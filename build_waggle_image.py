@@ -28,17 +28,23 @@ Will throw exception on execution error.
 def run_command(cmd):
     print "execute: %s" % (cmd) 
     try:
-        check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
+        child = subprocess.Popen(['/bin/bash', '-c', cmd])
+        child.wait()
+    except Exception as e:
+        print "Error: %s" % (str(e)) 
+        sys.exit(1)
+    if child.returncode != 0:
         print "Commmand exited with return code other than zero: %s" % (str(e)) 
         sys.exit(1)
         
+    return
 
 def run_command_f(cmd):
     print "execute: %s" % (cmd) 
     try:
-        check_call(cmd, shell=True)
-    except subprocess.CalledProcessError as e:
+        child = subprocess.Popen(['/bin/bash', '-c', cmd])
+        child.wait()
+    except Exception as e:
         pass
 
 def get_output(cmd):
@@ -183,7 +189,7 @@ apt-get install -y git
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
 git clone --recursive https://github.com/waggle-sensor/guestnodes.git
-
+git clone https://github.com/waggle-sensor/waggle_image.git
 
 
 
@@ -201,10 +207,10 @@ dpkg -l >> {0}
 ### mark image for first boot 
 touch /root/first_boot
 
-ln -s /usr/lib/waggle/guestnodes/scripts/waggle_first_boot.sh /etc/init.d/waggle_first_boot.sh
+ln -s /usr/lib/waggle/waggle-sensor/waggle_boot.sh /etc/init.d/waggle_boot.sh
 
-#chown root:root /etc/init.d/waggle_first_boot.sh
-update-rc.d waggle_first_boot.sh defaults
+
+update-rc.d waggle_boot.sh defaults
 
 rm -f /etc/network/interfaces.d/*
 rm -f /etc/udev/rules.d/70-persistent-net.rules 

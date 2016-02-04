@@ -12,14 +12,25 @@ data_directory="/root"
 
 report_file="/root/report.txt"
 
-
+waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/stock_images/'
 base_images=   {
-                'odroid-xu3' : { 'filename': "ubuntu-14.04lts-server-odroid-xu3-20150725.img" },
-                'odroid-c1' : {'filename':""} 
+                'odroid-xu3' : {
+                        'filename': "ubuntu-14.04lts-server-odroid-xu3-20150725.img",
+                         'url': waggle_stock_url
+                        },
+                'odroid-c1' : {
+                        'filename':"ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img",
+                        'url': waggle_stock_url
+                    } 
                 }
 
 
 mount_point="/mnt/newimage/"
+
+
+
+
+is_guestnode = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
 
 '''
@@ -34,7 +45,7 @@ def run_command(cmd):
         print "Error: %s" % (str(e)) 
         sys.exit(1)
     if child.returncode != 0:
-        print "Commmand exited with return code other than zero: %s" % (str(e)) 
+        print "Commmand exited with return code other than zero: %s" % (str(child.returncode)) 
         sys.exit(1)
         
     return
@@ -85,6 +96,7 @@ if odroid_model_raw == "ODROIDXU":
     print "Detected device: %s" % (odroid_model_raw)
     if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
         odroid_model="odroid-xu3"
+        is_guestnode = 1
     else:
         odroid_model="odroid-xu"
         print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
@@ -119,7 +131,7 @@ except:
 base_image_xz = base_image + '.xz'
 
 if not os.path.isfile(base_image_xz):
-    run_command('wget http://www.mcs.anl.gov/research/projects/waggle/downloads/'+ base_image_xz)
+    run_command('wget '+ base_images[odroid_model]['url'] + base_image_xz)
   
 
 if not os.path.isfile(base_image):
@@ -207,7 +219,7 @@ dpkg -l >> {0}
 ### mark image for first boot 
 touch /root/first_boot
 
-ln -s /usr/lib/waggle/waggle-sensor/waggle_boot.sh /etc/init.d/waggle_boot.sh
+ln -s /usr/lib/waggle/waggle-image/waggle_boot.sh /etc/init.d/waggle_boot.sh
 
 
 update-rc.d waggle_boot.sh defaults

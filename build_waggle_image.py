@@ -71,7 +71,7 @@ base_build_final_script='''\
 ### kill X processses
 set +e
 killall -u lightdm -9
-set -e
+
 
 
 ### username
@@ -98,6 +98,7 @@ if [ ${{odroid_exists}} == 0 ] ; then
 fi
 
 # verify waggle user has been created
+set +e
 id -u waggle > /dev/null 2>&1
 if [ $? -ne 0 ]; then 
   echo "error: unix user waggle was not created"
@@ -127,10 +128,11 @@ if [ $? -ne 0 ]; then
   exit 1 
 fi
 
-set +e
 echo "adding user waggle to group waggle"
 adduser waggle waggle
+
 set -e
+
 
 ### disallow root access
 sed -i 's/\(PermitRootLogin\) .*/\1 no/' /etc/ssh/sshd_config
@@ -183,8 +185,8 @@ apt-get autoremove -y
 
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
-git clone --recursive https://github.com/waggle-sensor/guestnodes.git
 git clone https://github.com/waggle-sensor/waggle_image.git
+git clone --recursive https://github.com/waggle-sensor/guestnodes.git
 
 cd /usr/lib/waggle/guestnodes/
 scripts/install_dependencies.sh

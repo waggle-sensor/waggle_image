@@ -110,8 +110,6 @@ if [ ${{odroid_exists}} != 0 ] && [ ${{waggle_exists}} != 0 ] ; then
   # real name
   usermod -c "waggle user" waggle
 
-  #change home directory
-  usermod -m -d /home/waggle/ waggle
 
   set +e
 fi

@@ -160,7 +160,7 @@ echo waggle:waggle | chpasswd
 echo root:waggle | chpasswd
 
 ### Remove ssh host files. Those will be recreated by the /etc/rc.local script by default.
-rm /etc/ssh/ssh_host*
+rm -f /etc/ssh/ssh_host*
 
 
 ### mark image for first boot 

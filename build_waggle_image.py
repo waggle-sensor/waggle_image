@@ -170,7 +170,7 @@ dpkg -l >> {0}
 
 '''
 
-
+# guest node specific code
 guestnode_build_script=base_build_init_script + '''\
 
 echo -e "10.31.81.10\tnodecontroller" >> /etc/hosts
@@ -187,11 +187,12 @@ git clone --recursive https://github.com/waggle-sensor/guestnodes.git
 git clone https://github.com/waggle-sensor/waggle_image.git
 
 cd /usr/lib/waggle/guestnodes/
+scripts/install_dependencies.sh
 
 
 '''+base_build_final_script
 
-
+# node controller specific code
 nodecontroller_build_script=base_build_init_script + '''\
 
 echo -e "10.31.81.51\tguestnode1 guestnode" >> /etc/hosts

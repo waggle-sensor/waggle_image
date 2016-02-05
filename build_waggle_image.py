@@ -76,8 +76,10 @@ killall -u lightdm -9
 
 ### username
 export odroid_exists=$(id -u odroid > /dev/null 2>&1; echo $?)
+export waggle_exists=$(id -u waggle > /dev/null 2>&1; echo $?)
 
-if [ ${{odroid_exists}} == 0 ] ; then
+# rename existing user odroid to waggle
+if [ ${{odroid_exists}} == 0 ] && [ ${{waggle_exists}} != 0 ] ; then
   echo "I will kill all processes of the user \"odroid\" now."
   sleep 1
   killall -u odroid -9
@@ -96,6 +98,24 @@ if [ ${{odroid_exists}} == 0 ] ; then
 
   set +e
 fi
+
+# create new user waggle
+if [ ${{odroid_exists}} != 0 ] && [ ${{waggle_exists}} != 0 ] ; then
+  
+  
+  set -e
+  
+  adduser --disabled-password --gecos "" waggle
+
+  # real name
+  usermod -c "waggle user" waggle
+
+  #change home directory
+  usermod -m -d /home/waggle/ waggle
+
+  set +e
+fi
+
 
 # verify waggle user has been created
 set +e

@@ -217,7 +217,7 @@ nodecontroller_build_script=base_build_init_script + '''\
 
 echo -e "10.31.81.51\tguestnode1 guestnode" >> /etc/hosts
 for i in 2 3 4 5 ; do
-  echo -e "10.31.81.5${i}\tguestnode${i}" >> /etc/hosts
+  echo -e "10.31.81.5${{i}}\tguestnode${{i}}" >> /etc/hosts
 done
 
 set -e

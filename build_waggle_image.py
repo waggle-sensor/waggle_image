@@ -25,6 +25,10 @@ base_images=   {
                 }
 
 
+create_b_image = 1
+
+change_partition_uuid_script = '/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
+
 mount_point="/mnt/newimage/"
 
 
@@ -32,6 +36,15 @@ mount_point="/mnt/newimage/"
 
 is_guestnode = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
+
+
+if create_b_image and not os.path.isfile(change_partition_uuid_script):
+    print change_partition_uuid_script, " not found"
+    sys.exit(1)
+
+if not os.path.isfile( data_directory+ '/waggle-id_rsa'):
+    print data_directory+ '/waggle-id_rsa not found. Disable this check in the script to continue anyway.' 
+    sys.exit(1)
 
 
 ###                              ###
@@ -99,7 +112,9 @@ dpkg --list | grep ^rc | awk -F" " ' {{ print $2 }} ' | xargs apt-get -y purge
 set -e
 apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc
 
-
+mkdir -p /usr/lib/waggle/
+cd /usr/lib/waggle/
+git clone https://github.com/waggle-sensor/waggle_image.git
 
 '''
 
@@ -242,8 +257,7 @@ apt-get autoremove -y
 
 
 mkdir -p /usr/lib/waggle/
-cd /usr/lib/waggle/
-git clone https://github.com/waggle-sensor/waggle_image.git
+
 git clone --recursive https://github.com/waggle-sensor/guestnodes.git
 
 cd /usr/lib/waggle/guestnodes/
@@ -599,6 +613,33 @@ except:
     pass
     
 os.rename(new_image+'.xz_part',  new_image+'.xz')
+
+
+
+# create second dd with different UUIDs
+if create_b_image:
+    if os.path.isfile(change_partition_uuid_script):
+        run_command(change_partition_uuid_script+ ' /dev/loop0')
+  
+        run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image, blocks_to_write, new_image_b))
+  
+        try:
+            os.remove(new_image_b+'.xz')
+        except:
+            pass
+            
+        os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')    
+    else:
+        print change_partition_uuid_script, " not found"
+        sys.exit(1)
+        
+        
+    
+  
+
+
+
+
 
 
 

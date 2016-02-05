@@ -517,9 +517,7 @@ new_fs_size_kb = estimated_fs_size_kb + (1024*100)
 run_command('e2fsck -f -y /dev/loop1')
 
 
-sector_size_string = run_command('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image))
-print "sector_size_string: ", sector_size_string
-sector_size=int(sector_size_string)
+sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image)))
 
 
 front_size_kb = sector_size * start_block/ 1024

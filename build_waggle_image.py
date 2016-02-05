@@ -27,7 +27,7 @@ base_images=   {
 
 create_b_image = 1
 
-change_partition_uuid_script = '/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
+change_partition_uuid_script = os.curdir + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
 mount_point="/mnt/newimage/"
 

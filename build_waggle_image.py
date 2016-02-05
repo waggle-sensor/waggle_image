@@ -58,6 +58,10 @@ apt-get update
 
 apt-get install -y git psmisc
 
+
+mkdir -p /etc/waggle/
+echo "10.31.81.10" > /etc/waggle/node_controller_host
+
 '''
 
 
@@ -169,6 +173,8 @@ dpkg -l >> {0}
 
 guestnode_build_script=base_build_init_script + '''\
 
+echo -e "10.31.81.10\tnodecontroller" >> /etc/hosts
+
 apt-get --no-install-recommends install -y network-manager
 apt-get autoclean
 apt-get autoremove -y
@@ -180,11 +186,18 @@ cd /usr/lib/waggle/
 git clone --recursive https://github.com/waggle-sensor/guestnodes.git
 git clone https://github.com/waggle-sensor/waggle_image.git
 
+cd /usr/lib/waggle/guestnodes/
+
 
 '''+base_build_final_script
 
 
 nodecontroller_build_script=base_build_init_script + '''\
+
+echo -e "10.31.81.51\tguestnode1 guestnode" >> /etc/hosts
+for i in 2 3 4 5 ; do
+  echo -e "10.31.81.5${i}\tguestnode${i}" >> /etc/hosts
+done
 
 set -e
 apt-get purge -y --force-yes \
@@ -241,7 +254,37 @@ cd /usr/lib/waggle/nodecontroller
 
 '''+base_build_final_script
 
-#TODO install nc packages
+
+nodecontroller_etc_network_interfaces_d ='''
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# created by Waggle autobuild
+
+auto lo eth0
+iface lo inet loopback
+
+iface eth0 inet static
+        address 10.31.81.10
+        netmask 255.255.255.0
+        
+'''
+
+
+#set static IP
+guest_node_etc_network_interfaces_d = '''\
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# created by Waggle autobuild
+
+auto lo eth0
+iface lo inet loopback
+
+iface eth0 inet static
+      address 10.31.81.51
+      netmask 255.255.255.0
+      #gateway 10.31.81.10
+
+'''
+
+
 
 
 '''
@@ -385,9 +428,12 @@ run_command('mount -o bind /sys  %s/sys' % (mount_point))
 
 
 
-
-local_build_script = guestnode_build_script.format(report_file)
-
+if is_guestnode:
+    local_build_script = guestnode_build_script.format(report_file)
+else: 
+    local_build_script = nodecontroller_build_script.format(report_file)
+    
+    
 write_file( mount_point+'/root/build_image.sh',  local_build_script)
 
 run_command('chmod +x %s/root/build_image.sh' % (mount_point))
@@ -410,24 +456,12 @@ shutil.copyfile(mount_point+report_file, new_image+'.report.txt')
 
 
 
-#set static IP
-guest_node_etc_network_interfaces_d = '''\
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# Include files from /etc/network/interfaces.d:
-source-directory /etc/network/interfaces.d
 
-auto lo eth0
-iface lo inet loopback
 
-iface eth0 inet static
-      address 10.31.81.51
-      netmask 255.255.255.0
-      #gateway 10.31.81.10
-
-'''
-
-write_file(mount_point+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
-
+if is_guestnode:
+    write_file(mount_point+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
+else:
+    write_file(mount_point+'/etc/network/interfaces', nodecontroller_etc_network_interfaces_d)
 
 
 

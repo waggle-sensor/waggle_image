@@ -370,8 +370,10 @@ def write_file(filename, content):
 
 
 for i in ['proc', 'dev', 'sys', '']:
-    time.sleep(3)
-    run_command_f('umount -d '+mount_point+i)
+    while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
+        run_command_f('umount -d '+mount_point+i)
+        time.sleep(3)
+    
     
 time.sleep(3)
 run_command_f('losetup -d /dev/loop1')
@@ -519,8 +521,9 @@ else:
 old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 1 | grep -o "[0-9]\+"'))
 
 for i in ['proc', 'dev', 'sys', '']:
-    time.sleep(5)
-    run_command_f('umount -d ' + mount_point + i)
+    while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
+        run_command_f('umount -d '+mount_point+i)
+        time.sleep(3)
 
 time.sleep(3)
 

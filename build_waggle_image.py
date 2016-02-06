@@ -365,9 +365,10 @@ def write_file(filename, content):
             
 
 for i in ['proc', 'dev', 'sys', '']:
+    time.sleep(1)
     run_command_f('umount '+mount_point+i)
     
-time.sleep(1)
+time.sleep(3)
 run_command_f('losetup -d /dev/loop1')
 run_command_f('losetup -d /dev/loop0')
 

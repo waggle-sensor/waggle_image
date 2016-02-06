@@ -332,19 +332,21 @@ iface eth0 inet static
 '''
 Will throw exception on execution error.
 '''
-def run_command(cmd):
+def run_command(cmd, die=1):
     print "execute: %s" % (cmd) 
     try:
         child = subprocess.Popen(['/bin/bash', '-c', cmd])
         child.wait()
     except Exception as e:
         print "Error: %s" % (str(e)) 
+        if not die:
+            return -1
         sys.exit(1)
-    if child.returncode != 0:
+    if die && child.returncode != 0:
         print "Commmand exited with return code other than zero: %s" % (str(child.returncode)) 
         sys.exit(1)
         
-    return
+    return child.returncode
 
 def run_command_f(cmd):
     print "execute: %s" % (cmd) 
@@ -364,9 +366,12 @@ def write_file(filename, content):
         text_file.write(content)
             
 
+
+
+
 for i in ['proc', 'dev', 'sys', '']:
     time.sleep(3)
-    run_command_f('umount '+mount_point+i)
+    run_command_f('umount -d '+mount_point+i)
     
 time.sleep(3)
 run_command_f('losetup -d /dev/loop1')
@@ -515,7 +520,7 @@ old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 
 
 for i in ['proc', 'dev', 'sys', '']:
     time.sleep(5)
-    run_command_f('umount ' + mount_point + i)
+    run_command_f('umount -d ' + mount_point + i)
 
 time.sleep(3)
 

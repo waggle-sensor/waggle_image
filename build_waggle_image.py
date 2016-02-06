@@ -342,7 +342,7 @@ def run_command(cmd, die=1):
         if not die:
             return -1
         sys.exit(1)
-    if die && child.returncode != 0:
+    if die and child.returncode != 0:
         print "Commmand exited with return code other than zero: %s" % (str(child.returncode)) 
         sys.exit(1)
         

@@ -370,14 +370,31 @@ def write_file(filename, content):
         text_file.write(content)
             
 
-
-
-
-for i in ['/proc', '/dev', '/sys', '']:
-    while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
-        run_command_f('umount -d '+mount_point+i)
-        time.sleep(3)
+def unmount_everything(mp):
+    for i in ['/proc', '/dev', '/sys', '']:
+        while int(get_output('mount | grep '+mp+i+' | wc -l')) != 0:
+            run_command_f('umount -d '+mp+i)
+            time.sleep(3)
+    time.sleep(3)
     
+
+
+def mount_everything(mp)  :  
+    run_command('mount /dev/loop1 %s' % (mp))
+    run_command('mount -o bind /proc %s/proc' % (mp))
+    run_command('mount -o bind /dev  %s/dev' % (mp))
+    run_command('mount -o bind /sys  %s/sys' % (mp))
+    time.sleep(3)
+    
+    
+def check_partition():
+    run_command('e2fsck -f -y /dev/loop1')
+    
+    
+
+
+unmount_everything(mount_point)
+
     
 time.sleep(3)
 for loop_device in ('/dev/loop1', '/dev/loop0' ):
@@ -473,18 +490,21 @@ run_command('losetup -o %s /dev/loop1 /dev/loop0' % (str(start_pos)))
 
 time.sleep(3)
 print "first filesystem check on /dev/loop1"
-run_command('e2fsck -f -y /dev/loop1')
+check_partition()
+
+
 
 
 try: 
     os.mkdir(mount_point)
 except:
     pass
-    
-run_command('mount /dev/loop1 %s' % (mount_point))
-run_command('mount -o bind /proc %s/proc' % (mount_point))
-run_command('mount -o bind /dev  %s/dev' % (mount_point))
-run_command('mount -o bind /sys  %s/sys' % (mount_point))
+
+
+
+mount_everything(mount_point)
+
+
 
 
 
@@ -503,7 +523,20 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 # CHROOT HERE
 #
 
+unmount_everything(mount_point)
+print "filesystem check on /dev/loop1 before chroot"
+check_partition()
+mount_everything(mount_point)
+
+
 run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
+
+
+
+unmount_everything(mount_point)
+print "filesystem check on /dev/loop1 after chroot"
+check_partition()
+mount_everything(mount_point)
 
 
 # 

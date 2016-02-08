@@ -393,7 +393,7 @@ def check_partition():
 
 
 
-def create_loop_devices(filename, start_block)
+def create_loop_devices(filename, start_block):
 
     # get partition start position
     #fdisk -lu ${base_image}

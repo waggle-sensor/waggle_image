@@ -478,6 +478,9 @@ run_command('mount -o bind /dev  %s/dev' % (mount_point))
 run_command('mount -o bind /sys  %s/sys' % (mount_point))
 
 
+time.sleep(3)
+print "first filesystem check on /dev/loop1"
+run_command('e2fsck -f -y /dev/loop1')
 
 
 if is_guestnode:
@@ -495,6 +498,9 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 #
 
 run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
+
+print "second filesystem check on /dev/loop1"
+run_command('e2fsck -f -y /dev/loop1')
 
 # 
 # After changeroot
@@ -521,6 +527,7 @@ else:
 
 
 old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 1 | grep -o "[0-9]\+"'))
+print "old_partition_size_kb: ", old_partition_size_kb
 
 for i in ['/proc', '/dev', '/sys', '']:
     while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
@@ -530,6 +537,7 @@ for i in ['/proc', '/dev', '/sys', '']:
 time.sleep(3)
 
 # verify partition:
+print "third filesystem check on /dev/loop1"
 run_command('e2fsck -f -y /dev/loop1')
 
 estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop1 | grep -o "[0-9]*"') )

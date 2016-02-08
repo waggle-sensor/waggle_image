@@ -457,14 +457,19 @@ shutil.copyfile(base_image, new_image)
 # get partition start position
 #fdisk -lu ${base_image}
 start_block=int(get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(new_image)))
+print "start_block: ", start_block
 
 start_pos=start_block*512  #get_output('echo "%s*512" | bc' % (start_block)) 
-
+print "start_pos: ", start_pos
 
 # create loop device for disk and for root partition
 run_command('losetup /dev/loop0 ' + new_image)
 run_command('losetup -o %s /dev/loop1 /dev/loop0' % (str(start_pos)))
 
+
+time.sleep(3)
+print "first filesystem check on /dev/loop1"
+run_command('e2fsck -f -y /dev/loop1')
 
 
 try: 
@@ -478,9 +483,6 @@ run_command('mount -o bind /dev  %s/dev' % (mount_point))
 run_command('mount -o bind /sys  %s/sys' % (mount_point))
 
 
-time.sleep(3)
-print "first filesystem check on /dev/loop1"
-run_command('e2fsck -f -y /dev/loop1')
 
 
 if is_guestnode:
@@ -499,8 +501,6 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 
 run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
 
-print "second filesystem check on /dev/loop1"
-run_command('e2fsck -f -y /dev/loop1')
 
 # 
 # After changeroot
@@ -537,7 +537,7 @@ for i in ['/proc', '/dev', '/sys', '']:
 time.sleep(3)
 
 # verify partition:
-print "third filesystem check on /dev/loop1"
+print "second filesystem check on /dev/loop1"
 run_command('e2fsck -f -y /dev/loop1')
 
 estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop1 | grep -o "[0-9]*"') )

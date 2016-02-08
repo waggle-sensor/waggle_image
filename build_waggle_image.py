@@ -675,10 +675,7 @@ if new_partition_size_kb < old_partition_size_kb:
 else:
     print "new_partition_size_kb is NOT smaller than old_partition_size_kb"
 
-for loop_device in ('/dev/loop0 ', '/dev/loop1' ):
-    while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-        run_command_f('losetup -d '+loop_device)
-        time.sleep(3)
+destroy_loop_devices()
 
 
 

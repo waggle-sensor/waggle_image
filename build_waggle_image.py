@@ -376,7 +376,7 @@ for i in ['proc', 'dev', 'sys', '']:
     
     
 time.sleep(3)
-for loop_device in ('/dev/loop0 ', '/dev/loop1' ):
+for loop_device in ('/dev/loop1', '/dev/loop0' ):
     while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
         run_command_f('losetup -d '+loop_device)
         time.sleep(3)

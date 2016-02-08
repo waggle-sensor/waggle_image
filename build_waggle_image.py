@@ -390,6 +390,37 @@ def mount_everything(mp)  :
 def check_partition():
     run_command('e2fsck -f -y /dev/loop1')
     
+
+
+
+def create_loop_devices(filename, start_block)
+
+    # get partition start position
+    #fdisk -lu ${base_image}
+    
+    if not start_block:
+        start_block=int(get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename)))
+        print "start_block: ", start_block
+
+    start_pos=start_block*512 
+    print "start_pos: ", start_pos
+
+    # create loop device for disk and for root partition
+    run_command('losetup /dev/loop0 ' + filename)
+    time.sleep(1)
+    run_command('losetup -o %s /dev/loop1 /dev/loop0' % (str(start_pos)))
+    
+    return start_block
+
+
+def destroy_loop_devices():
+    for loop_device in ('/dev/loop1', '/dev/loop0' ):
+        while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
+            run_command_f('losetup -d '+loop_device)
+            time.sleep(3)
+    
+
+##########################################
     
 
 
@@ -397,10 +428,9 @@ unmount_everything(mount_point)
 
     
 time.sleep(3)
-for loop_device in ('/dev/loop1', '/dev/loop0' ):
-    while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-        run_command_f('losetup -d '+loop_device)
-        time.sleep(3)
+destroy_loop_devices()
+
+
 
 
 
@@ -474,18 +504,12 @@ print "Copying file %s to %s ..." % (base_image, new_image)
 shutil.copyfile(base_image, new_image)
 
 
+#
+# LOOP DEVICES HERE
+#
 
-# get partition start position
-#fdisk -lu ${base_image}
-start_block=int(get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(new_image)))
-print "start_block: ", start_block
+start_block = create_loop_devices(new_image)
 
-start_pos=start_block*512  #get_output('echo "%s*512" | bc' % (start_block)) 
-print "start_pos: ", start_pos
-
-# create loop device for disk and for root partition
-run_command('losetup /dev/loop0 ' + new_image)
-run_command('losetup -o %s /dev/loop1 /dev/loop0' % (str(start_pos)))
 
 
 time.sleep(3)
@@ -505,9 +529,15 @@ except:
 mount_everything(mount_point)
 
 
+# TODO remove this test
 unmount_everything(mount_point)
+time.sleep(3)
+destroy_loop_devices()
 print "filesystem check on /dev/loop1 after first mount"
 check_partition()
+create_loop_devices(new_image, start_block)
+
+
 mount_everything(mount_point)
 
 
@@ -575,16 +605,16 @@ else:
 old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 1 | grep -o "[0-9]\+"'))
 print "old_partition_size_kb: ", old_partition_size_kb
 
-for i in ['/proc', '/dev', '/sys', '']:
-    while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
-        run_command_f('umount -d '+mount_point+i)
-        time.sleep(3)
 
+unmount_everything(mount_point)
+time.sleep(3)
+destroy_loop_devices()
+
+print "filesystem check on /dev/loop1 aftre chroot"
+check_partition()
+create_loop_devices(new_image, start_block)
 time.sleep(3)
 
-# verify partition:
-print "second filesystem check on /dev/loop1"
-run_command('e2fsck -f -y /dev/loop1')
 
 estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop1 | grep -o "[0-9]*"') )
 

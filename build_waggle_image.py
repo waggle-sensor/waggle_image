@@ -508,7 +508,7 @@ shutil.copyfile(base_image, new_image)
 # LOOP DEVICES HERE
 #
 
-start_block = create_loop_devices(new_image)
+start_block = create_loop_devices(new_image, None)
 
 
 

@@ -29,7 +29,7 @@ create_b_image = 1
 
 change_partition_uuid_script = os.curdir + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
-mount_point="/mnt/newimage/"
+mount_point="/mnt/newimage"
 
 
 
@@ -369,7 +369,7 @@ def write_file(filename, content):
 
 
 
-for i in ['proc', 'dev', 'sys', '']:
+for i in ['/proc', '/dev', '/sys', '']:
     while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
         run_command_f('umount -d '+mount_point+i)
         time.sleep(3)
@@ -494,7 +494,7 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 # CHROOT HERE
 #
 
-run_command('chroot %s /bin/bash /root/build_image.sh' % (mount_point))
+run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
 
 # 
 # After changeroot
@@ -504,7 +504,7 @@ try:
 except:
     pass
     
-shutil.copyfile(mount_point+report_file, new_image+'.report.txt')
+shutil.copyfile(mount_point+'/'+report_file, new_image+'.report.txt')
 
 
 
@@ -522,7 +522,7 @@ else:
 
 old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 1 | grep -o "[0-9]\+"'))
 
-for i in ['proc', 'dev', 'sys', '']:
+for i in ['/proc', '/dev', '/sys', '']:
     while int(get_output('mount | grep '+mount_point+i+' | wc -l')) != 0:
         run_command_f('umount -d '+mount_point+i)
         time.sleep(3)

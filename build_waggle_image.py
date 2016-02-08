@@ -232,6 +232,10 @@ rm -f /etc/udev/rules.d/70-persistent-net.rules
 echo > /root/.bash_history
 echo > /home/waggle/.bash_history
 
+set +e
+killall monit
+
+
 ### create report
 
 echo "image created: " > {0}

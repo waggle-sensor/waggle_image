@@ -533,9 +533,11 @@ mount_everything(mount_point)
 unmount_everything(mount_point)
 time.sleep(3)
 destroy_loop_devices()
+time.sleep(2)
+create_loop_devices(new_image, start_block)
 print "filesystem check on /dev/loop1 after first mount"
 check_partition()
-create_loop_devices(new_image, start_block)
+
 
 
 mount_everything(mount_point)
@@ -551,31 +553,16 @@ else:
 write_file( mount_point+'/root/build_image.sh',  local_build_script)
 
 
-unmount_everything(mount_point)
-print "filesystem check on /dev/loop1 before writing build_image.sh"
-check_partition()
-mount_everything(mount_point)
-
 run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 
 #
 # CHROOT HERE
 #
 
-unmount_everything(mount_point)
-print "filesystem check on /dev/loop1 before chroot"
-check_partition()
-mount_everything(mount_point)
-
 
 run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
 
 
-
-unmount_everything(mount_point)
-print "filesystem check on /dev/loop1 after chroot"
-check_partition()
-mount_everything(mount_point)
 
 
 # 
@@ -609,10 +596,12 @@ print "old_partition_size_kb: ", old_partition_size_kb
 unmount_everything(mount_point)
 time.sleep(3)
 destroy_loop_devices()
-
-print "filesystem check on /dev/loop1 aftre chroot"
-check_partition()
+time.sleep(3)
 create_loop_devices(new_image, start_block)
+time.sleep(3)
+print "filesystem check on /dev/loop1 after chroot"
+check_partition()
+
 time.sleep(3)
 
 

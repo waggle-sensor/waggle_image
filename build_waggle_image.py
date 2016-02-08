@@ -25,7 +25,7 @@ base_images=   {
                 }
 
 
-create_b_image = 1
+create_b_image = 0 # need to update the change_partition_uuid.sh first to get it work on loop device
 
 change_partition_uuid_script = os.path.abspath(os.path.curdir) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 

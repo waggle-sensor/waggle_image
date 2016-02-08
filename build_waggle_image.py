@@ -505,7 +505,10 @@ except:
 mount_everything(mount_point)
 
 
-
+unmount_everything(mount_point)
+print "filesystem check on /dev/loop1 after first mount"
+check_partition()
+mount_everything(mount_point)
 
 
 
@@ -516,6 +519,12 @@ else:
     
     
 write_file( mount_point+'/root/build_image.sh',  local_build_script)
+
+
+unmount_everything(mount_point)
+print "filesystem check on /dev/loop1 before writing build_image.sh"
+check_partition()
+mount_everything(mount_point)
 
 run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 

@@ -205,6 +205,9 @@ fi
 echo "adding user waggle to group waggle"
 adduser waggle waggle
 
+echo "sudo access for user waggle"
+adduser waggle sudo
+
 set -e
 
 

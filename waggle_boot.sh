@@ -48,7 +48,7 @@ do_start()
 	#   2 if daemon could not be started
 
         # clean-up on each boot
-        rm -f /etc/udev/rules.d/70-persistent-net.rules 
+        # TOO LATE, do that earlier: rm -f /etc/udev/rules.d/70-persistent-net.rules 
 
 
 	if [ ! -e /root/first_boot ] ; then

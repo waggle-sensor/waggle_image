@@ -267,9 +267,9 @@ apt-get autoremove -y
 
 mkdir -p /usr/lib/waggle/
 
-git clone --recursive https://github.com/waggle-sensor/guestnodes.git
+git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
 
-cd /usr/lib/waggle/guestnodes/
+cd /usr/lib/waggle/plugin_manager/
 scripts/install_dependencies.sh
 
 
@@ -474,7 +474,13 @@ else:
 
 
 date_today=get_output('date +"%Y%m%d"').rstrip()
-new_image_prefix="%s/waggle-guestnode-%s-%s" % (data_directory, odroid_model, date_today) 
+
+if is_guestnode:
+    image_type = "guestnode"
+else:
+    image_type = "nodecontroller"
+
+new_image_prefix="%s/waggle-%s-%s-%s" % (data_directory, image_type, odroid_model, date_today) 
 new_image="%s.img" % (new_image_prefix)
 
 new_image_b="%s_B.img" % (new_image_prefix)

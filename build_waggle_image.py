@@ -212,7 +212,7 @@ set -e
 
 
 ### disallow root access
-sed -i 's/\(PermitRootLogin\) .*/\1 no/' /etc/ssh/sshd_config
+sed -i 's/\(PermitRootLogin\) .*/\\1 no/' /etc/ssh/sshd_config
 
 ### default password
 echo waggle:waggle | chpasswd

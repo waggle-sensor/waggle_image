@@ -284,6 +284,8 @@ for i in 2 3 4 5 ; do
 done
 
 
+echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
+
 set +e
 
 

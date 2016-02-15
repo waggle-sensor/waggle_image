@@ -300,6 +300,12 @@ cd /usr/lib/waggle/nodecontroller
 ./scripts/install_dependencies.sh
 
 
+### get plugin_manager repo
+cd /usr/lib/waggle/
+git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
+cd /usr/lib/waggle/plugin_manager/
+scripts/install_dependencies.sh
+
 
 '''+base_build_final_script
 

@@ -112,11 +112,14 @@ dpkg --list | grep ^rc | awk -F" " ' {{ print $2 }} ' | xargs apt-get -y purge
 
 # Packages we want to install:
 set -e
-apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc wvdial
+apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc wvdial supervisor
 
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
 git clone https://github.com/waggle-sensor/waggle_image.git
+
+
+service supervisor stop
 
 '''
 

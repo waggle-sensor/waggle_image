@@ -3,8 +3,8 @@
 
 The connection to Internet is accomplished through wvdial. wvdial uses a 
 config file wvdial.conf. The wvdial application is started by udev when 
-it finds the ___Pantech UML290 Verizon Modem___  being attached to the system. 
-This is accomplished using the 75-wwan-net.rules file. 
+it finds a WWAN modem being attached to the system. This is accomplished 
+using the 75-wwan-net.rules file. 
 
 ##Setup:##
 

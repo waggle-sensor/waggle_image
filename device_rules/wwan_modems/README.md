@@ -18,7 +18,6 @@ using the 75-wwan-net.rules file.
 After the above steps, connect the modem and the system should attempt to get 
 network connection ___30-35 seconds___  after the modem is plugged in.
 
-A successful network connection will showup when *ifconfig* is issued under 
-___ppp0___  entry. 
+A successful network connection will show up under ___ppp0___  entry  when *ifconfig* is issued. 
 
 

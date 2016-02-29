@@ -1,0 +1,5 @@
+SUBSYSTEM!="usb", ACTION!="add", GOTO="rules_end"
+SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8037", SYMLINK+="waggle_sysmon"
+SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="003e", SYMLINK+="waggle_coresense"
+LABEL="rules_end"
+

@@ -12,6 +12,7 @@ set -e
 
 # ODROID-C1/C1+/C0/C2
 # Pin: 3 GPIO: 74
+# GND: 9 and 39
 #
 # Source: http://odroid.com/dokuwiki/doku.php?id=en:c1_gpio_default#
 

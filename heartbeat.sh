@@ -55,6 +55,8 @@ else
   exit 1
 fi
 
+echo "Detected device: ${DEVICE}"
+
 
 echo "Activating GPIO pin ${PIN} with export number ${GPIO_EXPORT}."
 

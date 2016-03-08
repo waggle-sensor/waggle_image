@@ -11,10 +11,9 @@ set -e
 # Source: http://dn.odroid.com/5422/ODROID-XU3/Schematics/XU4_HIGHTOPSILK.png
 
 # ODROID-C1/C1+/C0/C2
-# Pin 3 = Export GPIO#205 
+# Pin: 3 GPIO: 74
 #
-# Source: http://odroid.com/dokuwiki/doku.php?id=en:c2_hardware#expansion_connectors
-#
+# Source: http://odroid.com/dokuwiki/doku.php?id=en:c1_gpio_default#
 
 TIME_LOW=1.0
 TIME_HIGH=1.0
@@ -62,7 +61,7 @@ if [ ${DEVICE}x == "XU3x" ] ; then
   GPIO_EXPORT=173
   PIN=4
 elif [ ${DEVICE}x == "Cx" ] ; then
-  GPIO_EXPORT=205
+  GPIO_EXPORT=74
   PIN=3
 else
   echo "Device ${DEVICE} not recognized"

@@ -58,7 +58,10 @@ fi
 
 echo "Activating GPIO pin ${PIN} with export number ${GPIO_EXPORT}."
 
-echo ${GPIO_EXPORT} > /sys/class/gpio/export
+if [ ! -d /sys/class/gpio/gpio${GPIO_EXPORT} ] ; then
+  echo ${GPIO_EXPORT} > /sys/class/gpio/export
+fi
+
 echo "out" > /sys/class/gpio/gpio${GPIO_EXPORT}/direction
 
 echo "Starting heartbeat..."

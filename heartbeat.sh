@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-set -x
+
 
 # Documentation
 #
@@ -59,10 +59,14 @@ fi
 echo "Activating GPIO pin ${PIN} with export number ${GPIO_EXPORT}."
 
 if [ ! -d /sys/class/gpio/gpio${GPIO_EXPORT} ] ; then
+  set -x
   echo ${GPIO_EXPORT} > /sys/class/gpio/export
+  set +x
 fi
 
+set -x
 echo "out" > /sys/class/gpio/gpio${GPIO_EXPORT}/direction
+set +x
 
 echo "Starting heartbeat..."
 

@@ -117,9 +117,11 @@ apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial p
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
 git clone https://github.com/waggle-sensor/waggle_image.git
+cd waggle_image
+./configure
 
 
-service supervisor stop
+/etc/init.d/supervisor stop
 
 '''
 

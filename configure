@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+./install_dependencies.sh
+
+export current_dir="$(pwd)"
+
+
+if [ ! -e ${current_dir}/heartbeat.sh ] ; then
+  print "heartbeat.sh not found"
+  exit 1
+fi
+
+set -x
+mkdir -p /etc/supervisor/conf.d/
+
+ln -sf ${current_dir}/supervisor/heartbeat.conf /etc/supervisor/conf.d/heartbeat.conf
+
+/etc/init.d/supervisor restart
+
+

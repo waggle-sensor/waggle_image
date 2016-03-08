@@ -17,8 +17,7 @@ mkdir -p /var/log/waggle/
 
 ln -sf ${current_dir}/supervisor/heartbeat.conf /etc/supervisor/conf.d/heartbeat.conf
 
-/etc/init.d/supervisor restart
+set +x
+echo "supervisorctl status"
 
-sleep 1
 
-supervisorctl status

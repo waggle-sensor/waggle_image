@@ -19,6 +19,14 @@ set -e
 TIME_LOW=1.0
 TIME_HIGH=1.0
 
+
+########
+
+echo ""
+echo ""
+echo "Starting heartbeat script...  "
+echo "TIME: "$(date +"%Y-%m-%d %H:%M" -u)
+
 # Check if the current device is a C1+ or XU4. 
 
 HEADER=`head -n 1 /media/boot/boot.ini`

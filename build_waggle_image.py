@@ -114,6 +114,9 @@ dpkg --list | grep ^rc | awk -F" " ' {{ print $2 }} ' | xargs apt-get -y purge
 set -e
 apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc wvdial supervisor
 
+
+/etc/init.d/supervisor stop
+
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
 git clone https://github.com/waggle-sensor/waggle_image.git
@@ -121,7 +124,7 @@ cd waggle_image
 ./configure
 
 
-/etc/init.d/supervisor stop
+
 
 '''
 

@@ -124,7 +124,8 @@ cd waggle_image
 ./configure
 
 
-
+# make sure serial console requires password
+sed -i -e 's:exec /bin/login -f root:exec /bin/login:' /bin/auto-root-login
 
 '''
 

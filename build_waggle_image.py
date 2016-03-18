@@ -112,10 +112,9 @@ dpkg --list | grep ^rc | awk -F" " ' {{ print $2 }} ' | xargs apt-get -y purge
 
 # Packages we want to install:
 set -e
-apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc wvdial supervisor
+apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc wvdial
 
 
-/etc/init.d/supervisor stop
 
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/

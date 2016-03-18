@@ -12,10 +12,13 @@ if [ ! -e ${current_dir}/heartbeat.sh ] ; then
 fi
 
 set -x
-mkdir -p /etc/supervisor/conf.d/
+#mkdir -p /etc/supervisor/conf.d/
 mkdir -p /var/log/waggle/
 
-ln -sf ${current_dir}/supervisor/heartbeat.conf /etc/supervisor/conf.d/heartbeat.conf
+#ln -sf ${current_dir}/supervisor/heartbeat.conf /etc/supervisor/conf.d/heartbeat.conf
+rm -f /etc/supervisor/conf.d/heartbeat.conf
+
+ln -sf ${current_dir}/upstart/waggle_heartbeat.conf /etc/init/waggle_heartbeat.conf 
 
 set +x
 echo "supervisorctl status"

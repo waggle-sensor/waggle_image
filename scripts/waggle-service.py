@@ -127,24 +127,25 @@ class UpStartService(Service):
         
     
     def status(self):
-        status_line = "\n".join(subprocess.Popen(["service", self.id, "status"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
+        command = ["status", self.id]
+        status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
         
         
     def start(self):
-        command = ["service", self.id, "start"]
+        command = ["start", self.id]
         #print "command: ", ' '.join(command)
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
          
     def stop(self):
-        command = ["service", self.id, "stop"]
+        command = ["stop", self.id]
         #print "command: ", ' '.join(command)
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
         
     def restart(self):
-        command = ["service", self.id, "restart"]
+        command = ["restart", self.id]
         #print "command: ", ' '.join(command)
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
@@ -183,24 +184,6 @@ class InitService(Service):
     def restart(self):
         call(["/etc/init.d/"+self.id, "restart"])
     
-
-def status_code_2_text(status_int):
-    if (status_int == 0):
-        status = 'active'
-    elif (status_int == 1):
-        status = 'inactive'
-    elif (status_int == -10):
-        status = 'not found'    
-    else:
-        status = 'unknown'
-    return status
-    
-
-
-
-    
-    
-    
     
 
 class UpStart:
@@ -222,7 +205,7 @@ class UpStart:
         for s in self.services:
             self.services_dict[s.id.lower()] = s
             
-    def execute(self, cmd_array):
+    def execute(self, cmd_array, interactive=False):
         
         #print "command I got:", ','.join(cmd_array)
         
@@ -236,7 +219,7 @@ class UpStart:
             return 0
     
         if command == 'list' or command == 'l':
-            self.overview()
+            self.overview(interactive=interactive)
             return 1
     
         if len(cmd_array)==2:
@@ -252,11 +235,28 @@ class UpStart:
         if not command in Service.service_commands:
             print "error: command %s unknown" % (command)
             return 0
-            
-        try:
-            service = self.services_dict[service_string]
-        except:
-            service = None
+        
+        # check if id was used instead of name
+        service_id = None
+        use_service_id = False
+        if interactive:
+            try:
+                service_id = int(service_string)
+                use_service_id = True
+            except:
+                pass
+                
+        if use_service_id:
+            try:
+                service = self.services[service_id]
+            except:
+                return 0
+        else:
+                        
+            try:
+                service = self.services_dict[service_string]
+            except:
+                service = None
         
         if not service:
             print "error: service '{}' not found".format(service_string)
@@ -292,8 +292,11 @@ class UpStart:
         
         
         
-    def overview(self):
-        header = ['id', 'name', 'goal', 'state']
+    def overview(self, interactive=False):
+        if interactive:
+            header = ['id', 'name', 'goal', 'state']
+        else:
+            header = ['name', 'goal', 'state']
         data = []
         for i, s in enumerate(self.services):
         
@@ -312,7 +315,10 @@ class UpStart:
                 status='error'
         
             #print "(%d) %s  %s\n" % (i, s.id, status.ljust(10, ' '))
-            data.append([i, s.id, goal, state])
+            if interactive:
+                data.append([i, s.id, goal, state])
+            else:
+                data.append([s.id, goal, state])
 
         print tabulate(data, header, tablefmt="psql")
 
@@ -351,7 +357,7 @@ if __name__ == "__main__":
         while True:
             
             print "\nList of services: \n"
-            upstart.overview()
+            upstart.overview(interactive=True)
             
             
             command = raw_input('\nMain menu\nEnter your command: ')
@@ -360,7 +366,7 @@ if __name__ == "__main__":
             if (not command):
                 continue
                 
-            upstart.execute(re.split(r"\s+", command)) 
+            upstart.execute(re.split(r"\s+", command), interactive=True) 
             
             
             # if (command == "l"):

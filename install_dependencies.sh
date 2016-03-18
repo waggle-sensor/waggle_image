@@ -4,5 +4,5 @@ set -e
 set -x
 
 
-apt-get install -y supervisor
+#nothing here anymore
 

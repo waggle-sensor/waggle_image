@@ -20,6 +20,8 @@ rm -f /etc/supervisor/conf.d/heartbeat.conf
 
 ln -sf ${current_dir}/upstart/waggle_heartbeat.conf /etc/init/waggle_heartbeat.conf 
 
+ln -sf ${current_dir}/scripts/waggle-service.py /usr/bin/waggle-service
+
 set +x
 echo "done"
 

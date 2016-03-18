@@ -119,8 +119,8 @@ class UpStartService(Service):
                 return {'status' : 1, 'text' : result, 'state': state, 'goal': goal}
         
         
-        print 'state: ', state
-        print 'self.upstart_states_dict: ', str(self.upstart_states_dict)
+        #print 'state: ', state
+        #print 'self.upstart_states_dict: ', str(self.upstart_states_dict)
         
         return {'error' : 1, 'text' : 'status unknown: '+ result, 'state': state, 'goal': goal}
         

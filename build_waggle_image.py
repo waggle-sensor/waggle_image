@@ -66,6 +66,8 @@ dpkg-reconfigure locales
 echo "Etc/UTC" > /etc/timezone 
 dpkg-reconfigure --frontend noninteractive tzdata
 
+# because of "Failed to fetch http://ports.ubuntu.com/... ...Hash Sum mismatch"
+rm -rf /var/lib/apt/lists/*
 apt-get update
 #apt-get upgrade -y
 

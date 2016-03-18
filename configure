@@ -21,6 +21,6 @@ rm -f /etc/supervisor/conf.d/heartbeat.conf
 ln -sf ${current_dir}/upstart/waggle_heartbeat.conf /etc/init/waggle_heartbeat.conf 
 
 set +x
-echo "supervisorctl status"
+echo "done"
 
 

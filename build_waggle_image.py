@@ -209,12 +209,12 @@ fi
 
 
 # check if odroid group exists
-getent group odroid &> /dev/null 
+getent group odroid > /dev/null 2>&1
 if [ $? -eq 0 ]; then 
   echo "\"odroid\" group exists, will rename it to \"waggle\""
   groupmod -n waggle odroid || exit 1 
 else
-  getent group waggle &> /dev/null 
+  getent group waggle > /dev/null 2>&1 
   if [ $? -eq 0 ]; then 
     echo "Neither waggle nor odroid group exists. Will create odroid group."
     addgroup waggle
@@ -224,7 +224,7 @@ fi
 
 
 # verify waggle group has been created
-getent group waggle &> /dev/null 
+getent group waggle > /dev/null 2>&1 
 if [ $? -ne 0 ]; then 
   echo "error: unix group waggle was not created"
   exit 1 
@@ -484,11 +484,11 @@ destroy_loop_devices()
 print "usage: ./build_waggle_image.sh 2>&1 | tee build.log"
 
 # install parted
-if not call('hash partprobe &> /dev/null', shell=True):
+if not call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')
 
 # install pipeviewer
-if not call('hash pv &> /dev/null', shell=True):
+if not call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 

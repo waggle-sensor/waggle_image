@@ -22,6 +22,8 @@ cp ${current_dir}/upstart/waggle_heartbeat.conf /etc/init/
 
 ln -sf ${current_dir}/scripts/waggle-service.py /usr/bin/waggle-service
 
+ln -sf ${current_dir}/device_rules/atmel_boards/75-waggle-arduino.rules /etc/udev/rules.d/
+
 set +x
 echo "done"
 

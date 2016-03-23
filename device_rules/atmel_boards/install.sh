@@ -2,6 +2,7 @@
 set -e
 set -x
 
+rm -f /etc/udev/rules.d/75-waggle-arduino.rules
 cp 75-waggle-arduino.rules /etc/udev/rules.d/
 
 

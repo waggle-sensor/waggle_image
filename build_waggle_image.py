@@ -90,7 +90,7 @@ declare -a unwanted=("^gimp-*" "^x11*" abiword* apport* aspell aspell-en audacio
 export unwanted_count=${{#unwanted[@]}}
 CHUNK_SIZE=50
 for i in $(seq 0 ${{CHUNK_SIZE}} ${{unwanted_count}})  ; do 
-  export subset_unwanted=${{unwanted_count[@]:${{i}}:${{CHUNK_SIZE}}}}
+  export subset_unwanted=${{unwanted[@]:${{i}}:${{CHUNK_SIZE}}}}
   
   apt-get purge -y --force-yes --ignore-missing ${{subset_unwanted}} ${{KEEP_PACKAGES}}
   sleep 1

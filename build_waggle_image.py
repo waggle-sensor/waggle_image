@@ -484,11 +484,11 @@ destroy_loop_devices()
 print "usage: ./build_waggle_image.sh 2>&1 | tee build.log"
 
 # install parted
-if not call('hash partprobe > /dev/null 2>&1', shell=True):
+if call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')
 
 # install pipeviewer
-if not call('hash pv > /dev/null 2>&1', shell=True):
+if call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 

@@ -7,6 +7,7 @@ import os.path
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
 
+print "usage: ./build_waggle_image.sh 2>&1 | tee build.log"
 
 data_directory="/root"
 
@@ -413,6 +414,7 @@ def get_output(cmd):
 
 
 def write_file(filename, content):
+    print "writing file "+filename
     with open(filename, "w") as text_file:
         text_file.write(content)
             
@@ -481,7 +483,7 @@ destroy_loop_devices()
 
 
 
-print "usage: ./build_waggle_image.sh 2>&1 | tee build.log"
+
 
 # install parted
 if call('hash partprobe > /dev/null 2>&1', shell=True):
@@ -523,6 +525,9 @@ if is_guestnode:
     image_type = "guestnode"
 else:
     image_type = "nodecontroller"
+
+
+print "image_type: ", image_type
 
 new_image_prefix="%s/waggle-%s-%s-%s" % (data_directory, image_type, odroid_model, date_today) 
 new_image="%s.img" % (new_image_prefix)
@@ -571,7 +576,7 @@ check_partition()
 
 
 
-
+print "execute: mkdir -p "+mount_point
 try: 
     os.mkdir(mount_point)
 except:
@@ -605,6 +610,9 @@ else:
     
 write_file( mount_point+'/root/build_image.sh',  local_build_script)
 
+print "-------------------------\n"
+print local_build_script
+print "-------------------------\n"
 
 run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 
@@ -612,10 +620,12 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 # CHROOT HERE
 #
 
+print "################### start of chroot ###################"
 
 run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
 
 
+print "################### end of chroot ###################"
 
 
 # 
@@ -625,7 +635,8 @@ try:
     os.remove(new_image+'.report.txt')
 except:
     pass
-    
+
+print "copy: ", mount_point+'/'+report_file, new_image+'.report.txt'
 shutil.copyfile(mount_point+'/'+report_file, new_image+'.report.txt')
 
 

@@ -8,3 +8,4 @@ cp 75-waggle-arduino.rules /etc/udev/rules.d/
 
 set +x
 echo "run: udevadm control --reload-rules"
+echo "     udevadm trigger --subsystem-match=tty --action=add"

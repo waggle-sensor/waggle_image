@@ -33,7 +33,8 @@ cd ${current_dir}/device_rules/wwan_modems
 set +x
 
 echo "run: udevadm control --reload-rules"
-
+echo "     udevadm trigger --subsystem-match=tty --action=add"
+echo ""
 echo "done"
 
 

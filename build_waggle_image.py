@@ -148,7 +148,7 @@ dpkg --list | grep ^rc | awk -F" " ' {{ print $2 }} ' | xargs apt-get -y purge
 
 # Packages we want to install:
 set -e
-apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip monit tree psmisc wvdial
+apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip tree psmisc wvdial
 
 
 
@@ -288,7 +288,10 @@ echo > /root/.bash_history
 echo > /home/waggle/.bash_history
 
 set +e
+# monit accesses /dev/null even after leaving chroot, which makes it impossible unmount the new image
+/etc/init.d/monit stop
 killall monit
+sleep 3
 
 
 ### create report

@@ -47,7 +47,7 @@ while [ 1 ] ; do
     try_set_time
     if [ $? -eq 0 ] ; then
       break
-    done
+    fi
     # did not set time, will try again.
     sleep 10
   done

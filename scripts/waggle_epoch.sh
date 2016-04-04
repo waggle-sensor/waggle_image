@@ -1,32 +1,24 @@
 #!/bin/bash
 set -e
 
-# This script tries to get the time from the beehive server. If the year seems to be ok already, it will not try to fetch time
-#  from the beehive server. This is not intended to provide accurate time. For accurate time either use ntp or get time via the waggle protocol.
-
+# This script tries to get the time from the beehive server. 
 
 
 SERVER_HOST="beehive1.mcs.anl.gov"
-REFERENCE_YEAR=2016
-
-while [ 1 ] ; do
 
 
+try_set_time()
+{
   # check if time is needed
-  CURRENT_YEAR=$(date +"%Y")
-
-
-  if [ "${CURRENT_YEAR}x" == "x" ] ; then
-    CURRENT_YEAR=0
-  fi
-
-
-  if [ ! ${CURRENT_YEAR} -lt ${REFERENCE_YEAR} ] ; then
-    echo "date seems to be ok"
-    exit 0
-  fi
-
-  echo "Device seems to have the wrong date: year=${CURRENT_YEAR}"
+  #CURRENT_YEAR=$(date +"%Y")
+  #if [ "${CURRENT_YEAR}x" == "x" ] ; then
+  #  CURRENT_YEAR=0
+  #fi
+  #if [ ! ${CURRENT_YEAR} -lt ${REFERENCE_YEAR} ] ; then
+  #  echo "date seems to be ok"
+  #  return 0
+  #fi
+  #echo "Device seems to have the wrong date: year=${CURRENT_YEAR}"
 
   # get epoch from server
   set +e
@@ -35,12 +27,33 @@ while [ 1 ] ; do
 
   # if EPOCH is not empty, set date
   if [ ! "${EPOCH}x" == "x" ] ; then
+    set -x
     date -s@${EPOCH}
+    SUCCESS=$?
+    set +x
+    if [ ${SUCCESS} -eq 0 ] ; then
+       return 0
+    fi
+    return 1
   fi
+  return 1
+}
 
-  sleep 10
+########### start ###########
 
+while [ 1 ] ; do
+  
+  while [ 1 ] ; do
+    try_set_time
+    if [ $? -eq 0 ] ; then
+      break
+    done
+    # did not set time, will try again.
+    sleep 10
+  done
 
+  echo "sleep 24h"
+  sleep 86400
 done
 
 

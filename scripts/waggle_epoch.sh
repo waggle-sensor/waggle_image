@@ -16,12 +16,12 @@ while [ 1 ] ; do
   CURRENT_YEAR=$(date +"%Y")
 
 
-  if [ "${CURRENT_YEAR}x" == "x" ] ; do
+  if [ "${CURRENT_YEAR}x" == "x" ] ; then
     CURRENT_YEAR=0
   fi
 
 
-  if [ ! ${CURRENT_YEAR} -lt ${REFERENCE_YEAR} ] ; do
+  if [ ! ${CURRENT_YEAR} -lt ${REFERENCE_YEAR} ] ; then
     echo "date seems to be ok"
     exit 0
   fi
@@ -34,7 +34,7 @@ while [ 1 ] ; do
   set -e
 
   # if EPOCH is not empty, set date
-  if [ ! "${EPOCH}x" == "x" ] ; do
+  if [ ! "${EPOCH}x" == "x" ] ; then
     date -s@${EPOCH}
   fi
 

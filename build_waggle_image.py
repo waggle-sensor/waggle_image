@@ -30,7 +30,7 @@ create_b_image = 0 # need to update the change_partition_uuid.sh first to get it
 
 change_partition_uuid_script = os.path.abspath(os.path.curdir) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
-mount_point="/mnt/newimage"
+mount_point_A="/mnt/newimage_A"
 
 
 
@@ -402,10 +402,11 @@ iface eth0 inet static
 
 
 
-'''
-Will throw exception on execution error.
-'''
+
 def run_command(cmd, die=1):
+    '''
+    Will throw exception on execution error.
+    '''
     print "execute: %s" % (cmd) 
     try:
         child = subprocess.Popen(['/bin/bash', '-c', cmd])
@@ -422,6 +423,9 @@ def run_command(cmd, die=1):
     return child.returncode
 
 def run_command_f(cmd):
+    '''
+    Execute, wait, ignore error
+    '''
     print "execute: %s" % (cmd) 
     try:
         child = subprocess.Popen(['/bin/bash', '-c', cmd])
@@ -430,6 +434,9 @@ def run_command_f(cmd):
         pass
 
 def get_output(cmd):
+    '''
+    Execute, get STDOUT
+    '''
     print "execute: %s" % (cmd) 
     return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
 
@@ -440,7 +447,7 @@ def write_file(filename, content):
         text_file.write(content)
             
 
-def unmount_everything(mp):
+def unmount_mountpoint(mp):
     for i in ['/proc', '/dev', '/sys', '']:
         while int(get_output('mount | grep '+mp+i+' | wc -l')) != 0:
             run_command_f('umount -d '+mp+i)
@@ -449,8 +456,8 @@ def unmount_everything(mp):
     
 
 
-def mount_everything(mp)  :  
-    run_command('mount /dev/loop1 %s' % (mp))
+def mount_mountpoint(device, mp):
+    run_command('mount /dev/loop%dp1 %s' % (device, mp))
     run_command('mount -o bind /proc %s/proc' % (mp))
     run_command('mount -o bind /dev  %s/dev' % (mp))
     run_command('mount -o bind /sys  %s/sys' % (mp))
@@ -463,38 +470,93 @@ def check_partition():
 
 
 
-def create_loop_devices(filename, start_block):
+def losetup(loopdev, file, offset=0):
+    """
+    Create single loop device
+    """
+    offset_option = ''
+    
+    if offset:
+        offset_option = '-o %d ' % (offset)
+        
+    run_command('losetup %s %s %s' % (offset_option, loopdev, file)
+    
+    
+    
 
+def create_loop_devices(filename, device_number, start_block):
+    """
+    Create loop devices for complete image and for the root partition
+    startblock (optional) is the start of the second partition
+    """
     # get partition start position
     #fdisk -lu ${base_image}
     
+    loop_device = '/dev/loop'+str(device_number)
+    loop_partition_1 = loop_device+'p1' # boot partition
+    loop_partition_2 = loop_device+'p2' # data/root partition
+    
     if not start_block:
-        start_block=int(get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename)))
+        start_block_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
+        start_block=int(start_block_str)
         print "start_block: ", start_block
 
-    start_pos=start_block*512 
-    print "start_pos: ", start_pos
+    offset=start_block*512 
+    print "offset: ", offset
 
-    # create loop device for disk and for root partition
-    run_command('losetup /dev/loop0 ' + filename)
+    # create loop device for disk
+    losetup(loop_device, filename)
+    
     time.sleep(1)
-    run_command('losetup -o %s /dev/loop1 /dev/loop0' % (str(start_pos)))
+    # create loop device for root partition    
+    losetup(loop_partition_2, loop_device, offset)
     
     return start_block
 
 
 def destroy_loop_devices():
-    for loop_device in ('/dev/loop1', '/dev/loop0' ):
-        while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-            run_command_f('losetup -d '+loop_device)
-            time.sleep(3)
+    for device in ('/dev/loop0', '/dev/loop1' ):
+        for partition in ('p1', 'p2'):
+            loop_device = device+partition
+            while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
+                run_command_f('losetup -d '+loop_device)
+                time.sleep(3)
+
+
+
+def detect_odroid_model():
+    odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
+    odroid_model=""
+    
+    # The XU4 is actually a XU3.
+    if odroid_model_raw == "ODROIDXU":
+        print "Detected device: %s" % (odroid_model_raw)
+        if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
+            odroid_model="odroid-xu3"
+            #is_guestnode = 1
+        else:
+            odroid_model="odroid-xu"
+            print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
+            return None
+            
+    elif odroid_model_raw  == "ODROIDC":
+        print "Detected device: %s" % (odroid_model)
+        odroid_model="odroid-c1"
+    else:
+        print "Could not detect ODROID model. (%s)" % (odroid_model)
+        return None
+    
+    return odroid_model
+        
+
+##################################################################################################################################################################################################################
+##################################################################################################################################################################################################################
     
 
-##########################################
-    
 
+# clean up first
 
-unmount_everything(mount_point)
+unmount_mountpoint(0, mount_point_A)
 
     
 time.sleep(3)
@@ -515,27 +577,15 @@ if call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 
-odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
-odroid_model=""
 
-# The XU4 is actually a XU3.
-if odroid_model_raw == "ODROIDXU":
-    print "Detected device: %s" % (odroid_model_raw)
-    if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
-        odroid_model="odroid-xu3"
-        is_guestnode = 1
-    else:
-        odroid_model="odroid-xu"
-        print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
-        sys.exit(1)
+odroid_model = detect_odroid_model()
 
-elif odroid_model_raw  == "ODROIDC":
-    print "Detected device: %s" % (odroid_model)
-    odroid_model="odroid-c1"
-else:
-    print "Could not detect ODROID model. (%s)" % (odroid_model)
+if not odroid_model:
     sys.exit(1)
 
+
+if odroid_model == "odroid-xu3":
+    is_guestnode = 1
 
 
 
@@ -551,7 +601,7 @@ else:
 print "image_type: ", image_type
 
 new_image_prefix="%s/waggle-%s-%s-%s" % (data_directory, image_type, odroid_model, date_today) 
-new_image="%s.img" % (new_image_prefix)
+new_image_a="%s.img" % (new_image_prefix)
 
 new_image_b="%s_B.img" % (new_image_prefix)
 
@@ -575,19 +625,19 @@ if not os.path.isfile(base_image):
 
  
 try:
-    os.remove(new_image)
+    os.remove(new_image_a)
 except:
     pass
 
-print "Copying file %s to %s ..." % (base_image, new_image)
-shutil.copyfile(base_image, new_image)
+print "Copying file %s to %s ..." % (base_image, new_image_a)
+shutil.copyfile(base_image, new_image_a)
 
 
 #
 # LOOP DEVICES HERE
 #
 
-start_block = create_loop_devices(new_image, None)
+start_block = create_loop_devices(new_image_a, 0, None)
 
 
 
@@ -597,29 +647,29 @@ check_partition()
 
 
 
-print "execute: mkdir -p "+mount_point
+print "execute: mkdir -p "+mount_point_A
 try: 
-    os.mkdir(mount_point)
+    os.mkdir(mount_point_A)
 except:
     pass
 
 
 
-mount_everything(mount_point)
+mount_mountpoint(0, mount_point_A)
 
 
 # TODO remove this test
-unmount_everything(mount_point)
+unmount_mountpoint(0, mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(2)
-create_loop_devices(new_image, start_block)
+create_loop_devices(new_image_a, 0, start_block)
 print "filesystem check on /dev/loop1 after first mount"
 check_partition()
 
 
 
-mount_everything(mount_point)
+mount_mountpoint(0, mount_point_A)
 
 
 
@@ -629,13 +679,13 @@ else:
     local_build_script = nodecontroller_build_script.format(report_file)
     
     
-write_file( mount_point+'/root/build_image.sh',  local_build_script)
+write_file( mount_point_A+'/root/build_image.sh',  local_build_script)
 
 print "-------------------------\n"
 print local_build_script
 print "-------------------------\n"
 
-run_command('chmod +x %s/root/build_image.sh' % (mount_point))
+run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
 
 #
 # CHROOT HERE
@@ -643,7 +693,7 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point))
 
 print "################### start of chroot ###################"
 
-run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
+run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point_A))
 
 
 print "################### end of chroot ###################"
@@ -653,21 +703,21 @@ print "################### end of chroot ###################"
 # After changeroot
 #
 try:
-    os.remove(new_image+'.report.txt')
+    os.remove(new_image_a+'.report.txt')
 except:
     pass
 
-print "copy: ", mount_point+'/'+report_file, new_image+'.report.txt'
-shutil.copyfile(mount_point+'/'+report_file, new_image+'.report.txt')
+print "copy: ", mount_point_A+'/'+report_file, new_image_a+'.report.txt'
+shutil.copyfile(mount_point_A+'/'+report_file, new_image_a+'.report.txt')
 
 
 
 
 
 if is_guestnode:
-    write_file(mount_point+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
+    write_file(mount_point_A+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
 else:
-    write_file(mount_point+'/etc/network/interfaces', nodecontroller_etc_network_interfaces_d)
+    write_file(mount_point_A+'/etc/network/interfaces', nodecontroller_etc_network_interfaces_d)
 
 
 
@@ -678,11 +728,11 @@ old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 
 print "old_partition_size_kb: ", old_partition_size_kb
 
 
-unmount_everything(mount_point)
+unmount_mountpoint(0, mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(3)
-create_loop_devices(new_image, start_block)
+create_loop_devices(new_image_a, 0, start_block)
 time.sleep(3)
 print "filesystem check on /dev/loop1 after chroot"
 check_partition()
@@ -708,7 +758,7 @@ new_fs_size_kb = estimated_fs_size_kb + (1024*100)
 run_command('e2fsck -f -y /dev/loop1')
 
 
-sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image)))
+sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_a)))
 
 
 front_size_kb = sector_size * start_block/ 1024
@@ -728,7 +778,7 @@ if new_partition_size_kb < old_partition_size_kb:
     ### fdisk (shrink partition)
     # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start posirion and size of new partiton
   
-    run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block, new_partition_size_kb, new_image))
+    run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block, new_partition_size_kb, new_image_a))
   
 
 
@@ -739,7 +789,7 @@ if new_partition_size_kb < old_partition_size_kb:
     #set -e
 
     # does not show the new size
-    #fdisk -lu ${new_image}
+    #fdisk -lu ${new_image_a}
 
     # shows the new size (-b for bytes)
     #partx --show /dev/loop1 (fails)
@@ -774,15 +824,15 @@ combined_size_bytes = (new_partition_size_kb + front_size_kb) * 1024
 blocks_to_write = combined_size_kb/1024
 
 
-
-run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image, blocks_to_write, new_image))
+# write image to file
+run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_a))
 
 try:
-    os.remove(new_image+'.xz')
+    os.remove(new_image_a+'.xz')
 except:
     pass
     
-os.rename(new_image+'.xz_part',  new_image+'.xz')
+os.rename(new_image_a+'.xz_part',  new_image_a+'.xz')
 
 
 
@@ -791,7 +841,7 @@ if create_b_image:
     if os.path.isfile(change_partition_uuid_script):
         run_command(change_partition_uuid_script+ ' /dev/loop0')
   
-        run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image, blocks_to_write, new_image_b))
+        run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
   
         try:
             os.remove(new_image_b+'.xz')
@@ -816,8 +866,8 @@ if create_b_image:
 
 if os.path.isfile( data_directory+ '/waggle-id_rsa'):
     scp_target = 'waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images'
-    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image) ) 
-    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image, scp_target))
+    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) ) 
+    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_a, scp_target))
   
     if os.path.isfile( new_image_b+'.xz'):
         # upload second image with different UUID's
@@ -825,12 +875,12 @@ if os.path.isfile( data_directory+ '/waggle-id_rsa'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_b, scp_target))
 
   
-    if os.path.isfile( new_image+'.report.txt'): 
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image,scp_target))
+    if os.path.isfile( new_image_a+'.report.txt'): 
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image_a,scp_target))
       
   
-    if os.path.isfile( new_image+'.build_log.txt'): 
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image,scp_target))
+    if os.path.isfile( new_image_a+'.build_log.txt'): 
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_a,scp_target))
       
   
 

@@ -39,6 +39,10 @@ function dev_suffix {
 	echo "s"
 	return 0
   fi
+  if [[ $1 =~ ^"/dev/loop" ]] ; then
+	echo "p"
+	return 0
+  fi
 
   echo "unknown"
   return 1

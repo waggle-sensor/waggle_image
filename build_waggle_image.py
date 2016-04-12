@@ -776,7 +776,7 @@ if new_partition_size_kb < old_partition_size_kb:
     time.sleep(3)
 
     ### fdisk (shrink partition)
-    # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start posirion and size of new partiton
+    # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start position and size of new partiton
   
     run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block, new_partition_size_kb, new_image_a))
   
@@ -827,40 +827,78 @@ blocks_to_write = combined_size_kb/1024
 # write image to file
 run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_a))
 
+new_image_a_compressed = new_image_a+'.xz'
+
 try:
-    os.remove(new_image_a+'.xz')
+    os.remove(new_image_a_compressed)
 except:
     pass
     
-os.rename(new_image_a+'.xz_part',  new_image_a+'.xz')
+os.rename(new_image_a+'.xz_part',  new_image_a_compressed)
+
 
 
 
 # create second dd with different UUIDs
 if create_b_image:
-    if os.path.isfile(change_partition_uuid_script):
-        run_command(change_partition_uuid_script+ ' /dev/loop0')
-  
-        run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
-  
-        try:
-            os.remove(new_image_b+'.xz')
-        except:
-            pass
-            
-        os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')    
-    else:
+    
+    
+    if not os.path.isfile(change_partition_uuid_script):
         print change_partition_uuid_script, " not found"
         sys.exit(1)
-        
-        
     
-  
+    #copy image b (from a)
+    run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d  > %s.part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
+    
+    try:
+        os.remove(new_image_b)
+    except:
+        pass
+    
+    os.rename(new_image_b+'.part',  new_image_b)
+    
+    # create loop device
+    create_loop_devices(new_image_b, 1)
+    
+    # change UUID
+    run_command(change_partition_uuid_script+ ' /dev/loop1')
+    
+    
+    # the recovery image on the eMMC needs space:
+    
+    new_image_a_compressed_size = os.path.getsize(new_image_a_compressed)
+    new_image_a_compressed_size_mb = new_image_a_compressed_size / 1048576
+    
+    # increase partition size again
+    run_command('dd if=/dev/zero bs=1MiB of={} conv=notrunc oflag=append count={}'.format(new_image_b, new_image_a_compressed_size_mb+50))
+    
+    
+    # make filesystem use new space
+    run_command('resize2fs /dev/loop1p2')
+    
+    
+    # mount
+    mount_mountpoint(1, mount_point_B)
+    
+    
+    # copy SD-card image into eMMC as a backup
+    shutil.copyfile(new_image_a+'.xz', mount_point_B+'/root/')
 
-
-
-
-
+    # umount
+    unmount_mountpoint(mount_point_B)
+    
+    
+    try:
+        os.remove(new_image_b+'.xz')
+    except:
+        pass
+    
+    # compress 
+    run_command('xz -1 '+new_image_b)
+    
+    
+    #run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
+    #os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')    
 
 
 

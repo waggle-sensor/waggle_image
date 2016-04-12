@@ -457,7 +457,7 @@ def unmount_mountpoint(mp):
 
 
 def mount_mountpoint(device, mp):
-    run_command('mount /dev/loop%dp1 %s' % (device, mp))
+    run_command('mount /dev/loop%dp2 %s' % (device, mp))
     run_command('mount -o bind /proc %s/proc' % (mp))
     run_command('mount -o bind /dev  %s/dev' % (mp))
     run_command('mount -o bind /sys  %s/sys' % (mp))

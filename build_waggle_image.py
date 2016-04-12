@@ -479,7 +479,7 @@ def losetup(loopdev, file, offset=0):
     if offset:
         offset_option = '-o %d ' % (offset)
         
-    run_command('losetup %s %s %s' % (offset_option, loopdev, file)
+    run_command('losetup %s %s %s' % (offset_option, loopdev, file))
     
     
     

@@ -464,8 +464,8 @@ def mount_mountpoint(device, mp):
     time.sleep(3)
     
     
-def check_partition():
-    run_command('e2fsck -f -y /dev/loop1')
+def check_partition(device):
+    run_command('e2fsck -f -y /dev/loop{}p2'.format())
     
 
 
@@ -563,6 +563,8 @@ time.sleep(3)
 destroy_loop_devices()
 
 
+#TODO loop device number check !
+
 run_command_f('mknod -m 0660 /dev/loop0p2 b 7 9')
 run_command_f('mknod -m 0660 /dev/loop1p2 b 7 10')
 
@@ -641,8 +643,8 @@ start_block = create_loop_devices(new_image_a, 0, None)
 
 
 time.sleep(3)
-print "first filesystem check on /dev/loop1"
-check_partition()
+print "first filesystem check on /dev/loop0p2"
+check_partition(0)
 
 
 
@@ -663,8 +665,8 @@ time.sleep(3)
 destroy_loop_devices()
 time.sleep(2)
 create_loop_devices(new_image_a, 0, start_block)
-print "filesystem check on /dev/loop1 after first mount"
-check_partition()
+print "filesystem check on /dev/loop0p2 after first mount"
+check_partition(0)
 
 
 
@@ -723,7 +725,7 @@ else:
 
 
 
-old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 1 | grep -o "[0-9]\+"'))
+old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop0p2 | tail -n 1 | grep -o "[0-9]\+"'))
 print "old_partition_size_kb: ", old_partition_size_kb
 
 
@@ -733,15 +735,15 @@ destroy_loop_devices()
 time.sleep(3)
 create_loop_devices(new_image_a, 0, start_block)
 time.sleep(3)
-print "filesystem check on /dev/loop1 after chroot"
-check_partition()
+print "filesystem check on /dev/loop0p2 after chroot"
+check_partition(0)
 
 time.sleep(3)
 
 
-estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop1 | grep -o "[0-9]*"') )
+estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop0p2 | grep -o "[0-9]*"') )
 
-block_size=int(get_output('blockdev --getbsz /dev/loop1'))
+block_size=int(get_output('blockdev --getbsz /dev/loop0p2'))
 
 estimated_fs_size_kb = estimated_fs_size_blocks*block_size/1024
 
@@ -754,7 +756,7 @@ new_partition_size_kb = estimated_fs_size_kb + (1024*500)
 new_fs_size_kb = estimated_fs_size_kb + (1024*100)
 
 # verify partition:
-run_command('e2fsck -f -y /dev/loop1')
+run_command('e2fsck -f -y /dev/loop0p2')
 
 
 sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_a)))
@@ -767,10 +769,10 @@ if new_partition_size_kb < old_partition_size_kb:
     print "new_partition_size_kb is smaller than old_partition_size_kb"
 
     # shrink filesystem (that does not shrink the partition!)
-    run_command('resize2fs -p /dev/loop1 %sK' % (new_fs_size_kb))
+    run_command('resize2fs -p /dev/loop0p2 %sK' % (new_fs_size_kb))
 
 
-    run_command('partprobe  /dev/loop1')
+    run_command('partprobe  /dev/loop0p2')
 
     time.sleep(3)
 
@@ -781,26 +783,26 @@ if new_partition_size_kb < old_partition_size_kb:
   
 
 
-    run_command('partprobe /dev/loop1')
+    run_command('partprobe /dev/loop0p2')
 
     #set +e
-    #resize2fs /dev/loop1
+    #resize2fs /dev/loop0p2
     #set -e
 
     # does not show the new size
     #fdisk -lu ${new_image_a}
 
     # shows the new size (-b for bytes)
-    #partx --show /dev/loop1 (fails)
+    #partx --show /dev/loop0p2 (fails)
 
     time.sleep(3)
 
-    run_command('e2fsck -n -f /dev/loop1')
+    run_command('e2fsck -n -f /dev/loop0p2')
 
     #e2fsck_ok=1
     #set +e
     #while [ ${e2fsck_ok} != "0" ] ; do
-    #  e2fsck -f /dev/loop1
+    #  e2fsck -f /dev/loop0p2
     #  e2fsck_ok=$?
     #  sleep 2
     #done

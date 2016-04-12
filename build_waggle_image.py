@@ -563,8 +563,8 @@ time.sleep(3)
 destroy_loop_devices()
 
 
-run_command_f('mknod -m 0660 /dev/loop0p2 b 7 8')
-run_command_f('mknod -m 0660 /dev/loop1p2 b 7 8')
+run_command_f('mknod -m 0660 /dev/loop0p2 b 7 9')
+run_command_f('mknod -m 0660 /dev/loop1p2 b 7 10')
 
 
 # install parted

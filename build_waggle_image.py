@@ -556,7 +556,7 @@ def detect_odroid_model():
 
 # clean up first
 
-unmount_mountpoint(0, mount_point_A)
+unmount_mountpoint(mount_point_A)
 
     
 time.sleep(3)
@@ -659,7 +659,7 @@ mount_mountpoint(0, mount_point_A)
 
 
 # TODO remove this test
-unmount_mountpoint(0, mount_point_A)
+unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(2)
@@ -728,7 +728,7 @@ old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop1 | tail -n 
 print "old_partition_size_kb: ", old_partition_size_kb
 
 
-unmount_mountpoint(0, mount_point_A)
+unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(3)

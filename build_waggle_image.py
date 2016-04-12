@@ -465,7 +465,7 @@ def mount_mountpoint(device, mp):
     
     
 def check_partition(device):
-    run_command('e2fsck -f -y /dev/loop{}p2'.format())
+    run_command('e2fsck -f -y /dev/loop{}p2'.format(device))
     
 
 

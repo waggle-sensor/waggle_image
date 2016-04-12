@@ -521,6 +521,10 @@ def destroy_loop_devices():
             while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
                 run_command_f('losetup -d '+loop_device)
                 time.sleep(3)
+        loop_device = device 
+        while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
+            run_command_f('losetup -d '+loop_device)
+            time.sleep(3)
 
 
 

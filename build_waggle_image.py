@@ -31,7 +31,7 @@ create_b_image = 1
 change_partition_uuid_script = os.path.abspath(os.path.curdir) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
 mount_point_A="/mnt/newimage_A"
-
+mount_point_B="/mnt/newimage_B"
 
 
 
@@ -662,6 +662,12 @@ try:
 except:
     pass
 
+
+print "execute: mkdir -p "+mount_point_B
+try: 
+    os.mkdir(mount_point_B)
+except:
+    pass
 
 
 mount_mountpoint(0, mount_point_A)

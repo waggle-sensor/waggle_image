@@ -868,7 +868,7 @@ if create_b_image:
     os.rename(new_image_b+'.part',  new_image_b)
     
     # create loop device
-    create_loop_devices(new_image_b, 1)
+    create_loop_devices(new_image_b, 1, None)
     
     # change UUID
     run_command(change_partition_uuid_script+ ' /dev/loop1')

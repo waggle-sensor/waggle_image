@@ -26,7 +26,7 @@ base_images=   {
                 }
 
 
-create_b_image = 0 # need to update the change_partition_uuid.sh first to get it work on loop device
+create_b_image = 1
 
 change_partition_uuid_script = os.path.abspath(os.path.curdir) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
@@ -609,11 +609,13 @@ print "image_type: ", image_type
 
 new_image_prefix="%s/waggle-%s-%s-%s" % (data_directory, image_type, odroid_model, date_today) 
 new_image_a="%s.img" % (new_image_prefix)
+new_image_a_compressed = new_image_a+'.xz'
 
 new_image_b="%s_B.img" % (new_image_prefix)
 
 
 os.chdir(data_directory)
+
 
 try:
     base_image = base_images[odroid_model]['filename']
@@ -625,12 +627,12 @@ base_image_xz = base_image + '.xz'
 
 if not os.path.isfile(base_image_xz):
     run_command('wget '+ base_images[odroid_model]['url'] + base_image_xz)
-  
+
 
 if not os.path.isfile(base_image):
     run_command('unxz --keep '+base_image_xz)
 
- 
+
 try:
     os.remove(new_image_a)
 except:
@@ -684,8 +686,8 @@ if is_guestnode:
     local_build_script = guestnode_build_script.format(report_file)
 else: 
     local_build_script = nodecontroller_build_script.format(report_file)
-    
-    
+
+
 write_file( mount_point_A+'/root/build_image.sh',  local_build_script)
 
 print "-------------------------\n"
@@ -784,9 +786,9 @@ if new_partition_size_kb < old_partition_size_kb:
 
     ### fdisk (shrink partition)
     # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start position and size of new partiton
-  
+
     run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block, new_partition_size_kb, new_image_a))
-  
+
 
 
     run_command('partprobe /dev/loop0p2')
@@ -834,14 +836,15 @@ blocks_to_write = combined_size_kb/1024
 # write image to file
 run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_a))
 
-new_image_a_compressed = new_image_a+'.xz'
+
 
 try:
     os.remove(new_image_a_compressed)
 except:
     pass
-    
+
 os.rename(new_image_a+'.xz_part',  new_image_a_compressed)
+
 
 
 

@@ -70,6 +70,7 @@ dpkg-reconfigure --frontend noninteractive tzdata
 # because of "Failed to fetch http://ports.ubuntu.com/... ...Hash Sum mismatch"
 #rm -rf /var/lib/apt/lists/*
 touch -t 1501010000 /var/lib/apt/lists/*
+rm -f /var/lib/apt/lists/partial/*
 apt-get clean
 apt-get update
 

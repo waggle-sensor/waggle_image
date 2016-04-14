@@ -13,3 +13,5 @@ dd if=bl1.bin of=$1 bs=512 skip=1 seek=1
 
 # write u-boot
 dd if=u-boot.bin of=$1 bs=512 seek=64
+
+sync

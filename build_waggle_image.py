@@ -326,6 +326,7 @@ apt-get autoremove -y
 
 
 mkdir -p /usr/lib/waggle/
+cd /usr/lib/waggle/
 
 git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
 sleep 1

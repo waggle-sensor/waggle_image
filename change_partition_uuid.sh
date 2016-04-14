@@ -14,7 +14,7 @@ fi
 
 export OTHER_DEVICE="$1"
 
-if [ ! $(lsblk -o KNAME,TYPE ${OTHER_DEVICE} | grep -c disk) -eq 1 ] ; then
+if [ ! $(lsblk -o KNAME,TYPE ${OTHER_DEVICE} | grep -c "disk\|loop") -eq 1 ] ; then
   echo "device $1 not found."
   exit 1
 fi
@@ -37,6 +37,10 @@ function dev_suffix {
   fi
   if [[ $1 =~ ^"/dev/disk" ]] ; then
 	echo "s"
+	return 0
+  fi
+  if [[ $1 =~ ^"/dev/loop" ]] ; then
+	echo "p"
 	return 0
   fi
 

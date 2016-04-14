@@ -1,0 +1,19 @@
+have waggle-service &&
+_waggle_complete()
+{
+  local cur prev
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  if [ $COMP_CWORD -eq 1 ]; then
+    COMPREPLY=( $(compgen -W "start stop list" -- $cur) )
+  elif [ $COMP_CWORD -eq 2 ]; then
+    COMPREPLY=( $(compgen -W "waggle_communications waggle_wagman waggle_plugin_manager waggle_data_cache waggle_reverse_ssh_tunnel waggle_heartbeat" -- $cur) )
+  fi
+
+  return 0
+} &&
+complete -F _waggle_complete waggle-service
+

@@ -21,3 +21,6 @@ mkfs.ext4 "$1p2"
 #
 # NOTE This scheme is specific to the C1+. Other will have slightly altered
 # start / end regions.
+#
+# NOTE This also requires manual intervention right now. parted will ask you
+# a few questions about destroying the MBR and about an alignment issue.

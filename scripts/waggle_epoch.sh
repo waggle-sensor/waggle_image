@@ -22,7 +22,7 @@ try_set_time()
 
   # get epoch from server
   set +e
-  EPOCH=$(curl http://${SERVER_HOST}/api/1/epoch | grep -oP '{"epoch": \d+}' | grep -oP '\d+')
+  EPOCH=$(curl --connect-timeout 10 --retry 100 --retry-delay 10 http://${SERVER_HOST}/api/1/epoch | grep -oP '{"epoch": \d+}' | grep -oP '\d+')
   set -e
 
   # if EPOCH is not empty, set date
@@ -53,7 +53,7 @@ while [ 1 ] ; do
   done
 
   echo "sleep 24h"
-  sleep 86400
+  sleep 24h
 done
 
 

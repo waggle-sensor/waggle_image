@@ -1,7 +1,11 @@
-#!/bin/sh -ex
+#!/bin/bash 
+
+set -e
 
 MOUNT1=$(mktemp -d)
 MOUNT2=$(mktemp -d)
+
+set -x
 
 mount $1 $MOUNT1
 mount $2 $MOUNT2

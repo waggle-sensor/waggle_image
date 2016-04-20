@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
+
 
 if [ $# -ne 1 ] ; then
   echo "Usage: $0 disk"
@@ -43,7 +46,7 @@ else
 fi
 
 
-
+set -x
 
 
 

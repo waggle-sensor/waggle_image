@@ -1,4 +1,7 @@
-#!/bin/sh -ex
+#!/bin/bash
+
+set -e
+set -x
 
 # Install MBR.
 parted $1 mklabel msdos

@@ -4,14 +4,14 @@ set -e
 set -x
 
 # Install MBR.
-parted $1 mklabel msdos
+parted --script $1 mklabel msdos
 
 # Create boot partition.
-parted $1 mkpart primary fat16 3072s 266239s
-parted $1 set 1 lba off
+parted --script $1 mkpart primary fat16 3072s 266239s
+parted --script $1 set 1 lba off
 
 # Create root partition.
-parted $1 mkpart primary ext4 266240s 100%
+parted --script $1 mkpart primary ext4 266240s 100%
 
 # Create boot filesystem.
 mkdosfs -F 16 "$1p1"

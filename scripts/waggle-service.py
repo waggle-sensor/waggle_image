@@ -193,7 +193,7 @@ class UpStart:
         self.services = []
         self.services_all = subprocess.Popen(["initctl", "list"], stdout=subprocess.PIPE).communicate()[0]
         for line in self.services_all.split("\n"):
-            if line.startswith("waggle_"):
+            if line.startswith("waggle-"):
                 #print line
                 result = re.findall("^\S+", line)
                 if result:

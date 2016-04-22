@@ -18,8 +18,9 @@ mkdir -p /var/log/waggle/
 #ln -sf ${current_dir}/supervisor/heartbeat.conf /etc/supervisor/conf.d/heartbeat.conf
 rm -f /etc/supervisor/conf.d/heartbeat.conf
 
-cp ${current_dir}/upstart/waggle_heartbeat.conf /etc/init/
-cp ${current_dir}/upstart/waggle_epoch.conf /etc/init/
+# copy upstart scripts
+cp ${current_dir}/upstart/waggle-* /etc/init/
+rm -f ${current_dir}/upstart/waggle_*
 
 ln -sf ${current_dir}/scripts/waggle-service.py /usr/bin/waggle-service
 

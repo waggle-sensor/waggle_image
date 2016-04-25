@@ -1,6 +1,9 @@
 #!/bin/bash
 
-
+#
+# Run this script manually with argument "recover" to actually start recovering partitions after all tests.
+# The upstart-invoked version will not automatically do the recovery.
+#
 
 
 set -x
@@ -49,6 +52,159 @@ if [ ! -e /recovery_p1.tar.gz ] ; then
   tar -cvpzf /recovery_p1.tar.gz_part --exclude=./.Spotlight-V100 --exclude=./.fseventsd --exclude=./.Trashes --one-file-system --directory=/media/boot .
   mv /recovery_p1.tar.gz_part /recovery_p1.tar.gz
 fi
+
+
+
+CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
+OTHER_DEVICE=""
+
+if [ ${CURRENT_DEVICE}x" == "x" ] ; then
+  echo "memory card not recognized"
+  exit 1
+fi
+
+
+if [ ${CURRENT_DEVICE}x" == "/dev/mmcblk0x" ] ; then
+  OTHER_DEVICE="/dev/mmcblk1"
+fi
+
+if [ ${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
+  OTHER_DEVICE="/dev/mmcblk0"
+fi
+
+# Test if other memory card exists
+if [ ! -e ${OTHER_DEVICE} ] ; then
+  echo "Other memory card not found. Exit."
+  exit 0
+fi
+
+# umount, just in case
+for device in $(mount | grep "^${OTHER_DEVICE}" | cut -f1 -d ' ') ; do 
+  echo "Warning, device ${device} is currently mounted"
+  umount ${device}
+  sleep 5
+done
+
+for device in $(mount | grep "^${OTHER_DEVICE}" | cut -f1 -d ' ') ; do 
+  echo "Error, device ${device} is still mounted"
+  exit 1
+done
+
+DO_RECOVERY=0
+
+#
+# Check boot partition
+#
+
+BOOT_PARTITION_EXISTS=0
+if [ $(parted -m ${OTHER_DEVICE} print | grep "^1:.*fat16::;") -eq 1 ] ; then
+  echo "boot partition found"
+  BOOT_PARTITION_EXISTS=1
+fi
+
+BOOT_PARTITION_FS_OK=0
+if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_EXISTS} -eq 1 ] ; then
+  fsck.fat -n /dev/mmcblk1p1
+  if [ $? -eq 0 ]  ; then
+    BOOT_PARTITION_FS_OK=1
+  else
+    DO_RECOVERY=1
+  fi
+fi
+
+
+BOOT_PARTITION_MOUNTABLE=0
+if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_FS_OK} -eq 1 ] ; then
+  mkdir -p /media/test
+
+  set +e
+  mount ${OTHER_DEVICE}p1 /media/test
+  if [ $? -ne 0 ]  ; then
+    echo "Could not mount boot partition"
+    DO_RECOVERY=1
+  else
+    BOOT_PARTITION_MOUNTABLE=1
+  fi
+fi
+
+BOOT_PARTITION_BOOT_INI=0
+if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_MOUNTABLE} -eq 1 ] ; then
+
+    echo "Boot partition mounted"
+
+    if [ -e /media/test/boot.ini ] ; then
+      echo "boot partition looks legit"
+      BOOT_PARTITION_BOOT_INI=1
+    else
+      echo "boot partition has no boot.ini"
+      DO_RECOVERY=1
+    fi
+fi
+
+set +e
+umount /media/test
+sleep 5
+set -e
+
+#
+# Check data partition
+#
+
+DATA_PARTITION_EXISTS=0
+if [ $(parted -m ${OTHER_DEVICE} print | grep "^2:.*ext4::;") -eq 1 ] ; then
+  echo "data partition found"
+  DATA_PARTITION_EXISTS=1
+fi
+
+DATA_PARTITION_FS_OK=0
+if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_EXISTS} -eq 1 ] ; then
+  fsck.ext -n ${OTHER_DEVICE}p2
+  if [ $? -eq 0 ]  ; then
+    DATA_PARTITION_FS_OK=1
+  else
+    DO_RECOVERY=1
+  fi
+fi
+
+
+
+DATA_PARTITION_MOUNTABLE=0
+if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_FS_OK} -eq 1 ] ; then
+  mkdir -p /media/test
+
+  set +e
+  mount /dev/mmcblk1p2 /media/test
+  if [ $? -ne 0 ]  ; then
+    echo "Could not mount data partition"
+    DO_RECOVERY=1
+  else
+    DATA_PARTITION_MOUNTABLE=1
+  fi
+fi
+
+DATA_PARTITION_WAGGLE=0
+if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
+
+    echo "Data partition mounted"
+
+    if [ -d /media/test/usr/lib/waggle ] ; then
+      echo "data partition looks legit"
+      DATA_PARTITION_WAGGLE =1
+    else
+      echo "data partition has no waggle directory"
+      DO_RECOVERY=1
+    fi
+fi
+
+if [ ${DO_RECOVERY} -eq 1 ] ; then
+  echo "I want to do recovery"
+
+  if [ "${1}x" == "recoverx" ] ; then
+    
+  fi 
+
+fi
+
 
 
 

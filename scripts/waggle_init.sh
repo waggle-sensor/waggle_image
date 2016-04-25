@@ -58,17 +58,17 @@ fi
 CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
 OTHER_DEVICE=""
 
-if [ ${CURRENT_DEVICE}x" == "x" ] ; then
+if [ "${CURRENT_DEVICE}x" == "x" ] ; then
   echo "memory card not recognized"
   exit 1
 fi
 
 
-if [ ${CURRENT_DEVICE}x" == "/dev/mmcblk0x" ] ; then
+if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk0x" ] ; then
   OTHER_DEVICE="/dev/mmcblk1"
 fi
 
-if [ ${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
+if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
   OTHER_DEVICE="/dev/mmcblk0"
 fi
 

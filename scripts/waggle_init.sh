@@ -158,7 +158,7 @@ fi
 
 DATA_PARTITION_FS_OK=0
 if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_EXISTS} -eq 1 ] ; then
-  fsck.ext -n ${OTHER_DEVICE}p2
+  fsck.ext4 -n ${OTHER_DEVICE}p2
   if [ $? -eq 0 ]  ; then
     DATA_PARTITION_FS_OK=1
   else
@@ -195,6 +195,11 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
       DO_RECOVERY=1
     fi
 fi
+
+set +e
+umount /media/test
+sleep 5
+set -e
 
 if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "I want to do recovery"

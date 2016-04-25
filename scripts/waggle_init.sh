@@ -200,7 +200,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "I want to do recovery"
 
   if [ "${1}x" == "recoverx" ] ; then
-    
+      echo "recovering"
   fi 
 
 fi

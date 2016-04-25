@@ -179,7 +179,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_FS_OK} -eq 1 ] ; then
   mkdir -p /media/test
 
   set +e
-  mount /dev/mmcblk1p2 /media/test
+  mount ${OTHER_DEVICE}p2 /media/test
   if [ $? -ne 0 ]  ; then
     echo "Could not mount data partition"
     DO_RECOVERY=1
@@ -211,11 +211,18 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "I want to do recovery"
 
   if [ "${1}x" == "recoverx" ] ; then
-      echo "recovering"
+    echo "recovering"
+      
+    set -e
+    set -x
+    cd /usr/lib/waggle/waggle_image/setup-disk/
+    ./write-boot.sh ${OTHER_DEVICE}
+    ./make-partitions.sh  ${OTHER_DEVICE}
+    ./sync-files.sh ${CURRENT_DEVICE}p1 ${OTHER_DEVICE}p1
+    ./sync-files.sh ${CURRENT_DEVICE}p2 ${OTHER_DEVICE}p2
+  else
+    echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        
   fi 
-
 fi
-
-
 
 

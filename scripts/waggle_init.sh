@@ -189,7 +189,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
 
     if [ -d /media/test/usr/lib/waggle ] ; then
       echo "data partition looks legit"
-      DATA_PARTITION_WAGGLE =1
+      DATA_PARTITION_WAGGLE=1
     else
       echo "data partition has no waggle directory"
       DO_RECOVERY=1

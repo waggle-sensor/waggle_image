@@ -218,6 +218,21 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cd /usr/lib/waggle/waggle_image/setup-disk/
     ./write-boot.sh ${OTHER_DEVICE}
     ./make-partitions.sh  ${OTHER_DEVICE}
+    sleep 3
+    mount ${OTHER_DEVICE}p1 /media/test/
+    cd /media/test
+    tar xvzf /recovery_p1.tar.gz
+    touch /media/test/recovered.txt
+    
+    umount /media/test
+    
+    mount ${OTHER_DEVICE}p2 /media/test/
+    cd /media/test
+    tar xvzf /recovery_p2.tar.gz
+    touch /media/test/recovered.txt
+    
+    # TODO check for failed/partial recovery !
+    #TODO recovery files, certificate files, 
     
   else
     echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        

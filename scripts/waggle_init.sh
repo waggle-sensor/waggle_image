@@ -218,8 +218,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cd /usr/lib/waggle/waggle_image/setup-disk/
     ./write-boot.sh ${OTHER_DEVICE}
     ./make-partitions.sh  ${OTHER_DEVICE}
-    ./sync-files.sh ${CURRENT_DEVICE}p1 ${OTHER_DEVICE}p1
-    ./sync-files.sh ${CURRENT_DEVICE}p2 ${OTHER_DEVICE}p2
+    
   else
     echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        
   fi 

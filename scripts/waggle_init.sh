@@ -100,6 +100,9 @@ BOOT_PARTITION_EXISTS=0
 if [ $(parted -m ${OTHER_DEVICE} print | grep "^1:.*fat16::;" | wc -l ) -eq 1 ] ; then
   echo "boot partition found"
   BOOT_PARTITION_EXISTS=1
+else
+  echo "boot partition not found"
+  DO_RECOVERY=1  
 fi
 
 BOOT_PARTITION_FS_OK=0
@@ -154,6 +157,9 @@ DATA_PARTITION_EXISTS=0
 if [ $(parted -m ${OTHER_DEVICE} print | grep "^2:.*ext4::;" | wc -l ) -eq 1 ] ; then
   echo "data partition found"
   DATA_PARTITION_EXISTS=1
+else
+  echo "data partition not found"
+  DO_RECOVERY=1
 fi
 
 DATA_PARTITION_FS_OK=0

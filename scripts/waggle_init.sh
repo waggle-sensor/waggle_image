@@ -260,6 +260,19 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     done
     set -e
     
+    
+    OTHER_DEVICE_DATA_UUID=$(blkid -o export ${OTHER_DEVICE}p2 | grep "^UUID" |  cut -f2 -d '=')
+    echo "OTHER_DEVICE_DATA_UUID: ${OTHER_DEVICE_DATA_UUID}"
+    
+    
+    mount ${OTHER_DEVICE}p1 /media/test/
+    sed -i.bak 's/root=UUID=[a-fA-F0-9-]*/root=UUID='${OTHER_DEVICE_DATA_UUID}'/' /media/test/boot.ini 
+    
+    if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=") -eq 0 ] ; then
+        echo "Error: boot.ini does not have UUID in bootargs"
+        exit 1
+    fi
+    
     # TODO check for failed/partial recovery !
     #TODO recovery files, certificate files, 
     

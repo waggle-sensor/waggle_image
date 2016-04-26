@@ -19,7 +19,7 @@ fi
 /usr/lib/waggle/waggle_image/create_node_id.sh
 
 
-if [ ! $(hash mkdosfs > /dev/null 2>&1) ] ; then 
+if ! hash mkdosfs > /dev/null 2>&1 ; then  
   echo "mkdosfs not found (apt-get install -y dosfstools)"
   exit 1
 fi

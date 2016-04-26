@@ -278,7 +278,9 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
   else
     echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        
-  fi 
+  fi
+else
+  echo "all looks good" 
 fi
 
 

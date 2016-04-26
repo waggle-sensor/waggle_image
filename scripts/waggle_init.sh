@@ -273,6 +273,13 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
         exit 1
     fi
     
+    set +e
+    while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+      umount /media/test
+      sleep 5
+    done
+    set -e
+    
     # TODO check for failed/partial recovery !
     #TODO recovery files, certificate files, 
     

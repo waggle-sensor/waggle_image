@@ -24,13 +24,17 @@ pidfile='/var/run/waggle/heartbeat.pid'
 
 
 if [ -e ${pidfile} ] ; then
-  echo "Kill other heartbeat process"
   oldpid=`cat ${pidfile}`
-  set +e
-  kill -9 ${oldpid}
-  set -e
-  sleep 2
-  rm -f ${pidfile}
+
+  # delete process only if PID is different from ours (happens easily)  
+  if [ "${oldpid}_" != "$$_"  ] ; then
+    echo "Kill other heartbeat process"
+    set +e
+    kill -9 ${oldpid}
+    set -e
+    sleep 2
+    rm -f ${pidfile}
+  fi
 fi
 
 mkdir -p /var/run/waggle/

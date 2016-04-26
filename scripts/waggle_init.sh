@@ -145,8 +145,10 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_MOUNTABLE} -eq 1 ] ; then
 fi
 
 set +e
-umount /media/test
-sleep 5
+while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+  umount /media/test
+  sleep 5
+done
 set -e
 
 #
@@ -203,8 +205,10 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
 fi
 
 set +e
-umount /media/test
-sleep 5
+while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+  umount /media/test
+  sleep 5
+done
 set -e
 
 if [ ${DO_RECOVERY} -eq 1 ] ; then
@@ -224,12 +228,24 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     tar xvzf /recovery_p1.tar.gz
     touch /media/test/recovered.txt
     
-    umount /media/test
+    set +e
+    while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+      umount /media/test
+      sleep 5
+    done
+    set -e
     
     mount ${OTHER_DEVICE}p2 /media/test/
     cd /media/test
     tar xvzf /recovery_p2.tar.gz
     touch /media/test/recovered.txt
+    
+    set +e
+    while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+      umount /media/test
+      sleep 5
+    done
+    set -e
     
     # TODO check for failed/partial recovery !
     #TODO recovery files, certificate files, 

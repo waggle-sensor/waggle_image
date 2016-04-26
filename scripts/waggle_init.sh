@@ -53,6 +53,13 @@ if [ ! -e /recovery_p1.tar.gz ] ; then
   mv /recovery_p1.tar.gz_part /recovery_p1.tar.gz
 fi
 
+# make sure /media/test is available 
+set +e
+while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+  umount /media/test
+  sleep 5
+done
+set -e
 
 
 CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")

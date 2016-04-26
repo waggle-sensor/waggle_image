@@ -235,6 +235,9 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     tar xvzf /recovery_p1.tar.gz
     touch /media/test/recovered.txt
     
+    cd /media
+    sleep 1
+    
     set +e
     while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
       umount /media/test
@@ -246,6 +249,9 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cd /media/test
     tar xvzf /recovery_p2.tar.gz
     touch /media/test/recovered.txt
+    
+    cd /media
+    sleep 1
     
     set +e
     while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do

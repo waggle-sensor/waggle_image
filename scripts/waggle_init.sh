@@ -266,6 +266,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     
     mount ${OTHER_DEVICE}p1 /media/test/
+    sleep 1
     sed -i.bak 's/root=UUID=[a-fA-F0-9-]*/root=UUID='${OTHER_DEVICE_DATA_UUID}'/' /media/test/boot.ini 
     
     if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=" | wc -l) -eq 0 ] ; then

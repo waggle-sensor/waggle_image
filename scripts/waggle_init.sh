@@ -274,6 +274,11 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
         exit 1
     fi
     
+    if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=${OTHER_DEVICE_DATA_UUID}" | wc -l) -eq 0 ] ; then
+        echo "Error: boot.ini does not have new UUID in bootargs"
+        exit 1
+    fi
+    
     set +e
     while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
       umount /media/test

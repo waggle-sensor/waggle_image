@@ -15,6 +15,12 @@ if [ ! -e /media/boot/boot.ini ] ; then
 fi
 
 
+if [ $(ps auxwww | grep "waggle_init.sh" | grep -v grep | wc -l) -ne 1 ]; then
+  echo "This script is already running"
+  exit 1
+fi
+
+
 # create Node ID
 /usr/lib/waggle/waggle_image/create_node_id.sh
 

@@ -15,7 +15,9 @@ if [ ! -e /media/boot/boot.ini ] ; then
 fi
 
 
-if [ $(ps auxwww | grep "waggle_init.sh" | grep -v grep | wc -l) -ne 1 ]; then
+# here we check if script is already running (e.g. invoked by upstart)
+# 2 processes are expected because the subshell below creates a second process
+if [ $(ps auxwww | grep "waggle_init.sh" | grep -v grep | wc -l) -ne 2 ]; then
   echo "This script is already running"
   exit 1
 fi

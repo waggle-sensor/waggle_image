@@ -19,6 +19,11 @@ fi
 /usr/lib/waggle/waggle_image/create_node_id.sh
 
 
+if [ ! $(hash mkdosfs > /dev/null 2>&1) ] ; then 
+  echo "mkdosfs not found (apt-get install -y dosfstools)"
+  exit 1
+fi
+
 # increase file system on first boot
 if [ -e /root/first_boot ] ; then
   # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
@@ -41,7 +46,7 @@ fi
 if [ ! -e /recovery_p2.tar.gz ] ; then
   cd /
   rm -f  /recovery_p2.tar.gz_part
-  time -p tar -cvpzf /recovery_p2.tar.gz_part --exclude=recovery_p1.tar.gz --exclude=recovery_p1.tar.gz_part --exclude=/recovery_p2.tar.gz --exclude=/recovery_p2.tar.gz_part --exclude=/dev --exclude=/proc --exclude=/sys --exclude=/tmp --exclude=/run --exclude=/mnt --exclude=/media --exclude=/lost+found --exclude=/var/cache/apt --exclude=/var/log --one-file-system /
+  tar -cvpzf /recovery_p2.tar.gz_part --exclude=/recovery_p1.tar.gz --exclude=/recovery_p1.tar.gz_part --exclude=/recovery_p2.tar.gz_part --exclude=/recovery_p2.tar.gz --exclude=/dev --exclude=/proc --exclude=/sys --exclude=/tmp --exclude=/run --exclude=/mnt --exclude=/media --exclude=/lost+found --exclude=/var/cache/apt --exclude=/var/log --one-file-system /
   # takes 10 minutes to create file
   mv /recovery_p2.tar.gz_part /recovery_p2.tar.gz
 fi
@@ -54,6 +59,7 @@ if [ ! -e /recovery_p1.tar.gz ] ; then
 fi
 
 # make sure /media/test is available 
+mkdir -p /media/test
 set +e
 while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
   umount /media/test
@@ -248,6 +254,14 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     mount ${OTHER_DEVICE}p2 /media/test/
     cd /media/test
     tar xvzf /recovery_p2.tar.gz
+    
+    # copy certificate files
+    mkdir -p /media/test/usr/lib/waggle/SSL/node
+    if [ -d /usr/lib/waggle/SSL/node ] ; then
+        cp 
+    fi
+    
+    
     touch /media/test/recovered.txt
     
     cd /media
@@ -288,6 +302,9 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     # TODO check for failed/partial recovery !
     #TODO recovery files, certificate files, 
+    
+    
+    
     
   else
     echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        

@@ -270,8 +270,10 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     set -e
     set -x
     
-    #dd if=/dev/zero of=/dev/mmcblk1 bs=1M count=50
-    
+    #wipe first 500MB
+    dd if=/dev/zero of=${OTHER_DEVICE} bs=1M count=500
+    sync
+    sleep 2
     
     cd /usr/lib/waggle/waggle_image/setup-disk/
     ./write-boot.sh ${OTHER_DEVICE}

@@ -32,9 +32,36 @@ if ! hash mkdosfs > /dev/null 2>&1 ; then
   exit 1
 fi
 
+MAC_ADDRESS=""
+MODALIAS=""
+for dev in /sys/class/net/eth? ; do
+    MODALIAS=$(cat ${dev}/device/modalias)
+    if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] ; then
+        MAC_ADDRESS=$(cat ${dev}/address)
+        echo "MAC_ADDRESS: ${MAC_ADDRESS}"
+        MAC_STRING=$(echo ${MAC_ADDRESS} | tr -d ":")
+    fi 
+done
+
+
 # increase file system on first boot
 if [ -e /root/first_boot ] ; then
   # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
+  
+  #create new udev rules file to fix wrong eth order
+  if [ "${MAC_ADDRESS}x" != "x" ] ; then
+    # if MAC address is assigned to eth0 than all is ok.
+    if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
+      sed -i.bak -e "/${MAC_ADDRESS}/d" -e '/NAME=\"eth0/d' /etc/udev/rules.d/70-persistent-net.rules
+  
+      export INTERFACE=eth0
+      export MATCHADDR=${MAC_ADDRESS}
+      /lib/udev/write_net_rules
+    else
+        echo "udev eth0 ok"
+    fi
+  fi
+  
   alias msgbox=echo
   .  /usr/local/bin/fs_resize.sh ; resize_p2
 
@@ -240,6 +267,10 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
       
     set -e
     set -x
+    
+    #dd if=/dev/zero of=/dev/mmcblk1 bs=1M count=50
+    
+    
     cd /usr/lib/waggle/waggle_image/setup-disk/
     ./write-boot.sh ${OTHER_DEVICE}
     ./make-partitions.sh  ${OTHER_DEVICE}
@@ -326,18 +357,11 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     
     # modify /etc/hostname
-    MACADDRESS=""
-    MODALIAS=""
-    for dev in /sys/class/net/eth? ; do
-        MODALIAS=$(cat ${dev}/device/modalias)
-        if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] ; then
-            MACADDRESS=$(cat ${dev}/address | tr -d ":" )
-            echo "MACADDRESS: ${MACADDRESS}"
-        fi 
-    done
     
-    if [ "${MACADDRESS}x" !=  "x" ] ; then
-        NEW_HOSTNAME = "${MACADDRESS}_${OTHER_DEVICE_TYPE}"
+    
+    if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
+        
+        NEW_HOSTNAME = "${MAC_STRING}_${OTHER_DEVICE_TYPE}"
         echo ${NEW_HOSTNAME} > /media/test/etc/hostname
         echo "{NEW_HOSTNAME: ${NEW_HOSTNAME}"
     fi

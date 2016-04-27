@@ -283,10 +283,17 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     set -e
     
     
+    OTHER_DEVICE_BOOT_UUID=$(blkid -o export ${OTHER_DEVICE}p1 | grep "^UUID" |  cut -f2 -d '=')
+    echo "OTHER_DEVICE_BOOT_UUID: ${OTHER_DEVICE_BOOT_UUID}"
+    
     OTHER_DEVICE_DATA_UUID=$(blkid -o export ${OTHER_DEVICE}p2 | grep "^UUID" |  cut -f2 -d '=')
     echo "OTHER_DEVICE_DATA_UUID: ${OTHER_DEVICE_DATA_UUID}"
     
+    # Is the other device SD-card or eMMC ?
+    OTHER_DEVICE_TYPE=$(cat /sys/block/${OTHER_DEVICE}/device/type)
     
+    
+    # modify boot.ini
     mount ${OTHER_DEVICE}p1 /media/test/
     sleep 1
     sed -i.bak 's/root=UUID=[a-fA-F0-9-]*/root=UUID='${OTHER_DEVICE_DATA_UUID}'/' /media/test/boot.ini 
@@ -300,6 +307,41 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
         echo "Error: boot.ini does not have new UUID in bootargs"
         exit 1
     fi
+    
+    set +e
+    while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+      umount /media/test
+      sleep 5
+    done
+    set -e
+    
+    # write /etc/fstab
+    mount ${OTHER_DEVICE}p1 /media/test/
+    
+    echo "UUID=${OTHER_DEVICE_DATA_UUID}	/	ext4	errors=remount-ro,noatime,nodiratime		0 1" > /media/test/etc/fstab
+    echo "UUID=${OTHER_DEVICE_BOOT_UUID}	/media/boot	vfat	defaults,rw,owner,flush,umask=000	0 0" >> /media/test/etc/fstab
+    echo "tmpfs		/tmp	tmpfs	nodev,nosuid,mode=1777			0 0" >> /media/test/etc/fstab
+    
+    
+    
+    
+    # modify /etc/hostname
+    MACADDRESS=""
+    MODALIAS=""
+    for dev in /sys/class/net/eth? ; do
+        MODALIAS=$(cat ${dev}/device/modalias)
+        if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] ; then
+            MACADDRESS=$(cat ${dev}/address | tr -d ":" )
+            echo "MACADDRESS: ${MACADDRESS}"
+        fi 
+    done
+    
+    if [ "${MACADDRESS}x" !=  "x" ] ; then
+        NEW_HOSTNAME = "${MACADDRESS}_${OTHER_DEVICE_TYPE}"
+        echo ${NEW_HOSTNAME} > /media/test/etc/hostname
+        echo "{NEW_HOSTNAME: ${NEW_HOSTNAME}"
+    fi
+    
     
     set +e
     while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do

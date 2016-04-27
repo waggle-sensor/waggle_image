@@ -62,6 +62,8 @@ if [ -e /root/first_boot ] ; then
     fi
   fi
   
+  sleep 3
+  
   alias msgbox=echo
   .  /usr/local/bin/fs_resize.sh ; resize_p2
 
@@ -354,11 +356,10 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     echo "tmpfs		/tmp	tmpfs	nodev,nosuid,mode=1777			0 0" >> /media/test/etc/fstab
     
     
+    # udev should not require changes once it is ok
     
     
     # modify /etc/hostname
-    
-    
     if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
         
         NEW_HOSTNAME = "${MAC_STRING}_${OTHER_DEVICE_TYPE}"

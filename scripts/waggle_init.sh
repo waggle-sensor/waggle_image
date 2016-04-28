@@ -26,7 +26,7 @@ if [ -e ${pidfile} ] ; then
   oldpid=`cat ${pidfile}`
 
   if [ "${1}x" != "forcex" ] ; then
-      echo "Script is already running."
+      echo "Script is already running. (${pidfile})"
   fi
 
   # delete process only if PID is different from ours (happens easily)  
@@ -415,4 +415,4 @@ else
   echo "all looks good" 
 fi
 
-
+rm -f ${pidfile}

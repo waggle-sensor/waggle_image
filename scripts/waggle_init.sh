@@ -15,12 +15,31 @@ if [ ! -e /media/boot/boot.ini ] ; then
 fi
 
 
-# here we check if script is already running (e.g. invoked by upstart)
-# 2 processes are expected because the subshell below creates a second process
-if [ $(ps auxwww | grep "waggle_init.sh" | grep -v grep | wc -l) -ne 2 ]; then
-  echo "This script is already running"
-  exit 1
+pidfile='/var/run/waggle/waggle_init.pid'
+
+
+if [ -e ${pidfile} ] ; then
+  oldpid=`cat ${pidfile}`
+
+  if [ "${1}x" != "forcex" ] ; then
+      echo "Script is already running."
+  fi
+
+  # delete process only if PID is different from ours (happens easily)  
+  if [ "${oldpid}_" != "$$_"  ] ; then
+    echo "Kill other waggle_init process"
+    set +e
+    kill -9 ${oldpid}
+    set -e
+    sleep 2
+    rm -f ${pidfile}
+  fi
 fi
+
+mkdir -p /var/run/waggle/
+
+echo "$$" > ${pidfile}
+
 
 
 # create Node ID

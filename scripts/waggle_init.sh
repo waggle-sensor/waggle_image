@@ -411,7 +411,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     set -e
     
     # write /etc/fstab
-    mount ${OTHER_DEVICE}p1 /media/test/
+    mount ${OTHER_DEVICE}p2 /media/test/
     
     echo "UUID=${OTHER_DEVICE_DATA_UUID}	/	ext4	errors=remount-ro,noatime,nodiratime		0 1" > /media/test/etc/fstab
     echo "UUID=${OTHER_DEVICE_BOOT_UUID}	/media/boot	vfat	defaults,rw,owner,flush,umask=000	0 0" >> /media/test/etc/fstab

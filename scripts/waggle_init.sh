@@ -27,6 +27,7 @@ if [ -e ${pidfile} ] ; then
 
   if [ "${1}x" != "forcex" ] ; then
       echo "Script is already running. (${pidfile})"
+      exit 1
   fi
 
   # delete process only if PID is different from ours (happens easily)  

@@ -225,12 +225,14 @@ fi
 
 BOOT_PARTITION_FS_OK=0
 if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_EXISTS} -eq 1 ] ; then
+  set +e
   fsck.fat -n /dev/mmcblk1p1
   if [ $? -eq 0 ]  ; then
     BOOT_PARTITION_FS_OK=1
   else
     DO_RECOVERY=1
   fi
+  set -e
 fi
 
 
@@ -284,12 +286,14 @@ fi
 
 DATA_PARTITION_FS_OK=0
 if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_EXISTS} -eq 1 ] ; then
+  set +e
   fsck.ext4 -n ${OTHER_DEVICE}p2
   if [ $? -eq 0 ]  ; then
     DATA_PARTITION_FS_OK=1
   else
     DO_RECOVERY=1
   fi
+  set -e
 fi
 
 

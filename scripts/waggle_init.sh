@@ -322,7 +322,7 @@ set -e
 if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "I want to do recovery"
 
-  if [ ${WANT_RECOVER} -eq 1 ] ; then
+  if [ ${WANT_RECOVER} -eq 1 ] || [ ${WANT_WIPE} -eq 1 ]; then
     echo "recovering"
       
     set -e

@@ -116,10 +116,12 @@ fi
 
 if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk0x" ] ; then
   OTHER_DEVICE="/dev/mmcblk1"
+  OTHER_DEVICE_NAME="mmcblk1"
 fi
 
 if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
   OTHER_DEVICE="/dev/mmcblk0"
+  OTHER_DEVICE_NAME="mmcblk0"
 fi
 
 # Test if other memory card exists
@@ -325,7 +327,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     echo "OTHER_DEVICE_DATA_UUID: ${OTHER_DEVICE_DATA_UUID}"
     
     # Is the other device SD-card or eMMC ?
-    OTHER_DEVICE_TYPE=$(cat /sys/block/${OTHER_DEVICE}/device/type)
+    OTHER_DEVICE_TYPE=$(cat /sys/block/${OTHER_DEVICE_NAME}/device/type)
     
     
     # modify boot.ini

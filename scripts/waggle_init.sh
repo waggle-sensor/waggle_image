@@ -52,6 +52,7 @@ echo "$$" > ${pidfile}
 
 if ! hash mkdosfs > /dev/null 2>&1 ; then  
   echo "mkdosfs not found (apt-get install -y dosfstools)"
+  rm -f ${pidfile}
   exit 1
 fi
 
@@ -133,6 +134,7 @@ OTHER_DEVICE=""
 
 if [ "${CURRENT_DEVICE}x" == "x" ] ; then
   echo "memory card not recognized"
+  rm -f ${pidfile}
   exit 1
 fi
 
@@ -150,6 +152,7 @@ fi
 # Test if other memory card exists
 if [ ! -e ${OTHER_DEVICE} ] ; then
   echo "Other memory card not found. Exit."
+  rm -f ${pidfile}
   exit 0
 fi
 
@@ -162,6 +165,7 @@ done
 
 for device in $(mount | grep "^${OTHER_DEVICE}" | cut -f1 -d ' ') ; do 
   echo "Error, device ${device} is still mounted"
+  rm -f ${pidfile}
   exit 1
 done
 
@@ -360,11 +364,13 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=" | wc -l) -eq 0 ] ; then
         echo "Error: boot.ini does not have UUID in bootargs"
+        rm -f ${pidfile}
         exit 1
     fi
     
     if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=${OTHER_DEVICE_DATA_UUID}" | wc -l) -eq 0 ] ; then
         echo "Error: boot.ini does not have new UUID in bootargs"
+        rm -f ${pidfile}
         exit 1
     fi
     

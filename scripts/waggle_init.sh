@@ -5,10 +5,10 @@
 # The upstart-invoked version will not automatically do the recovery.
 #
 
-# argument "force" will kill other process
-# argument "recover" will write waggle image to other memory device (SD-card or eMMC)
-# argument "wipe" will force writing to other memory device
-# It is not possible to combine those arguments at the moment
+# argument "force" will kill other waggle_init process
+# argument "recover" will write waggle image to other memory device (SD-card or eMMC), only if needed, e.g. filesystem broken
+# argument "wipe" will force writing to other memory device (wipe forces recover)
+
 
 
 set -x
@@ -45,6 +45,31 @@ fi
 mkdir -p /var/run/waggle/
 
 echo "$$" > ${pidfile}
+
+
+
+DO_RECOVERY=0
+WANT_RECOVER=0
+WANT_WIPE=0
+WANT_FORCE=0
+
+
+for i in ${1} ${2} ${3} ; do
+    if [ "${i}x" == "recoverx" ] ; then
+        WANT_RECOVER=1
+    fi
+    
+    if [ "${i}x" == "wipex" ] ; then
+        WANT_WIPE=1
+        DO_RECOVERY=1
+    fi
+    
+    if [ "${i}x" == "forcex" ] ; then
+        WANT_FORCE=1
+    fi
+    
+done
+
 
 
 
@@ -171,16 +196,12 @@ for device in $(mount | grep "^${OTHER_DEVICE}" | cut -f1 -d ' ') ; do
   exit 1
 done
 
-DO_RECOVERY=0
+
 
 #
 # Check boot partition
 #
 
-
-if [ "${1}x" == "wipex" ] ; then
-  DO_RECOVERY=1
-fi
 
 
 BOOT_PARTITION_EXISTS=0
@@ -301,7 +322,7 @@ set -e
 if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "I want to do recovery"
 
-  if [ "${1}x" == "recoverx" ] ; then
+  if [ ${WANT_RECOVER} -eq 1 ] ; then
     echo "recovering"
       
     set -e

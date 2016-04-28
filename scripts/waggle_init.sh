@@ -347,8 +347,12 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     sync
     sleep 2
     
+    # write boot loader and u-boot files (this is an odroid script)
+    cd /usr/share/c1_uboot
+    ./sd_fusing.sh ${OTHER_DEVICE}
+    
     cd /usr/lib/waggle/waggle_image/setup-disk/
-    ./write-boot.sh ${OTHER_DEVICE}
+    #./write-boot.sh ${OTHER_DEVICE}
     ./make-partitions.sh  ${OTHER_DEVICE}
     sleep 3
     mount ${OTHER_DEVICE}p1 /media/test/

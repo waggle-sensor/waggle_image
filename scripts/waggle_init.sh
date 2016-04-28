@@ -374,6 +374,8 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cd /media/test
     tar xvzf /recovery_p2.tar.gz
     
+    mkdir -p sys tmp run mnt media dev proc
+    
     # copy certificate files
     mkdir -p /media/test/usr/lib/waggle/SSL/node
     if [ -d /usr/lib/waggle/SSL/node ] ; then

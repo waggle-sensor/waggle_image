@@ -10,7 +10,7 @@ _waggle_complete()
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "start stop list" -- $cur) )
   elif [ $COMP_CWORD -eq 2 ]; then
-    COMPREPLY=( $(compgen -W "waggle-communications waggle-wagman waggle-plugin_manager waggle-data_cache waggle-reverse_ssh_tunnel waggle-heartbeat waggle-init" -- $cur) )
+    COMPREPLY=( $(compgen -W "waggle-communications waggle-wagman waggle-plugin_manager waggle-data_cache waggle-reverse_ssh_tunnel waggle-heartbeat waggle-init waggle-epoch" -- $cur) )
   fi
 
   return 0

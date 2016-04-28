@@ -7,6 +7,7 @@
 
 # argument "force" will kill other process
 # argument "recover" will write waggle image to other memory device (SD-card or eMMC)
+# argument "wipe" will force writing to other memory device
 # It is not possible to combine those arguments at the moment
 
 
@@ -175,6 +176,12 @@ DO_RECOVERY=0
 #
 # Check boot partition
 #
+
+
+if [ "${1}x" == "wipex" ] ; then
+  DO_RECOVERY=1
+fi
+
 
 BOOT_PARTITION_EXISTS=0
 if [ $(parted -m ${OTHER_DEVICE} print | grep "^1:.*fat16::;" | wc -l ) -eq 1 ] ; then

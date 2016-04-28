@@ -103,6 +103,12 @@ done
 if [ -e /root/first_boot ] ; then
   # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
   
+  # disable u-boot console
+  if [ $(grep 'setenv bootdelay "0"' /media/boot/boot.ini | wc -l) -eq 0 ] ; then
+    sed -i.bak '1s/^\(.*\)/\1\n\nsetenv bootdelay "0"\n/' /media/boot/boot.ini 
+  fi
+  
+  
   #create new udev rules file to fix wrong eth order
   if [ "${MAC_ADDRESS}x" != "x" ] ; then
     # if MAC address is assigned to eth0 than all is ok.
@@ -428,7 +434,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     # modify /etc/hostname
     if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
         
-        NEW_HOSTNAME = "${MAC_STRING}_${OTHER_DEVICE_TYPE}"
+        NEW_HOSTNAME="${MAC_STRING}_${OTHER_DEVICE_TYPE}"
         echo ${NEW_HOSTNAME} > /media/test/etc/hostname
         echo "{NEW_HOSTNAME: ${NEW_HOSTNAME}"
     fi

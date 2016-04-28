@@ -5,6 +5,10 @@
 # The upstart-invoked version will not automatically do the recovery.
 #
 
+# argument "force" will kill other process
+# argument "recover" will write waggle image to other memory device (SD-card or eMMC)
+# It is not possible to combine those arguments at the moment
+
 
 set -x
 set -e

@@ -73,14 +73,6 @@ echo "$$" > ${pidfile}
 
 
 
-
-
-
-
-# create Node ID
-/usr/lib/waggle/waggle_image/create_node_id.sh
-
-
 if ! hash mkdosfs > /dev/null 2>&1 ; then  
   echo "mkdosfs not found (apt-get install -y dosfstools)"
   rm -f ${pidfile}
@@ -138,6 +130,10 @@ if [ -e /root/first_boot ] ; then
   # other waggle services should not be started at this point.
   sleep infinity
 fi
+
+
+# create Node ID
+/usr/lib/waggle/waggle_image/create_node_id.sh
 
 
 # create recovery files for partitions

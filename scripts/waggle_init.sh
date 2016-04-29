@@ -383,8 +383,6 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cd /media/test
     tar xvzf /recovery_p1.tar.gz
     
-    cp /recovery_p1.tar.gz /recovery_p2.tar.gz /media/test
-    
     touch /media/test/recovered.txt
     
     cd /media
@@ -401,6 +399,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cd /media/test
     tar xvzf /recovery_p2.tar.gz
     
+    cp /recovery_p1.tar.gz /recovery_p2.tar.gz /media/test
     mkdir -p sys tmp run mnt media dev proc
     
     # copy certificate files

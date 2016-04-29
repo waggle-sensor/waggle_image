@@ -6,7 +6,7 @@ set -e
 export current_dir="$(pwd)"
 
 
-if [ ! -e ${current_dir}/heartbeat.sh ] ; then
+if [ ! -e ${current_dir}/scripts/heartbeat.sh ] ; then
   print "heartbeat.sh not found"
   exit 1
 fi

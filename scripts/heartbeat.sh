@@ -22,12 +22,13 @@ TIME_HIGH=1.0
 
 pidfile='/var/run/waggle/heartbeat.pid'
 
+OWN_PID=$$
 
 if [ -e ${pidfile} ] ; then
   oldpid=`cat ${pidfile}`
-
+  
   # delete process only if PID is different from ours (happens easily)  
-  if [ "${oldpid}_" != "$$_"  ] ; then
+  if [ "${oldpid}_" != "${OWN_PID}_"  ] ; then
     echo "Kill other heartbeat process"
     set +e
     kill -9 ${oldpid}
@@ -39,7 +40,7 @@ fi
 
 mkdir -p /var/run/waggle/
 
-echo "$$" > /var/run/waggle/heartbeat.pid
+echo "${OWN_PID}" > /var/run/waggle/heartbeat.pid
 
 ########
 

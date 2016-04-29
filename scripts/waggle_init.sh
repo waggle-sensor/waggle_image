@@ -79,6 +79,9 @@ if ! hash mkdosfs > /dev/null 2>&1 ; then
   exit 1
 fi
 
+#
+# detect MAC address
+#
 MAC_ADDRESS=""
 MODALIAS=""
 for dev in /sys/class/net/eth? ; do
@@ -90,8 +93,49 @@ for dev in /sys/class/net/eth? ; do
     fi 
 done
 
+CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
+OTHER_DEVICE=""
 
-# increase file system on first boot
+if [ "${CURRENT_DEVICE}x" == "x" ] ; then
+  echo "memory card not recognized"
+  rm -f ${pidfile}
+  exit 1
+fi
+
+
+if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk0x" ] ; then
+  CURRENT_DEVICE_NAME="mmcblk0"
+  OTHER_DEVICE="/dev/mmcblk1"
+  OTHER_DEVICE_NAME="mmcblk1"
+fi
+
+if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
+  CURRENT_DEVICE_NAME="mmcblk1"
+  OTHER_DEVICE="/dev/mmcblk0"
+  OTHER_DEVICE_NAME="mmcblk0"
+fi
+
+
+CURRENT_DEVICE_TYPE=$(cat /sys/block/${CURRENT_DEVICE_NAME}/device/type)
+
+#
+# set hostname
+#
+if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
+    
+    NEW_HOSTNAME="${MAC_STRING}_${CURRENT_DEVICE_TYPE}"
+    
+    OLD_HOSTNAME=$(cat /etc/hostname)
+    
+    if [ "${NEW_HOSTNAME}x" != "${OLD_HOSTNAME}x" ] ; then
+      echo ${NEW_HOSTNAME} > /etc/hostname
+      echo "{NEW_HOSTNAME: ${NEW_HOSTNAME}"
+    fi 
+fi
+
+#
+# first boot: increase file system size
+#
 if [ -e /root/first_boot ] ; then
   # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
   
@@ -131,12 +175,14 @@ if [ -e /root/first_boot ] ; then
   sleep infinity
 fi
 
-
+#
 # create Node ID
+#
 /usr/lib/waggle/waggle_image/create_node_id.sh
 
-
+#
 # create recovery files for partitions
+#
 if [ ! -e /recovery_p2.tar.gz ] ; then
   cd /
   rm -f  /recovery_p2.tar.gz_part
@@ -152,7 +198,9 @@ if [ ! -e /recovery_p1.tar.gz ] ; then
   mv /recovery_p1.tar.gz_part /recovery_p1.tar.gz
 fi
 
+#
 # make sure /media/test is available 
+#
 mkdir -p /media/test
 set +e
 while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
@@ -162,27 +210,10 @@ done
 set -e
 
 
-CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
-OTHER_DEVICE=""
 
-if [ "${CURRENT_DEVICE}x" == "x" ] ; then
-  echo "memory card not recognized"
-  rm -f ${pidfile}
-  exit 1
-fi
-
-
-if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk0x" ] ; then
-  OTHER_DEVICE="/dev/mmcblk1"
-  OTHER_DEVICE_NAME="mmcblk1"
-fi
-
-if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
-  OTHER_DEVICE="/dev/mmcblk0"
-  OTHER_DEVICE_NAME="mmcblk0"
-fi
-
-# Test if other memory card exists
+#
+# Test if other memory card actually exists
+#
 if [ ! -e ${OTHER_DEVICE} ] ; then
   echo "Other memory card not found. Exit."
   rm -f ${pidfile}
@@ -205,11 +236,8 @@ done
 
 
 #
-# Check boot partition
+# Check other boot partition
 #
-
-
-
 BOOT_PARTITION_EXISTS=0
 if [ $(parted -m ${OTHER_DEVICE} print | grep "^1:.*fat16::;" | wc -l ) -eq 1 ] ; then
   echo "boot partition found"
@@ -268,7 +296,7 @@ done
 set -e
 
 #
-# Check data partition
+# Check other data partition
 #
 
 DATA_PARTITION_EXISTS=0
@@ -330,10 +358,10 @@ done
 set -e
 
 if [ ${DO_RECOVERY} -eq 1 ] ; then
-  echo "I want to do recovery"
+  echo "Warning: Recovery needed !"
 
   if [ ${WANT_RECOVER} -eq 1 ] || [ ${WANT_WIPE} -eq 1 ]; then
-    echo "recovering"
+    echo "recovering..."
       
     set -e
     set -x
@@ -438,15 +466,6 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     
     # udev should not require changes once it is ok
-    
-    
-    # modify /etc/hostname
-    if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
-        
-        NEW_HOSTNAME="${MAC_STRING}_${OTHER_DEVICE_TYPE}"
-        echo ${NEW_HOSTNAME} > /media/test/etc/hostname
-        echo "{NEW_HOSTNAME: ${NEW_HOSTNAME}"
-    fi
     
     
     set +e

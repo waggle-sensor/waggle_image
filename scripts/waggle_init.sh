@@ -129,7 +129,7 @@ if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
     
     if [ "${NEW_HOSTNAME}x" != "${OLD_HOSTNAME}x" ] ; then
       echo ${NEW_HOSTNAME} > /etc/hostname
-      echo "{NEW_HOSTNAME: ${NEW_HOSTNAME}"
+      echo "NEW_HOSTNAME: ${NEW_HOSTNAME}"
     fi 
 fi
 

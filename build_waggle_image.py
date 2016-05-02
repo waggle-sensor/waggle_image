@@ -914,7 +914,31 @@ if create_b_image:
 if os.path.isfile( data_directory+ '/waggle-id_rsa'):
     scp_target = 'waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images'
     run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) ) 
-    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_a, scp_target))
+    
+    
+    cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_a, scp_target)
+    
+    count = 0
+    while 1:
+        count +=1
+        if (count >= 10):
+            print "error: scp failed after 10 trys\n"
+            sys.exit(1)
+            
+        cmd_return = 1
+        try:
+            child = subprocess.Popen(['/bin/bash', '-c', cmd])
+            child.wait()
+            cmd_return = child.returncode
+            
+        except Exception as e:
+            print "Error: %s" % (str(e))
+            cmd_return = 1
+   
+        if cmd_return == 0:
+            break
+        
+        time.sleep(10)
   
     if os.path.isfile( new_image_b+'.xz'):
         # upload second image with different UUID's

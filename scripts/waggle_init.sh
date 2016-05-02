@@ -405,13 +405,19 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     cp /recovery_p1.tar.gz /recovery_p2.tar.gz /media/test
     mkdir -p sys tmp run mnt media dev proc
     
-    # copy certificate files
+    #
+    # copy certificate files if available
+    #
     mkdir -p /media/test/usr/lib/waggle/SSL/node
     if [ -d /usr/lib/waggle/SSL/node ] ; then
-        cp 
+        for file in $(ls -1 /usr/lib/waggle/SSL/node/) ; do
+          cp ${file} /media/test/usr/lib/waggle/SSL/node
+        done
     fi
     
-    
+    #
+    # indicate recovery process completed
+    #
     touch /media/test/recovered.txt
     
     cd /media

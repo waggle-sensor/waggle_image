@@ -942,7 +942,7 @@ if os.path.isfile( data_directory+ '/waggle-id_rsa'):
         
         time.sleep(10)
   
-    run_command('ssh -o "StrictHostKeyChecking no" -i /root/waggle-id_rsa waggle@terra.mcs.anl.gov echo "{0}" > {1}latest.txt'.format( new_image_base +".img.xz" , remote_path)
+    run_command('ssh -o "StrictHostKeyChecking no" -i /root/waggle-id_rsa waggle@terra.mcs.anl.gov echo "{0}" > {1}latest.txt'.format( new_image_base +".img.xz" , remote_path))
   
     if os.path.isfile( new_image_b+'.xz'):
         # upload second image with different UUID's

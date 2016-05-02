@@ -35,7 +35,7 @@ mount_point_B="/mnt/newimage_B"
 
 
 
-is_guestnode = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
+is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
 
 
@@ -306,7 +306,7 @@ dpkg -l >> {0}
 '''
 
 # guest node specific code
-guestnode_build_script=base_build_init_script + '''\
+extension_node_build_script=base_build_init_script + '''\
 
 echo -e "10.31.81.10\tnodecontroller" >> /etc/hosts
 
@@ -331,9 +331,9 @@ scripts/install_dependencies.sh
 # node controller specific code
 nodecontroller_build_script=base_build_init_script + '''\
 
-echo -e "10.31.81.51\tguestnode1 guestnode" >> /etc/hosts
+echo -e "10.31.81.51\textensionnode1 extensionnode" >> /etc/hosts
 for i in 2 3 4 5 ; do
-  echo -e "10.31.81.5${{i}}\tguestnode${{i}}" >> /etc/hosts
+  echo -e "10.31.81.5${{i}}\textensionnode${{i}}" >> /etc/hosts
 done
 
 
@@ -532,7 +532,7 @@ def detect_odroid_model():
         print "Detected device: %s" % (odroid_model_raw)
         if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
             odroid_model="odroid-xu3"
-            #is_guestnode = 1
+            #is_extension_node = 1
         else:
             odroid_model="odroid-xu"
             print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
@@ -585,22 +585,23 @@ if not odroid_model:
 
 
 if odroid_model == "odroid-xu3":
-    is_guestnode = 1
+    is_extension_node = 1
 
 
 
 
 date_today=get_output('date +"%Y%m%d"').rstrip()
 
-if is_guestnode:
-    image_type = "guestnode"
+if is_extension_node:
+    image_type = "extension_node"
 else:
     image_type = "nodecontroller"
 
 
 print "image_type: ", image_type
 
-new_image_prefix="%s/waggle-%s-%s-%s" % (data_directory, image_type, odroid_model, date_today) 
+new_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today) 
+new_image_prefix="%s/%s" % (data_directory, new_image_base)
 new_image_a="%s.img" % (new_image_prefix)
 new_image_a_compressed = new_image_a+'.xz'
 
@@ -681,8 +682,8 @@ mount_mountpoint(0, mount_point_A)
 
 
 
-if is_guestnode:
-    local_build_script = guestnode_build_script.format(report_file)
+if is_extension_node:
+    local_build_script = extension_node_build_script.format(report_file)
 else: 
     local_build_script = nodecontroller_build_script.format(report_file)
 
@@ -722,7 +723,7 @@ shutil.copyfile(mount_point_A+'/'+report_file, new_image_a+'.report.txt')
 
 
 
-if is_guestnode:
+if is_extension_node:
     write_file(mount_point_A+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
 else:
     write_file(mount_point_A+'/etc/network/interfaces', nodecontroller_etc_network_interfaces_d)
@@ -912,7 +913,8 @@ if create_b_image:
 
 
 if os.path.isfile( data_directory+ '/waggle-id_rsa'):
-    scp_target = 'waggle@terra.mcs.anl.gov:/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images'
+    remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/{0}/{1}/'.format(image_type, odroid_model)
+    scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
     run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) ) 
     
     
@@ -939,6 +941,8 @@ if os.path.isfile( data_directory+ '/waggle-id_rsa'):
             break
         
         time.sleep(10)
+  
+    run_command('ssh -o "StrictHostKeyChecking no" -i /root/waggle-id_rsa waggle@terra.mcs.anl.gov echo "{0}" > {1}latest.txt'.format( new_image_base +".img.xz" , remote_path)
   
     if os.path.isfile( new_image_b+'.xz'):
         # upload second image with different UUID's

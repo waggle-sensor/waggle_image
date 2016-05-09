@@ -137,7 +137,7 @@ fi
 # first boot: increase file system size
 #
 if [ -e /root/first_boot ] ; then
-  # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
+  
   
   # disable u-boot console
   if [ $(grep 'setenv bootdelay "0"' /media/boot/boot.ini | wc -l) -eq 0 ] ; then
@@ -155,18 +155,21 @@ if [ -e /root/first_boot ] ; then
       export MATCHADDR=${MAC_ADDRESS}
       /lib/udev/write_net_rules
     else
-        echo "udev eth0 ok"
+      echo "udev eth0 ok"
     fi
   fi
   
-  sleep 3
-  
-  alias msgbox=echo
-  .  /usr/local/bin/fs_resize.sh ; resize_p2
+
+  if [ -e /root/do_resize ] ; then 
+    sleep 3
+
+    # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
+    alias msgbox=echo
+    .  /usr/local/bin/fs_resize.sh ; resize_p2
+    rm -f /root/do_resize
+  fi
 
   rm -f /root/first_boot
-
-  #update-rc.d -f waggle_first_boot.sh remove
 
   # to prevent user from changing filesystem at this point, reboot now.
   reboot

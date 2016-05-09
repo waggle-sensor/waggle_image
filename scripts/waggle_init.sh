@@ -202,7 +202,7 @@ fi
 if [ ! -e /recovery_p2.tar.gz ] ; then
   cd /
   rm -f  /recovery_p2.tar.gz_part
-  tar -cvpzf /recovery_p2.tar.gz_part --exclude=/recovery_p1.tar.gz --exclude=/recovery_p1.tar.gz_part --exclude=/recovery_p2.tar.gz_part --exclude=/recovery_p2.tar.gz --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/run/* --exclude=/mnt/* --exclude=/media/* --exclude=/lost+found --exclude=/var/cache/apt/* --one-file-system /
+  GZIP=-1 tar -cvpzf /recovery_p2.tar.gz_part --exclude=/recovery_p1.tar.gz --exclude=/recovery_p1.tar.gz_part --exclude=/recovery_p2.tar.gz_part --exclude=/recovery_p2.tar.gz --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/run/* --exclude=/mnt/* --exclude=/media/* --exclude=/lost+found --exclude=/var/cache/apt/* --one-file-system /
   # takes 10 minutes to create file
   mv /recovery_p2.tar.gz_part /recovery_p2.tar.gz
 fi

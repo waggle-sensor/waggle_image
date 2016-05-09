@@ -202,7 +202,14 @@ fi
 if [ ! -e /recovery_p2.tar.gz ] ; then
   cd /
   rm -f  /recovery_p2.tar.gz_part
-  GZIP=-1 tar -cvpzf /recovery_p2.tar.gz_part --exclude=/recovery_p1.tar.gz --exclude=/recovery_p1.tar.gz_part --exclude=/recovery_p2.tar.gz_part --exclude=/recovery_p2.tar.gz --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/run/* --exclude=/mnt/* --exclude=/media/* --exclude=/lost+found --exclude=/var/cache/apt/* --one-file-system /
+  set +e 
+  GZIP=-1 tar -cvpzf /recovery_p2.tar.gz_part --warning=no-file-changed --exclude=/recovery_p1.tar.gz --exclude=/recovery_p1.tar.gz_part --exclude=/recovery_p2.tar.gz_part --exclude=/recovery_p2.tar.gz --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/run/* --exclude=/mnt/* --exclude=/media/* --exclude=/lost+found --exclude=/var/log/upstart/waggle-* --exclude=/var/cache/apt/* --one-file-system /
+  exitcode=$?
+  if [ "$exitcode" != "1" ] && [ "$exitcode" != "0" ]; then
+    # exit code 1 means: Some files differ
+    exit $exitcode
+  fi
+  set -e
   # takes 10 minutes to create file
   mv /recovery_p2.tar.gz_part /recovery_p2.tar.gz
 fi
@@ -210,7 +217,13 @@ fi
 
 if [ ! -e /recovery_p1.tar.gz ] ; then
   rm -f  /recovery_p1.tar.gz_part
+  set +e 
   tar -cvpzf /recovery_p1.tar.gz_part --exclude=./.Spotlight-V100 --exclude=./.fseventsd --exclude=./.Trashes --one-file-system --directory=/media/boot .
+  exitcode=$?
+  if [ "$exitcode" != "1" ] && [ "$exitcode" != "0" ]; then
+    exit $exitcode
+  fi
+  set -e
   mv /recovery_p1.tar.gz_part /recovery_p1.tar.gz
 fi
 

@@ -10,7 +10,7 @@
 # argument "wipe" will force writing to other memory device (wipe forces recover)
 
 
-
+echo "starting waggle_init.sh"
 
 
 DO_RECOVERY=0

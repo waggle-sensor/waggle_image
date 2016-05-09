@@ -47,15 +47,28 @@ set -e
 pidfile='/var/run/waggle/waggle_init.pid'
 
 
+# delete pidfile if process does not exist
+oldpid=""
 if [ -e ${pidfile} ] ; then
   oldpid=`cat ${pidfile}`
 
+  if ! ps -p ${oldpid} > /dev/null 2>&1 ; then
+     rm ${pidfile}
+     oldpid=""
+  fi
+fi
+
+# if old process is still running
+if [ "${oldpid}x" != "x" ] ; then
+ 
+  # either stop current process
   if [ ${WANT_FORCE} -eq 0 ] ; then
-      echo "Script is already running. (${pidfile})"
-      exit 1
+     echo "Script is already running. (pid: ${oldpid})"
+     exit 1  
+     
   fi
 
-  # delete process only if PID is different from ours (happens easily)  
+  # or delete old process (only if PID is different from ours (happens easily))
   if [ "${oldpid}_" != "$$_"  ] ; then
     echo "Kill other waggle_init process"
     set +e

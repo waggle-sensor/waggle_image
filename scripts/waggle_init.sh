@@ -451,7 +451,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     mkdir -p /media/test/usr/lib/waggle/SSL/node
     if [ -d /usr/lib/waggle/SSL/node ] ; then
         for file in $(ls -1 /usr/lib/waggle/SSL/node/) ; do
-          cp ${file} /media/test/usr/lib/waggle/SSL/node
+          cp /usr/lib/waggle/SSL/node/${file} /media/test/usr/lib/waggle/SSL/node
         done
     fi
     

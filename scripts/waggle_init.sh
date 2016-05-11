@@ -22,6 +22,7 @@ WANT_FORCE=0
 for i in ${1} ${2} ${3} ; do
     if [ "${i}x" == "recoverx" ] ; then
         WANT_RECOVER=1
+        DO_RECOVERY=1
     fi
     
     if [ "${i}x" == "wipex" ] ; then

@@ -128,8 +128,18 @@ if [ "${CURRENT_DEVICE}x" == "/dev/mmcblk1x" ] ; then
   OTHER_DEVICE_NAME="mmcblk0"
 fi
 
-
+#
+# SD-card or eMMC ? "SD" or "MMC"
+#
 CURRENT_DEVICE_TYPE=$(cat /sys/block/${CURRENT_DEVICE_NAME}/device/type)
+
+if [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] || [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
+
+  echo -e "#e.g. 'SD' or 'MMC'\n${CURRENT_DEVICE_TYPE}" > /etc/waggle/current_memory_device
+else
+  echo "error: memory device not recognized: ${CURRENT_DEVICE_TYPE}"
+  exit 1
+fi
 
 #
 # set hostname

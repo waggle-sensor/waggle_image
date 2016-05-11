@@ -536,6 +536,34 @@ else
 fi
 
 
+#
+# sync config and cert files
+#
+set +e
+while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+  umount /media/test
+  sleep 5
+  done
+set -e
+    
+mount ${OTHER_DEVICE}p2 /media/test/
+
+sleep 1
+
+rsync --archive --update /etc/waggle/ /media/test/etc/waggle
+rsync --archive --update /media/test/etc/waggle/ /etc/waggle
+rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
+rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
+
+set +e
+while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+  umount /media/test
+  sleep 5
+  done
+set -e
+
+
+
 if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
   echo "Detected MMC, will go to sleep to prevent nodecontroller software from starting"
   sleep infinity

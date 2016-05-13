@@ -10,6 +10,18 @@
 # argument "wipe" will force writing to other memory device (wipe forces recover)
 
 
+
+# Testing
+# add argument "wipe" to call in /etc/init/waggle-init.conf
+DEBUG=0
+DEBUG_HOST=""
+
+
+if [ ${DEBUG} -eq 1] ; then
+  curl ${DEBUG_HOST}/failovertest?status=starting
+fi
+
+
 echo "starting waggle_init.sh"
 
 
@@ -142,6 +154,10 @@ else
   exit 1
 fi
 
+if [ ${DEBUG} -eq 1] ; then
+  curl "${DEBUG_HOST}/failovertest?CURRENT_DEVICE_TYPE=${CURRENT_DEVICE_TYPE}"
+fi
+
 #
 # set hostname
 #
@@ -155,13 +171,19 @@ if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
       echo ${NEW_HOSTNAME} > /etc/hostname
       echo "NEW_HOSTNAME: ${NEW_HOSTNAME}"
     fi 
+  if [ ${DEBUG} -eq 1] ; then
+    curl "${DEBUG_HOST}/failovertest?MAC_ADDRESS=${MAC_ADDRESS}"
+  fi
+
 fi
 
 #
 # first boot: increase file system size
 #
 if [ -e /root/first_boot ] ; then
-  
+  if [ ${DEBUG} -eq 1] ; then
+    curl "${DEBUG_HOST}/failovertest?status=first_boot"
+  fi
   
   # disable u-boot console
   if [ $(grep 'setenv bootdelay "0"' /media/boot/boot.ini | wc -l) -eq 0 ] ; then
@@ -195,6 +217,10 @@ if [ -e /root/first_boot ] ; then
 
   rm -f /root/first_boot
 
+  if [ ${DEBUG} -eq 1] ; then
+    curl "${DEBUG_HOST}/failovertest?status=first_boot_done"
+  fi
+
   # to prevent user from changing filesystem at this point, reboot now.
   reboot
 
@@ -211,6 +237,9 @@ fi
 # create recovery files for partitions
 #
 if [ ! -e /recovery_p2.tar.gz ] ; then
+  if [ ${DEBUG} -eq 1] ; then
+    curl "${DEBUG_HOST}/failovertest?status=create_recovery_p2"
+  fi
   cd /
   rm -f  /recovery_p2.tar.gz_part
   set +e 
@@ -227,6 +256,9 @@ fi
 
 
 if [ ! -e /recovery_p1.tar.gz ] ; then
+  if [ ${DEBUG} -eq 1] ; then
+    curl "${DEBUG_HOST}/failovertest?status=create_recovery_p1"
+  fi
   rm -f  /recovery_p1.tar.gz_part
   set +e 
   tar -cvpzf /recovery_p1.tar.gz_part --exclude=./.Spotlight-V100 --exclude=./.fseventsd --exclude=./.Trashes --one-file-system --directory=/media/boot .

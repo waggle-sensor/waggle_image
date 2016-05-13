@@ -431,10 +431,17 @@ set -e
 
 if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "Warning: Recovery needed !"
+  if [ ${DEBUG} -eq 1 ] ; then
+    curl "${DEBUG_HOST}/failovertest?status=recovery_needed"
+  fi
 
   if [ ${WANT_RECOVER} -eq 1 ] || [ ${WANT_WIPE} -eq 1 ]; then
     echo "recovering..."
-      
+    
+    if [ ${DEBUG} -eq 1 ] ; then
+      curl "${DEBUG_HOST}/failovertest?status=recovery_init"
+    fi
+    
     set -e
     set -x
     
@@ -558,13 +565,21 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     # TODO check for failed/partial recovery !
     #TODO recovery files, certificate files, 
     
-    
+    if [ ${DEBUG} -eq 1 ] ; then
+      curl "${DEBUG_HOST}/failovertest?status=recovery_done"
+    fi
     
     
   else
+    if [ ${DEBUG} -eq 1 ] ; then
+      curl "${DEBUG_HOST}/failovertest?status=recovery_denied"
+    fi
     echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        
   fi
 else
+  if [ ${DEBUG} -eq 1 ] ; then
+    curl "${DEBUG_HOST}/failovertest?status=recovery_not_needed"
+  fi    
   echo "all looks good" 
 fi
 
@@ -588,6 +603,11 @@ rsync --archive --update /media/test/etc/waggle/ /etc/waggle
 rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
 rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
 
+
+if [ ${DEBUG} -eq 1 ] ; then
+  curl "${DEBUG_HOST}/failovertest?status=rsync_done"
+fi
+
 set +e
 while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
   umount /media/test
@@ -598,10 +618,16 @@ set -e
 
 
 if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
+  if [ ${DEBUG} -eq 1 ] ; then
+    curl "${DEBUG_HOST}/failovertest?status=MMC_infinite_sleep"
+  fi
   echo "Detected MMC, will go to sleep to prevent nodecontroller software from starting"
   sleep infinity
   exit 1
 fi
 
+if [ ${DEBUG} -eq 1 ] ; then
+  curl "${DEBUG_HOST}/failovertest?status=done"
+fi
 
 rm -f ${pidfile}

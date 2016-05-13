@@ -17,7 +17,7 @@ DEBUG=0
 DEBUG_HOST=""
 
 
-if [ ${DEBUG} -eq 1] ; then
+if [ ${DEBUG} -eq 1 ] ; then
   curl ${DEBUG_HOST}/failovertest?status=starting
 fi
 
@@ -154,7 +154,7 @@ else
   exit 1
 fi
 
-if [ ${DEBUG} -eq 1] ; then
+if [ ${DEBUG} -eq 1 ] ; then
   curl "${DEBUG_HOST}/failovertest?CURRENT_DEVICE_TYPE=${CURRENT_DEVICE_TYPE}"
 fi
 
@@ -171,7 +171,7 @@ if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
       echo ${NEW_HOSTNAME} > /etc/hostname
       echo "NEW_HOSTNAME: ${NEW_HOSTNAME}"
     fi 
-  if [ ${DEBUG} -eq 1] ; then
+  if [ ${DEBUG} -eq 1 ] ; then
     curl "${DEBUG_HOST}/failovertest?MAC_ADDRESS=${MAC_ADDRESS}"
   fi
 
@@ -181,7 +181,7 @@ fi
 # first boot: increase file system size
 #
 if [ -e /root/first_boot ] ; then
-  if [ ${DEBUG} -eq 1] ; then
+  if [ ${DEBUG} -eq 1 ] ; then
     curl "${DEBUG_HOST}/failovertest?status=first_boot"
   fi
   
@@ -217,7 +217,7 @@ if [ -e /root/first_boot ] ; then
 
   rm -f /root/first_boot
 
-  if [ ${DEBUG} -eq 1] ; then
+  if [ ${DEBUG} -eq 1 ] ; then
     curl "${DEBUG_HOST}/failovertest?status=first_boot_done"
   fi
 
@@ -237,7 +237,7 @@ fi
 # create recovery files for partitions
 #
 if [ ! -e /recovery_p2.tar.gz ] ; then
-  if [ ${DEBUG} -eq 1] ; then
+  if [ ${DEBUG} -eq 1 ] ; then
     curl "${DEBUG_HOST}/failovertest?status=create_recovery_p2"
   fi
   cd /
@@ -256,7 +256,7 @@ fi
 
 
 if [ ! -e /recovery_p1.tar.gz ] ; then
-  if [ ${DEBUG} -eq 1] ; then
+  if [ ${DEBUG} -eq 1 ] ; then
     curl "${DEBUG_HOST}/failovertest?status=create_recovery_p1"
   fi
   rm -f  /recovery_p1.tar.gz_part

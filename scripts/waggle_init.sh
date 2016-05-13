@@ -636,8 +636,8 @@ fi
 rm -f ${pidfile}
 
 if [ ${DEBUG} -eq 1 ]; then
-  # stop heartbeat
+
   set +e
-  waggle-service stop waggle-heartbeat
+  shutdown -h now
   exit 1
 fi

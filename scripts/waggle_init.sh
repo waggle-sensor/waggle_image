@@ -617,13 +617,12 @@ set -e
 
 
 
-if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
-  if [ ${DEBUG} -eq 1 ] ; then
-    curl "${DEBUG_HOST}/failovertest?status=MMC_infinite_sleep"
-  fi
+if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] && [ ${DEBUG} -eq 0 ]; then
+  
   echo "Detected MMC, will go to sleep to prevent nodecontroller software from starting"
   sleep infinity
   exit 1
+  
 fi
 
 if [ ${DEBUG} -eq 1 ] ; then
@@ -631,3 +630,10 @@ if [ ${DEBUG} -eq 1 ] ; then
 fi
 
 rm -f ${pidfile}
+
+if [ ${DEBUG} -eq 1 ]; then
+  # stop heartbeat
+  set +e
+  waggle-service stop waggle-heartbeat
+  exit 1
+fi

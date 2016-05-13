@@ -48,6 +48,10 @@ for i in ${1} ${2} ${3} ; do
     
 done
 
+if [ ${DEBUG} -eq 1 ] ; then
+    WANT_WIPE=1
+    DO_RECOVERY=1
+fi
 
 if [ ! -e /media/boot/boot.ini ] ; then
   echo "error: could not find /media/boot/boot.ini"

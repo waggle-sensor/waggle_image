@@ -18,7 +18,7 @@ DEBUG_HOST=""
 
 
 if [ ${DEBUG} -eq 1 ] ; then
-  curl --retry 10 ""${DEBUG_HOST}/failovertest?status=starting""
+  curl --retry 10 "${DEBUG_HOST}/failovertest?status=starting" || true
 fi
 
 
@@ -159,7 +159,7 @@ else
 fi
 
 if [ ${DEBUG} -eq 1 ] ; then
-  curl --retry 10 "${DEBUG_HOST}/failovertest?CURRENT_DEVICE_TYPE=${CURRENT_DEVICE_TYPE}"
+  curl --retry 10 "${DEBUG_HOST}/failovertest?CURRENT_DEVICE_TYPE=${CURRENT_DEVICE_TYPE}" || true
 fi
 
 #
@@ -176,7 +176,7 @@ if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
       echo "NEW_HOSTNAME: ${NEW_HOSTNAME}"
     fi 
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?MAC_ADDRESS=${MAC_ADDRESS}"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?MAC_ADDRESS=${MAC_ADDRESS}" || true
   fi
 
 fi
@@ -186,7 +186,7 @@ fi
 #
 if [ -e /root/first_boot ] ; then
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?status=first_boot"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=first_boot" || true
   fi
   
   # disable u-boot console
@@ -222,7 +222,7 @@ if [ -e /root/first_boot ] ; then
   rm -f /root/first_boot
 
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?status=first_boot_done"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=first_boot_done" || true
   fi
 
   # to prevent user from changing filesystem at this point, reboot now.
@@ -242,7 +242,7 @@ fi
 #
 if [ ! -e /recovery_p2.tar.gz ] ; then
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?status=create_recovery_p2"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=create_recovery_p2" || true
   fi
   cd /
   rm -f  /recovery_p2.tar.gz_part
@@ -261,7 +261,7 @@ fi
 
 if [ ! -e /recovery_p1.tar.gz ] ; then
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?status=create_recovery_p1"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=create_recovery_p1" || true
   fi
   rm -f  /recovery_p1.tar.gz_part
   set +e 
@@ -436,14 +436,14 @@ set -e
 if [ ${DO_RECOVERY} -eq 1 ] ; then
   echo "Warning: Recovery needed !"
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_needed"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_needed" || true
   fi
 
   if [ ${WANT_RECOVER} -eq 1 ] || [ ${WANT_WIPE} -eq 1 ]; then
     echo "recovering..."
     
     if [ ${DEBUG} -eq 1 ] ; then
-      curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_init"
+      curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_init" || true
     fi
     
     set -e
@@ -570,19 +570,19 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     #TODO recovery files, certificate files, 
     
     if [ ${DEBUG} -eq 1 ] ; then
-      curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_done"
+      curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_done" || true
     fi
     
     
   else
     if [ ${DEBUG} -eq 1 ] ; then
-      curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_denied"
+      curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_denied" || true
     fi
     echo "No automatic recovery. Use argument \"recover\" to invoke recovery."        
   fi
 else
   if [ ${DEBUG} -eq 1 ] ; then
-    curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_not_needed"
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_not_needed" || true
   fi    
   echo "all looks good" 
 fi
@@ -609,7 +609,7 @@ rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SS
 
 
 if [ ${DEBUG} -eq 1 ] ; then
-  curl --retry 10 "${DEBUG_HOST}/failovertest?status=rsync_done"
+  curl --retry 10 "${DEBUG_HOST}/failovertest?status=rsync_done" || true
 fi
 
 set +e
@@ -630,7 +630,7 @@ if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] && [ ${DEBUG} -eq 0 ]; then
 fi
 
 if [ ${DEBUG} -eq 1 ] ; then
-  curl --retry 10 "${DEBUG_HOST}/failovertest?status=done"
+  curl --retry 10 "${DEBUG_HOST}/failovertest?status=done" || true
 fi
 
 rm -f ${pidfile}

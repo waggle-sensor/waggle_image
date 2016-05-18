@@ -13,6 +13,8 @@
 
 # Testing
 # add argument "wipe" to call in /etc/init/waggle-init.conf
+# make sure to delete recovery files when you do changes
+# delete /etc/udev/rules.d/70-persistent-net.rules if you plan to change the device/network
 DEBUG=0
 DEBUG_HOST=""
 
@@ -116,11 +118,18 @@ MAC_ADDRESS=""
 MODALIAS=""
 for dev in /sys/class/net/eth? ; do
     MODALIAS=$(cat ${dev}/device/modalias)
-    if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] ; then
+    
+    # how to detect correct network device:
+    # C1+: platform:meson-ethx
+    # XU4: PRODUCT=bda/8153/3000
+    
+    if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] || [ $(cat ${dev}/device/uevent | grep "PRODUCT=bda/8153/3000" | wc -l) -eq 1 ] ; then
         MAC_ADDRESS=$(cat ${dev}/address)
         echo "MAC_ADDRESS: ${MAC_ADDRESS}"
         MAC_STRING=$(echo ${MAC_ADDRESS} | tr -d ":")
-    fi 
+    fi
+    
+  
 done
 
 CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")

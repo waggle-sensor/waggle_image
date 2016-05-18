@@ -115,15 +115,23 @@ fi
 # detect MAC address
 #
 MAC_ADDRESS=""
-MODALIAS=""
+
 for dev in /sys/class/net/eth? ; do
-    MODALIAS=$(cat ${dev}/device/modalias)
+    MODALIAS=""
+    if [ -e ${dev}/device/modalias ] ; then
+      MODALIAS=$(cat ${dev}/device/modalias)
+    fi
+    
+    PRODUCT_MATCH=0
+    if [ -e ${dev}/device/uevent ] ; then
+        PRODUCT_MATCH=$(cat ${dev}/device/uevent | grep "PRODUCT=bda/8153/3000" | wc -l)
+    fi
     
     # how to detect correct network device:
     # C1+: platform:meson-ethx
     # XU4: PRODUCT=bda/8153/3000
     
-    if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] || [ $(cat ${dev}/device/uevent | grep "PRODUCT=bda/8153/3000" | wc -l) -eq 1 ] ; then
+    if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] || [ ${PRODUCT_MATCH} -eq 1 ] ; then
         MAC_ADDRESS=$(cat ${dev}/address)
         echo "MAC_ADDRESS: ${MAC_ADDRESS}"
         MAC_STRING=$(echo ${MAC_ADDRESS} | tr -d ":")

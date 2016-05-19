@@ -180,7 +180,7 @@ if [ ${DEBUG} -eq 1 ] ; then
 fi
 
 #
-# set hostname
+# set hostname and /etc/hosts
 #
 if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
     
@@ -191,7 +191,13 @@ if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
     if [ "${NEW_HOSTNAME}x" != "${OLD_HOSTNAME}x" ] ; then
       echo ${NEW_HOSTNAME} > /etc/hostname
       echo "NEW_HOSTNAME: ${NEW_HOSTNAME}"
+    fi
+    
+    # add hostname to /etc/hosts
+    if [ $(grep "127.0.0.1.*${NEW_HOSTNAME}" /etc/hosts | wc -l) -eq 0 ] ; then
+      echo  "127.0.0.1       ${NEW_HOSTNAME}" >> /etc/hosts
     fi 
+     
   if [ ${DEBUG} -eq 1 ] ; then
     curl --retry 10 "${DEBUG_HOST}/failovertest?MAC_ADDRESS=${MAC_ADDRESS}" || true
   fi

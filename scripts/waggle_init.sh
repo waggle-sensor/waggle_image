@@ -221,6 +221,7 @@ if [ -e /root/first_boot ] ; then
       export INTERFACE=eth0
       export MATCHADDR=${MAC_ADDRESS}
       /lib/udev/write_net_rules
+      reboot
     else
       echo "udev eth0 ok"
     fi

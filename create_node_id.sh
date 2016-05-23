@@ -29,6 +29,12 @@ export NODE_ID=""
 #export NETWORK_DEVICE=$(ifconfig -a | grep "Ethernet" | grep "^eth" | sort | head -n 1 | grep -o "^eth[0-9]" | tr -d '\n')
 export NETWORK_DEVICE="eth0"
 echo "NETWORK_DEVICE: ${NETWORK_DEVICE}"
+
+while [ $( ifconfig ${NETWORK_DEVICE} > /dev/null 2>&1  ; echo $? ) -ne 0 ] ; do
+  echo "device ${NETWORK_DEVICE} not found, retry in a few seconds"
+  sleep 3
+done
+
 export MACADDRESS=`ifconfig ${NETWORK_DEVICE} | head -n 1 | grep -o "[[:xdigit:]:]\{17\}" | sed 's/://g'`
 echo "MACADDRESS: ${MACADDRESS}"
 if [ ! ${#MACADDRESS} -ge 12 ]; then

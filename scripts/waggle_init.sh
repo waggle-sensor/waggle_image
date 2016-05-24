@@ -120,7 +120,9 @@ fi
 #
 MAC_ADDRESS=""
 
-for dev in /sys/class/net/eth? ; do
+while [ "${MAC_ADDRESS}x" == "x" ] ; do
+
+  for dev in /sys/class/net/eth? ; do
     MODALIAS=""
     if [ -e ${dev}/device/modalias ] ; then
       MODALIAS=$(cat ${dev}/device/modalias)
@@ -141,6 +143,12 @@ for dev in /sys/class/net/eth? ; do
         MAC_STRING=$(echo ${MAC_ADDRESS} | tr -d ":")
     fi
     
+  done
+  
+  if [ "${MAC_ADDRESS}x" == "x" ] ; do
+      echo "MAC_ADDRESS not found, retrying..."
+    sleep 3
+  done
   
 done
 

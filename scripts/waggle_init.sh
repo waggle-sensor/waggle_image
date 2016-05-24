@@ -537,8 +537,8 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     set -e
     set -x
     
-    #wipe first 500MB
-    if [ "${DEVICE}x" == "Cx" ] ; then
+    #wipe first 500MB (do not wipe eMMC on XU4)
+    if [ "${DEVICE}x" == "Cx" ] || [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] ; then
       dd if=/dev/zero of=${OTHER_DEVICE} bs=1M count=500
       sync
       sleep 2

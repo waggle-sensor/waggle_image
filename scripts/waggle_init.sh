@@ -660,11 +660,13 @@ sleep 1
 rsync --archive --update /etc/waggle/ /media/test/etc/waggle
 rsync --archive --update /media/test/etc/waggle/ /etc/waggle
 
+mkdir -p /media/test/usr/lib/waggle/SSL/node /usr/lib/waggle/SSL/node
+
 if [ -e /usr/lib/waggle/SSL/node/ ] ; then
   rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
 fi
 
-if [ -e /media/test/usr/lib/waggle/SSL/node/ ] ; then 
+if [ -e /media/test/usr/lib/waggle/SSL/node/ ] ; then
   rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
 fi
 

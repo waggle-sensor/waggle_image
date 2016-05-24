@@ -367,7 +367,7 @@ if [ $(parted -m ${OTHER_DEVICE} print | grep "^1:.*fat16::;" | wc -l ) -eq 1 ] 
   echo "boot partition found"
   BOOT_PARTITION_EXISTS=1
 else
-  echo "boot partition not found"
+  echo "!!! boot partition not found"
   DO_RECOVERY=1  
 fi
 
@@ -378,6 +378,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_EXISTS} -eq 1 ] ; then
   if [ $? -eq 0 ]  ; then
     BOOT_PARTITION_FS_OK=1
   else
+    echo "!!! fsch.fat returned error"
     DO_RECOVERY=1
   fi
   set -e
@@ -391,7 +392,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_FS_OK} -eq 1 ] ; then
   set +e
   mount ${OTHER_DEVICE}p1 /media/test
   if [ $? -ne 0 ]  ; then
-    echo "Could not mount boot partition"
+    echo "!!! Could not mount boot partition"
     DO_RECOVERY=1
   else
     BOOT_PARTITION_MOUNTABLE=1
@@ -407,7 +408,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_MOUNTABLE} -eq 1 ] ; then
       echo "boot partition looks legit"
       BOOT_PARTITION_BOOT_INI=1
     else
-      echo "boot partition has no boot.ini"
+      echo "!!! boot partition has no boot.ini"
       DO_RECOVERY=1
     fi
 fi
@@ -428,7 +429,7 @@ if [ $(parted -m ${OTHER_DEVICE} print | grep "^2:.*ext4::;" | wc -l ) -eq 1 ] ;
   echo "data partition found"
   DATA_PARTITION_EXISTS=1
 else
-  echo "data partition not found"
+  echo "!!! data partition not found"
   DO_RECOVERY=1
 fi
 
@@ -439,6 +440,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_EXISTS} -eq 1 ] ; then
   if [ $? -eq 0 ]  ; then
     DATA_PARTITION_FS_OK=1
   else
+    echo "!!! fsck.ext4 returned an error"
     DO_RECOVERY=1
   fi
   set -e
@@ -453,7 +455,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_FS_OK} -eq 1 ] ; then
   set +e
   mount ${OTHER_DEVICE}p2 /media/test
   if [ $? -ne 0 ]  ; then
-    echo "Could not mount data partition"
+    echo "!!! Could not mount data partition"
     DO_RECOVERY=1
   else
     DATA_PARTITION_MOUNTABLE=1
@@ -469,7 +471,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
       echo "data partition looks legit"
       DATA_PARTITION_WAGGLE=1
     else
-      echo "data partition has no waggle directory"
+      echo "!!! data partition has no waggle directory"
       DO_RECOVERY=1
     fi
 fi

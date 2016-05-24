@@ -65,8 +65,9 @@ set -e
 
 pidfile='/var/run/waggle/waggle_init.pid'
 
-
+#
 # delete pidfile if process does not exist
+#
 oldpid=""
 if [ -e ${pidfile} ] ; then
   oldpid=`cat ${pidfile}`
@@ -77,7 +78,9 @@ if [ -e ${pidfile} ] ; then
   fi
 fi
 
+#
 # if old process is still running
+#
 if [ "${oldpid}x" != "x" ] ; then
  
   # either stop current process
@@ -103,8 +106,9 @@ mkdir -p /var/run/waggle/
 echo "$$" > ${pidfile}
 
 
-
-
+#
+# mkdosfs needed to create vfat partition
+#
 if ! hash mkdosfs > /dev/null 2>&1 ; then  
   echo "mkdosfs not found (apt-get install -y dosfstools)"
   rm -f ${pidfile}
@@ -204,6 +208,29 @@ if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
 
 fi
 
+
+#
+# create new udev rules file to fix wrong eth order
+#
+REBOOT=0
+if [ "${MAC_ADDRESS}x" != "x" ] ; then
+  # if MAC address is assigned to eth0 than all is ok.
+  if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
+    echo "wrong network device is assigned to eth0, try fixing it..."
+    
+    # only delete lines that prevent mapping of onboard ethernet to eth0
+    sed -i.bak -e "/${MAC_ADDRESS}/d" -e '/NAME=\"eth0/d' /etc/udev/rules.d/70-persistent-net.rules
+
+    export INTERFACE=eth0
+    export MATCHADDR=${MAC_ADDRESS}
+    /lib/udev/write_net_rules
+    REBOOT=1
+  else
+    echo "udev eth0 ok"
+  fi
+fi
+
+
 #
 # first boot: increase file system size
 #
@@ -218,21 +245,7 @@ if [ -e /root/first_boot ] ; then
   fi
   
   
-  #create new udev rules file to fix wrong eth order
-  if [ "${MAC_ADDRESS}x" != "x" ] ; then
-    # if MAC address is assigned to eth0 than all is ok.
-    if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
-      echo "wrong network device is assigned to eth0, try fixing it..."
-      sed -i.bak -e "/${MAC_ADDRESS}/d" -e '/NAME=\"eth0/d' /etc/udev/rules.d/70-persistent-net.rules
   
-      export INTERFACE=eth0
-      export MATCHADDR=${MAC_ADDRESS}
-      /lib/udev/write_net_rules
-      reboot
-    else
-      echo "udev eth0 ok"
-    fi
-  fi
   
 
   if [ -e /root/do_resize ] ; then 
@@ -251,13 +264,21 @@ if [ -e /root/first_boot ] ; then
   if [ ${DEBUG} -eq 1 ] ; then
     curl --retry 10 "${DEBUG_HOST}/failovertest?status=first_boot_done" || true
   fi
-
-  # to prevent user from changing filesystem at this point, reboot now.
-  reboot
-
-  # other waggle services should not be started at this point.
-  sleep infinity
+  
+  REBOOT=1
+  
 fi
+
+
+if [ ${REBOOT} -eq 1 ] ; then
+    
+    # to prevent user from changing filesystem at this point, reboot now.
+    reboot
+
+    # other waggle services should not be started at this point.
+    sleep infinity
+fi
+
 
 #
 # create Node ID

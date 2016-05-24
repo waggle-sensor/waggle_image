@@ -116,6 +116,31 @@ if ! hash mkdosfs > /dev/null 2>&1 ; then
 fi
 
 #
+# Detect Odroid model
+#
+
+HEADER=`head -n 1 /media/boot/boot.ini`
+
+DEVICE=""
+
+if [ ${HEADER}x == "ODROIDXU-UBOOT-CONFIGx" ] ; then
+  if [ -e /media/boot/exynos5422-odroidxu3.dtb ] ; then
+    # XU3 and XU4 are identical
+    DEVICE="XU3"
+  fi
+elif [ ${HEADER}x == "ODROIDC-UBOOT-CONFIGx" ] ; then
+  DEVICE="C"
+fi
+
+if [ ${DEVICE}x == "x" ] ; then
+  echo "Device not recognized"
+  exit 1
+fi 
+
+
+
+
+#
 # detect MAC address
 #
 MAC_ADDRESS=""
@@ -522,12 +547,12 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     ./make-partitions.sh  ${OTHER_DEVICE}
     sleep 3
     
-    if [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] ; then
+    if [ "${DEVICE}x" == "Cx" ] ; then
       cd /usr/share/c1_uboot
       ./sd_fusing.sh ${OTHER_DEVICE}
     fi
     
-    if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
+    if [ "${DEVICE}x" == "XU3x" ] ; then
         cd /usr/lib/waggle/waggle_image/setup-disk/xu3
         ./sd_fusing.sh ${OTHER_DEVICE}
     fi

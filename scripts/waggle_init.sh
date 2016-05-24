@@ -533,7 +533,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     set -x
     
     #wipe first 500MB
-    if [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] ; then
+    if [ "${DEVICE}x" == "Cx" ] ; then
       dd if=/dev/zero of=${OTHER_DEVICE} bs=1M count=500
       sync
       sleep 2

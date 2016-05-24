@@ -586,14 +586,10 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     sleep 1
     sed -i.bak 's/root=UUID=[a-fA-F0-9-]*/root=UUID='${OTHER_DEVICE_DATA_UUID}'/' /media/test/boot.ini 
     
-    if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=" | wc -l) -eq 0 ] ; then
-        echo "Error: boot.ini does not have UUID in bootargs"
-        rm -f ${pidfile}
-        exit 1
-    fi
     
-    if [ $(grep "^setenv bootargs" /media/test/boot.ini | grep "root=UUID=${OTHER_DEVICE_DATA_UUID}" | wc -l) -eq 0 ] ; then
-        echo "Error: boot.ini does not have new UUID in bootargs"
+    
+    if [ $(grep -v "^#" /media/test/boot.ini | grep "root=UUID=${OTHER_DEVICE_DATA_UUID}" | wc -l) -eq 0 ] ; then
+        echo "Error: boot.ini does not have new UUID in bootargs or bootrootfs"
         rm -f ${pidfile}
         exit 1
     fi

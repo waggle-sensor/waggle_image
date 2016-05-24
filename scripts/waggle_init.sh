@@ -203,6 +203,11 @@ fi
 # SD-card or eMMC ? "SD" or "MMC"
 #
 CURRENT_DEVICE_TYPE=$(cat /sys/block/${CURRENT_DEVICE_NAME}/device/type)
+OTHER_DEVICE_TYPE=""
+if [ -e /sys/block/${OTHER_DEVICE_NAME}/device/type ] ; then
+    OTHER_DEVICE_TYPE=$(cat /sys/block/${OTHER_DEVICE_NAME}/device/type)
+fi
+
 
 if [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] || [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
 
@@ -612,8 +617,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     OTHER_DEVICE_DATA_UUID=$(blkid -o export ${OTHER_DEVICE}p2 | grep "^UUID" |  cut -f2 -d '=')
     echo "OTHER_DEVICE_DATA_UUID: ${OTHER_DEVICE_DATA_UUID}"
     
-    # Is the other device SD-card or eMMC ?
-    OTHER_DEVICE_TYPE=$(cat /sys/block/${OTHER_DEVICE_NAME}/device/type)
+    
     
     
     # modify boot.ini
@@ -645,6 +649,9 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     
     # udev should not require changes once it is ok
+    
+    
+    echo "${MAC_STRING}_${OTHER_DEVICE_TYPE}" > /media/test/etc/hostname
     
     
     set +e

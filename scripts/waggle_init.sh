@@ -659,9 +659,14 @@ sleep 1
 
 rsync --archive --update /etc/waggle/ /media/test/etc/waggle
 rsync --archive --update /media/test/etc/waggle/ /etc/waggle
-rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
-rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
 
+if [ -e /usr/lib/waggle/SSL/node/ ] ; then
+  rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
+fi
+
+if [ -e /media/test/usr/lib/waggle/SSL/node/ ] ; then 
+  rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
+fi
 
 if [ ${DEBUG} -eq 1 ] ; then
   curl --retry 10 "${DEBUG_HOST}/failovertest?status=rsync_done" || true

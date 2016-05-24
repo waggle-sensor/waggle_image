@@ -222,6 +222,7 @@ if [ -e /root/first_boot ] ; then
   if [ "${MAC_ADDRESS}x" != "x" ] ; then
     # if MAC address is assigned to eth0 than all is ok.
     if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
+      echo "wrong network device is assigned to eth0, try fixing it..."
       sed -i.bak -e "/${MAC_ADDRESS}/d" -e '/NAME=\"eth0/d' /etc/udev/rules.d/70-persistent-net.rules
   
       export INTERFACE=eth0

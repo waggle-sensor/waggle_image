@@ -145,10 +145,10 @@ while [ "${MAC_ADDRESS}x" == "x" ] ; do
     
   done
   
-  if [ "${MAC_ADDRESS}x" == "x" ] ; do
-      echo "MAC_ADDRESS not found, retrying..."
+  if [ "${MAC_ADDRESS}x" == "x" ] ; then
+    echo "MAC_ADDRESS not found, retrying..."
     sleep 3
-  done
+  fi
   
 done
 

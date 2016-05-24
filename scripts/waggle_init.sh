@@ -144,7 +144,7 @@ fi
 # detect MAC address
 #
 MAC_ADDRESS=""
-
+set +e
 while [ "${MAC_ADDRESS}x" == "x" ] ; do
 
   for dev in /sys/class/net/eth? ; do
@@ -176,6 +176,7 @@ while [ "${MAC_ADDRESS}x" == "x" ] ; do
   fi
   
 done
+set -e
 
 CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
 OTHER_DEVICE=""

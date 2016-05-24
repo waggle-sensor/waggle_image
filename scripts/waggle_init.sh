@@ -683,45 +683,48 @@ else
 fi
 
 
+
+set +e
+while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+  umount /media/test
+  sleep 5
+  done
+set -e
+
 #
 # sync config and cert files
 #
-set +e
-while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
-  umount /media/test
-  sleep 5
-  done
-set -e
     
-mount ${OTHER_DEVICE}p2 /media/test/
+if [ -e ${OTHER_DEVICE}p2 ] ; then    
+  mount ${OTHER_DEVICE}p2 /media/test/
 
-sleep 1
+  sleep 1
 
-rsync --archive --update /etc/waggle/ /media/test/etc/waggle
-rsync --archive --update /media/test/etc/waggle/ /etc/waggle
+  rsync --archive --update /etc/waggle/ /media/test/etc/waggle
+  rsync --archive --update /media/test/etc/waggle/ /etc/waggle
 
-mkdir -p /media/test/usr/lib/waggle/SSL/node /usr/lib/waggle/SSL/node
+  mkdir -p /media/test/usr/lib/waggle/SSL/node /usr/lib/waggle/SSL/node
 
-if [ -e /usr/lib/waggle/SSL/node/ ] ; then
-  rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
-fi
+  if [ -e /usr/lib/waggle/SSL/node/ ] ; then
+    rsync --archive --update /usr/lib/waggle/SSL/node/ /media/test/usr/lib/waggle/SSL/node
+  fi
 
-if [ -e /media/test/usr/lib/waggle/SSL/node/ ] ; then
-  rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
-fi
+  if [ -e /media/test/usr/lib/waggle/SSL/node/ ] ; then
+    rsync --archive --update /media/test/usr/lib/waggle/SSL/node/ /usr/lib/waggle/SSL/node
+  fi
 
-if [ ${DEBUG} -eq 1 ] ; then
-  curl --retry 10 "${DEBUG_HOST}/failovertest?status=rsync_done" || true
-fi
+  if [ ${DEBUG} -eq 1 ] ; then
+    curl --retry 10 "${DEBUG_HOST}/failovertest?status=rsync_done" || true
+  fi
 
-set +e
-while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
-  umount /media/test
-  sleep 5
+  set +e
+  while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
+    umount /media/test
+    sleep 5
   done
-set -e
+  set -e
 
-
+fi
 
 if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] && [ ${DEBUG} -eq 0 ]; then
   

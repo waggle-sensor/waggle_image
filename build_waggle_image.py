@@ -147,7 +147,7 @@ dpkg --list | grep ^rc | awk -F" " ' {{ print $2 }} ' | xargs apt-get -y purge
 
 # Packages we want to install:
 set -e
-apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip tree psmisc wvdial dosfstools autossh parted
+apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial python-pip tree psmisc wvdial dosfstools autossh parted bash-completion
 
 
 # Every waggle image needs this repository

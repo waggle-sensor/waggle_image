@@ -498,9 +498,11 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     set -x
     
     #wipe first 500MB
-    dd if=/dev/zero of=${OTHER_DEVICE} bs=1M count=500
-    sync
-    sleep 2
+    if [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] ; then
+      dd if=/dev/zero of=${OTHER_DEVICE} bs=1M count=500
+      sync
+      sleep 2
+    fi
     
     # write boot loader and u-boot files (this is an odroid script)
     
@@ -510,9 +512,16 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     ./make-partitions.sh  ${OTHER_DEVICE}
     sleep 3
     
-    cd /usr/share/c1_uboot
-    ./sd_fusing.sh ${OTHER_DEVICE}
+    if [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] ; then
+      cd /usr/share/c1_uboot
+      ./sd_fusing.sh ${OTHER_DEVICE}
+    fi
     
+    if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] ; then
+        cd /usr/lib/waggle/waggle_image/setup-disk/xu3
+        ./sd_fusing.sh ${OTHER_DEVICE}
+    fi
+  
     mount ${OTHER_DEVICE}p1 /media/test/
     cd /media/test
     tar xvzf /recovery_p1.tar.gz

@@ -27,21 +27,22 @@ fi
 echo "starting waggle_init.sh"
 
 
-DO_RECOVERY=0
-WANT_RECOVER=0
+RECOVERY_NEEDED=0
+
+RECOVER_IF_NEEDED=0
 WANT_WIPE=0
 WANT_FORCE=0
 
 
 for i in ${1} ${2} ${3} ; do
     if [ "${i}x" == "recoverx" ] ; then
-        WANT_RECOVER=1
-        DO_RECOVERY=1
+        RECOVER_IF_NEEDED=1
+        RECOVERY_NEEDED=1
     fi
     
     if [ "${i}x" == "wipex" ] ; then
         WANT_WIPE=1
-        DO_RECOVERY=1
+        RECOVERY_NEEDED=1
     fi
     
     if [ "${i}x" == "forcex" ] ; then
@@ -52,12 +53,12 @@ done
 
 if [ ${DEBUG} -eq 1 ] ; then
     WANT_WIPE=1
-    DO_RECOVERY=1
+    RECOVERY_NEEDED=1
 fi
 
 
 if [ -e /root/do_recovery ] ; then
-    DO_RECOVERY=1
+    RECOVERY_NEEDED=1
 fi
 
 
@@ -413,39 +414,39 @@ if [ $(parted -m ${OTHER_DEVICE} print | grep "^1:.*fat16::;" | wc -l ) -eq 1 ] 
   BOOT_PARTITION_EXISTS=1
 else
   echo "!!! boot partition not found"
-  DO_RECOVERY=1  
+  RECOVERY_NEEDED=1  
 fi
 
 BOOT_PARTITION_FS_OK=0
-if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_EXISTS} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 0 ] && [ ${BOOT_PARTITION_EXISTS} -eq 1 ] ; then
   set +e
   fsck.fat -n /dev/mmcblk1p1
   if [ $? -eq 0 ]  ; then
     BOOT_PARTITION_FS_OK=1
   else
     echo "!!! fsch.fat returned error"
-    DO_RECOVERY=1
+    RECOVERY_NEEDED=1
   fi
   set -e
 fi
 
 
 BOOT_PARTITION_MOUNTABLE=0
-if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_FS_OK} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 0 ] && [ ${BOOT_PARTITION_FS_OK} -eq 1 ] ; then
   mkdir -p /media/test
 
   set +e
   mount ${OTHER_DEVICE}p1 /media/test
   if [ $? -ne 0 ]  ; then
     echo "!!! Could not mount boot partition"
-    DO_RECOVERY=1
+    RECOVERY_NEEDED=1
   else
     BOOT_PARTITION_MOUNTABLE=1
   fi
 fi
 
 BOOT_PARTITION_BOOT_INI=0
-if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_MOUNTABLE} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 0 ] && [ ${BOOT_PARTITION_MOUNTABLE} -eq 1 ] ; then
 
     echo "Boot partition mounted"
 
@@ -454,7 +455,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${BOOT_PARTITION_MOUNTABLE} -eq 1 ] ; then
       BOOT_PARTITION_BOOT_INI=1
     else
       echo "!!! boot partition has no boot.ini"
-      DO_RECOVERY=1
+      RECOVERY_NEEDED=1
     fi
 fi
 
@@ -475,18 +476,18 @@ if [ $(parted -m ${OTHER_DEVICE} print | grep "^2:.*ext4::;" | wc -l ) -eq 1 ] ;
   DATA_PARTITION_EXISTS=1
 else
   echo "!!! data partition not found"
-  DO_RECOVERY=1
+  RECOVERY_NEEDED=1
 fi
 
 DATA_PARTITION_FS_OK=0
-if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_EXISTS} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 0 ] && [ ${DATA_PARTITION_EXISTS} -eq 1 ] ; then
   set +e
   fsck.ext4 -n ${OTHER_DEVICE}p2
   if [ $? -eq 0 ]  ; then
     DATA_PARTITION_FS_OK=1
   else
     echo "!!! fsck.ext4 returned an error"
-    DO_RECOVERY=1
+    RECOVERY_NEEDED=1
   fi
   set -e
 fi
@@ -494,21 +495,21 @@ fi
 
 
 DATA_PARTITION_MOUNTABLE=0
-if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_FS_OK} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 0 ] && [ ${DATA_PARTITION_FS_OK} -eq 1 ] ; then
   mkdir -p /media/test
 
   set +e
   mount ${OTHER_DEVICE}p2 /media/test
   if [ $? -ne 0 ]  ; then
     echo "!!! Could not mount data partition"
-    DO_RECOVERY=1
+    RECOVERY_NEEDED=1
   else
     DATA_PARTITION_MOUNTABLE=1
   fi
 fi
 
 DATA_PARTITION_WAGGLE=0
-if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
 
     echo "Data partition mounted"
 
@@ -517,7 +518,7 @@ if [ ${DO_RECOVERY} -eq 0 ] && [ ${DATA_PARTITION_MOUNTABLE} -eq 1 ] ; then
       DATA_PARTITION_WAGGLE=1
     else
       echo "!!! data partition has no waggle directory"
-      DO_RECOVERY=1
+      RECOVERY_NEEDED=1
     fi
 fi
 
@@ -528,13 +529,13 @@ while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
 done
 set -e
 
-if [ ${DO_RECOVERY} -eq 1 ] ; then
+if [ ${RECOVERY_NEEDED} -eq 1 ] ; then
   echo "Warning: Recovery needed !"
   if [ ${DEBUG} -eq 1 ] ; then
     curl --retry 10 "${DEBUG_HOST}/failovertest?status=recovery_needed" || true
   fi
 
-  if [ ${WANT_RECOVER} -eq 1 ] || [ ${WANT_WIPE} -eq 1 ]; then
+  if [ ${RECOVER_IF_NEEDED} -eq 1 ] || [ ${WANT_WIPE} -eq 1 ]; then
     echo "recovering..."
     
     if [ ${DEBUG} -eq 1 ] ; then

@@ -55,6 +55,12 @@ if [ ${DEBUG} -eq 1 ] ; then
     DO_RECOVERY=1
 fi
 
+
+if [ -e /root/do_recovery ] ; then
+    DO_RECOVERY=1
+fi
+
+
 if [ ! -e /media/boot/boot.ini ] ; then
   echo "error: could not find /media/boot/boot.ini"
   exit 1
@@ -651,6 +657,7 @@ if [ ${DO_RECOVERY} -eq 1 ] ; then
     
     # udev should not require changes once it is ok
     
+    rm -f /root/do_recovery /media/test/root/do_recovery
     
     echo "${MAC_STRING}_${OTHER_DEVICE_TYPE}" > /media/test/etc/hostname
     

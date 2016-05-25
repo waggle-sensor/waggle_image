@@ -59,6 +59,7 @@ fi
 
 if [ -e /root/do_recovery ] ; then
     RECOVERY_NEEDED=1
+    RECOVER_IF_NEEDED=1
 fi
 
 

@@ -277,6 +277,7 @@ chown waggle:waggle /home/waggle/.ssh/ /home/waggle/.ssh/authorized_keys
 
 touch /root/first_boot
 touch /root/do_resize
+touch /root/do_recovery
 
 rm -f /etc/network/interfaces.d/*
 rm -f /etc/udev/rules.d/70-persistent-net.rules 

@@ -420,7 +420,7 @@ def losetup(loopdev, file, offset=0):
     
     
 
-def create_loop_devices(filename, device_number, start_block):
+def create_loop_devices(filename, device_number, start_block_boot, start_block_data):
     """
     Create loop devices for complete image and for the root partition
     startblock (optional) is the start of the second partition
@@ -432,22 +432,31 @@ def create_loop_devices(filename, device_number, start_block):
     loop_partition_1 = loop_device+'p1' # boot partition
     loop_partition_2 = loop_device+'p2' # data/root partition
     
-    if not start_block:
-        start_block_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
-        start_block=int(start_block_str)
-        print "start_block: ", start_block
+    if not start_block_data:
+        start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
+        start_block_data=int(start_block_data_str)
+        print "start_block_data: ", start_block_data
 
-    offset=start_block*512 
-    print "offset: ", offset
+    start_block_boot_str = get_output("fdisk -lu {0} | grep '{0}1' | awk '{{print $2}}'".format(filename))
+    start_block_boot=int(start_block_boot_str)
+    print "start_block_boot: ", start_block_boot
+
+    offset_boot=start_block_boot*512 
+    print "offset_boot: ", offset_boot
+
+    offset_data=start_block_data*512 
+    print "offset_data: ", offset_data
 
     # create loop device for disk
     losetup(loop_device, filename)
     
     time.sleep(1)
+    # create loop device for boot partition    
+    losetup(loop_partition_1, loop_device, offset_boot)
     # create loop device for root partition    
-    losetup(loop_partition_2, loop_device, offset)
+    losetup(loop_partition_2, loop_device, offset_data)
     
-    return start_block
+    return start_block_boot, start_block_data
 
 
 def destroy_loop_devices():
@@ -507,7 +516,7 @@ destroy_loop_devices()
 
 run_command_f('mknod -m 0660 /dev/loop0p2 b 7 9')
 run_command_f('mknod -m 0660 /dev/loop1p2 b 7 10')
-
+run_command_f('mknod -m 0660 /dev/loop1p1 b 7 11')
 
 # install parted
 if call('hash partprobe > /dev/null 2>&1', shell=True):
@@ -581,7 +590,7 @@ shutil.copyfile(base_image, new_image_a)
 # LOOP DEVICES HERE
 #
 
-start_block = create_loop_devices(new_image_a, 0, None)
+start_block_boot, start_block_data = create_loop_devices(new_image_a, 0, None, None)
 
 
 
@@ -613,7 +622,7 @@ unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(2)
-create_loop_devices(new_image_a, 0, start_block)
+create_loop_devices(new_image_a, 0,  None, start_block)
 print "filesystem check on /dev/loop0p2 after first mount"
 check_partition(0)
 
@@ -683,7 +692,7 @@ unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(3)
-create_loop_devices(new_image_a, 0, start_block)
+create_loop_devices(new_image_a, 0,  None, start_block)
 time.sleep(3)
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)
@@ -810,7 +819,7 @@ if create_b_image:
     os.rename(new_image_b+'.part',  new_image_b)
     
     # create loop device
-    create_loop_devices(new_image_b, 1, None)
+    create_loop_devices(new_image_b, 1,  None, None)
     
     # change UUID
     run_command(change_partition_uuid_script+ ' /dev/loop1')

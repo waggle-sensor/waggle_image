@@ -2,7 +2,6 @@
 
 # this script was take from the ODROID image and was slighlty modified to support mmcblk0 AND mmcblk1 device names. It also can be used directly as an executable
 
-alias msgbox=echo
 
 fs_resize() { 
 	
@@ -30,7 +29,7 @@ do_resize() {
 		"ubuntu-server")
 			resize_p2 ;;
 		*)
-			msgbox "FS_RESIZE: Sorry your distro $DISTRO isn't supported yet. Please report on the forums"
+			echo "FS_RESIZE: Sorry your distro $DISTRO isn't supported yet. Please report on the forums"
 			;;
 	esac
 }
@@ -120,7 +119,7 @@ EOF
   
   REBOOT=1
   
-  msgbox "Rootfs Extended. Please reboot to take effect"
+  echo "Rootfs Extended. Please reboot to take effect"
   return 0
 }
 

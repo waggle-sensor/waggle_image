@@ -126,26 +126,8 @@ fi
 #
 # Detect Odroid model
 #
-
-HEADER=`head -n 1 /media/boot/boot.ini`
-
-DEVICE=""
-
-if [ ${HEADER}x == "ODROIDXU-UBOOT-CONFIGx" ] ; then
-  if [ -e /media/boot/exynos5422-odroidxu3.dtb ] ; then
-    # XU3 and XU4 are identical
-    DEVICE="XU3"
-  fi
-elif [ ${HEADER}x == "ODROIDC-UBOOT-CONFIGx" ] ; then
-  DEVICE="C"
-fi
-
-if [ ${DEVICE}x == "x" ] ; then
-  echo "Device not recognized"
-  exit 1
-fi 
-
-
+/usr/lib/waggle/waggle_image/scripts/detect_odroid_model.sh
+# returns ${ODROID_MODEL}
 
 
 #

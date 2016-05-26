@@ -2,6 +2,7 @@
 
 # this script was take from the ODROID image and was slighlty modified to support mmcblk0 AND mmcblk1 device names. It also can be used directly as an executable
 
+alias msgbox=echo
 
 fs_resize() { 
 	
@@ -128,7 +129,7 @@ EOF
 ##### START ######
 
 
-alias msgbox=echo
+
 
 CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
 if [ "${CURRENT_DEVICE}x" == "x" ] ; then

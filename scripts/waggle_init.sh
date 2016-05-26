@@ -298,10 +298,9 @@ if [ -e /root/first_boot ] ; then
   if [ -e /root/do_resize ] ; then 
     sleep 3
 
-    # this script increases the partition size. It is an odroid script. The user will have to reboot afterwards.
+    # this script increases the partition size. Afterwards, a reboot is needed.
     set +e
-    alias msgbox=echo
-    .  /usr/local/bin/fs_resize.sh ; resize_p2
+    /usr/lib/waggle/waggle_image/scripts/fs_resize.sh
     rm -f /root/do_resize
     set -e
   fi

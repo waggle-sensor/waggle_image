@@ -133,40 +133,9 @@ fi
 #
 # detect MAC address
 #
-MAC_ADDRESS=""
-set +e
-while [ "${MAC_ADDRESS}x" == "x" ] ; do
+. /usr/lib/waggle/waggle_image/scripts/detect_mac_address.sh 
+# returns MAC_ADDRESS and MAC_STRING
 
-  for dev in /sys/class/net/eth? ; do
-    MODALIAS=""
-    if [ -e ${dev}/device/modalias ] ; then
-      MODALIAS=$(cat ${dev}/device/modalias)
-    fi
-    
-    PRODUCT_MATCH=0
-    if [ -e ${dev}/device/uevent ] ; then
-        PRODUCT_MATCH=$(cat ${dev}/device/uevent | grep "PRODUCT=bda/8153/3000" | wc -l)
-    fi
-    
-    # how to detect correct network device:
-    # C1+: platform:meson-ethx
-    # XU4: PRODUCT=bda/8153/3000
-    
-    if [ "${MODALIAS}x" ==  "platform:meson-ethx" ] || [ ${PRODUCT_MATCH} -eq 1 ] ; then
-        MAC_ADDRESS=$(cat ${dev}/address)
-        echo "MAC_ADDRESS: ${MAC_ADDRESS}"
-        MAC_STRING=$(echo ${MAC_ADDRESS} | tr -d ":")
-    fi
-    
-  done
-  
-  if [ "${MAC_ADDRESS}x" == "x" ] ; then
-    echo "MAC_ADDRESS not found, retrying..."
-    sleep 3
-  fi
-  
-done
-set -e
 
 CURRENT_DEVICE=$(mount | grep "on / " | cut -f 1 -d ' ' | grep -o "/dev/mmcblk[0-1]")
 OTHER_DEVICE=""
@@ -528,7 +497,7 @@ if [ ${RECOVERY_NEEDED} -eq 1 ] ; then
     set -x
     
     #wipe first 500MB (do not wipe eMMC on XU4)
-    if [ "${DEVICE}x" == "Cx" ] || [ "${OTHER_DEVICE_TYPE}x" == "SDx" ] ; then
+    if [ "${ODROID_MODEL}x" == "Cx" ] || [ "${OTHER_DEVICE_TYPE}x" == "SDx" ] ; then
       dd if=/dev/zero of=${OTHER_DEVICE} bs=1M count=500
       sync
       sleep 2
@@ -542,12 +511,12 @@ if [ ${RECOVERY_NEEDED} -eq 1 ] ; then
     ./make-partitions.sh  ${OTHER_DEVICE}
     sleep 3
     
-    if [ "${DEVICE}x" == "Cx" ] ; then
+    if [ "${ODROID_MODEL}x" == "Cx" ] ; then
       cd /usr/share/c1_uboot
       ./sd_fusing.sh ${OTHER_DEVICE}
     fi
     
-    if [ "${DEVICE}x" == "XU3x" ] ; then
+    if [ "${ODROID_MODEL}x" == "XU3x" ] ; then
         cd /usr/lib/waggle/waggle_image/setup-disk/xu3
         ./sd_fusing.sh ${OTHER_DEVICE}
     fi

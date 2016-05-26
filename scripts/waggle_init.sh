@@ -126,7 +126,7 @@ fi
 #
 # Detect Odroid model
 #
-/usr/lib/waggle/waggle_image/scripts/detect_odroid_model.sh
+. /usr/lib/waggle/waggle_image/scripts/detect_odroid_model.sh
 # returns ${ODROID_MODEL}
 
 

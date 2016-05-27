@@ -856,6 +856,12 @@ if create_b_image:
         os.remove(new_image_b)
     except:
         pass
+
+    try:
+        os.remove(new_image_b+'.xz')
+    except:
+        pass
+
     
     os.rename(new_image_b+'.part',  new_image_b)
     
@@ -873,27 +879,18 @@ if create_b_image:
     
     # increase partition size again
     run_command('dd if=/dev/zero bs=1MiB of={} conv=notrunc oflag=append count={}'.format(new_image_b, new_image_a_compressed_size_mb+50))
+    time.sleep(1)
     
+    
+    # verify file system
+    run_command('e2fsck -f -y /dev/loop1p2')
+    
+    time.sleep(1)
     
     # make filesystem use new space
     run_command('resize2fs /dev/loop1p2')
+    time.sleep(1)
     
-    
-    # mount
-    mount_mountpoint(1, mount_point_B)
-    
-    
-    # copy SD-card image into eMMC as a backup
-    shutil.copyfile(new_image_a+'.xz', mount_point_B+'/root/')
-
-    # umount
-    unmount_mountpoint(mount_point_B)
-    
-    
-    try:
-        os.remove(new_image_b+'.xz')
-    except:
-        pass
     
     # compress 
     run_command('xz -1 '+new_image_b)
@@ -938,7 +935,7 @@ if os.path.isfile( data_directory+ '/waggle-id_rsa'):
   
   
     run_command('echo "{0}" > {1}/latest.txt'.format(new_image_base +".img.xz", data_directory))
-    run_command('scp -o "StrictHostKeyChecking no" -i /root/waggle-id_rsa {0}/latest.txt waggle@terra.mcs.anl.gov:{1}/'.format(data_directory, remote_path))
+    run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(data_directory, scp_target))
   
     if os.path.isfile( new_image_b+'.xz'):
         # upload second image with different UUID's

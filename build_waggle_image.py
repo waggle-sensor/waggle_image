@@ -542,6 +542,7 @@ for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
         # each loop device needs a different minor number.
         new_minor = min_used_minor(device_minor_used)
         run_command_f('mknod -m 0660 {} b 7 {}'.format(device, new_minor))
+        device_minor_used[new_minor]=1
 
 
 

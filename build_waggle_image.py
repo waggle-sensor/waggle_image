@@ -650,7 +650,7 @@ unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(2)
-create_loop_devices(new_image_a, 0,  None, start_block)
+create_loop_devices(new_image_a, 0,  None, start_block_data)
 print "filesystem check on /dev/loop0p2 after first mount"
 check_partition(0)
 
@@ -720,7 +720,7 @@ unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(3)
-create_loop_devices(new_image_a, 0,  None, start_block)
+create_loop_devices(new_image_a, 0,  None, start_block_data)
 time.sleep(3)
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)

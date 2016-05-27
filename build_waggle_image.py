@@ -9,6 +9,9 @@ import os.path
 
 print "usage: python -u ./build_waggle_image.py 2>&1 | tee build.log"
 
+
+debug=1 # skip chroot environment if 1
+
 data_directory="/root"
 
 report_file="/root/report.txt"
@@ -681,7 +684,8 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
 
 print "################### start of chroot ###################"
 
-run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point_A))
+if debug == 0:
+    run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point_A))
 
 
 print "################### end of chroot ###################"
@@ -836,9 +840,15 @@ if create_b_image:
         print change_partition_uuid_script, " not found"
         sys.exit(1)
     
-    #copy image b (from a)
+    try:
+        os.remove(new_image_b+'.part')
+    except:
+        pass
+    
+    #copy image a to b
     run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d  > %s.part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
     
+    # delete old b if it exists
     try:
         os.remove(new_image_b)
     except:
@@ -890,7 +900,9 @@ if create_b_image:
     #os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')    
 
 
-
+#
+# Upload files to waggle download directory
+#
 if os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/{0}/{1}/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path

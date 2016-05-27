@@ -700,8 +700,11 @@ except:
     pass
 
 print "copy: ", mount_point_A+'/'+report_file, new_image_a+'.report.txt'
-shutil.copyfile(mount_point_A+'/'+report_file, new_image_a+'.report.txt')
 
+if os.path.exists(mount_point_A+'/'+report_file):
+    shutil.copyfile(mount_point_A+'/'+report_file, new_image_a+'.report.txt')
+else:
+    print "file not found:", mount_point_A+'/'+report_file
 
 
 

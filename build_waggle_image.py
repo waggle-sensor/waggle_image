@@ -749,7 +749,7 @@ run_command('e2fsck -f -y /dev/loop0p2')
 sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_a)))
 
 
-front_size_kb = sector_size * start_block/ 1024
+front_size_kb = sector_size * start_block_data/ 1024
 
 if new_partition_size_kb < old_partition_size_kb: 
 
@@ -766,7 +766,7 @@ if new_partition_size_kb < old_partition_size_kb:
     ### fdisk (shrink partition)
     # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start position and size of new partiton
 
-    run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block, new_partition_size_kb, new_image_a))
+    run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block_data, new_partition_size_kb, new_image_a))
 
 
 

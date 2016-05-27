@@ -62,6 +62,7 @@ if ! $(hash uuidgen 2>/dev/null) ; then
   apt-get install -y uuid-runtime
 fi
 
+export LC_CTYPE=C 
 export NEWUUID_1=`cat /dev/urandom | tr -dc 'A-F0-9' | fold -w 4 | head -n 1 | tr -d '\n'` ; echo "NEWUUID_1: ${NEWUUID_1}"
 export NEWUUID_2=`uuidgen` ; echo "NEWUUID_2: ${NEWUUID_2}"
 

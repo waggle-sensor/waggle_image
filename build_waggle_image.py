@@ -538,7 +538,7 @@ for device in glob.glob('/dev/loop[0-9]*'):
 print device_minor_used
 
 for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
-    if not os.path.isfile(device):
+    if not os.path.exists(device):
         # each loop device needs a different minor number.
         new_minor = min_used_minor(device_minor_used)
         run_command_f('mknod -m 0660 {} b 7 {}'.format(device, new_minor))

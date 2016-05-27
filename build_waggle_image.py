@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import time, os, commands, subprocess, shutil, sys
+import time, os, commands, subprocess, shutil, sys, glob
 from subprocess import call, check_call
 import os.path
 
@@ -498,6 +498,14 @@ def detect_odroid_model():
     return odroid_model
         
 
+
+def min_used_minor(device_minor_used):
+    for i in range(1,50):
+        print i
+        if not i in device_minor_used:
+            return i
+            
+            
 ##################################################################################################################################################################################################################
 ##################################################################################################################################################################################################################
     
@@ -512,11 +520,30 @@ time.sleep(3)
 destroy_loop_devices()
 
 
-#TODO loop device number check !
 
-run_command_f('mknod -m 0660 /dev/loop0p2 b 7 9')
-run_command_f('mknod -m 0660 /dev/loop1p2 b 7 10')
-run_command_f('mknod -m 0660 /dev/loop1p1 b 7 11')
+# list devices: ls -latr /dev/loop[0-9]*
+# find minor number: stat -c %T /dev/loop2
+
+
+# dict of minors that are already used
+device_minor_used={}
+
+for device in glob.glob('/dev/loop[0-9]*'):
+    print "device: ", device
+    minor=os.minor(os.stat(device).st_rdev)
+    print "device minor: ", minor
+    device_minor_used[minor]=1
+
+
+print device_minor_used
+
+for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
+    if not os.path.isfile(device):
+        # each loop device needs a different minor number.
+        new_minor = min_used_minor(device_minor_used)
+        run_command_f('mknod -m 0660 {} b 7 {}'.format(device, new_minor))
+
+
 
 # install parted
 if call('hash partprobe > /dev/null 2>&1', shell=True):

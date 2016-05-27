@@ -10,7 +10,7 @@ import os.path
 print "usage: python -u ./build_waggle_image.py 2>&1 | tee build.log"
 
 
-debug=1 # skip chroot environment if 1
+debug=0 # skip chroot environment if 1
 
 data_directory="/root"
 

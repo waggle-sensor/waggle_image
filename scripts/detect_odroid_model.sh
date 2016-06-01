@@ -22,8 +22,6 @@ fi
 echo "ODROID_MODEL=${ODROID_MODEL}"
 
 
-exit 0
-
 
 ####################################
 # below is the old code that was used to detect the hardware model. We keep it here just in case we may have to use it again.

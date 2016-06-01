@@ -805,6 +805,9 @@ if new_partition_size_kb < old_partition_size_kb:
 else:
     print "new_partition_size_kb is NOT smaller than old_partition_size_kb"
 
+print "check boot partition"
+run_command('fsck.vfat -py /dev/loop0p1')
+
 destroy_loop_devices()
 
 

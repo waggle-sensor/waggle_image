@@ -63,7 +63,9 @@ if ! $(hash uuidgen 2>/dev/null) ; then
 fi
 
 export LC_CTYPE=C 
-export NEWUUID_1=`cat /dev/urandom | tr -dc 'A-F0-9' | head -c 4` ; echo "NEWUUID_1: ${NEWUUID_1}"
+
+# "tail -n +1" is a trick to prevent broken pipe
+export NEWUUID_1=`cat /dev/urandom | tr -dc 'A-F0-9' | tail -n +1 | head -c 4` ; echo "NEWUUID_1: ${NEWUUID_1}"
 export NEWUUID_2=`uuidgen` ; echo "NEWUUID_2: ${NEWUUID_2}"
 
 # turn ASCII into HEX representation, eg: "5A51-334D"

@@ -436,6 +436,7 @@ def create_loop_devices(filename, device_number, start_block_boot, start_block_d
     loop_partition_2 = loop_device+'p2' # data/root partition
     
     if not start_block_data:
+        # example: fdisk -lu waggle-extension_node-odroid-xu3-20160601.img | grep "^waggle-extension_node-odroid-xu3-20160601.img2" | awk '{{print $2}}'
         start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
         start_block_data=int(start_block_data_str)
         print "start_block_data: ", start_block_data
@@ -806,7 +807,7 @@ else:
     print "new_partition_size_kb is NOT smaller than old_partition_size_kb"
 
 print "check boot partition"
-run_command('fsck.vfat -py /dev/loop0p1')
+run_command_f('fsck.vfat -py /dev/loop0p1')
 
 destroy_loop_devices()
 

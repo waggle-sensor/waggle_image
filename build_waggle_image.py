@@ -219,7 +219,7 @@ chown waggle:waggle /home/waggle/.ssh/ /home/waggle/.ssh/authorized_keys
 
 touch /root/first_boot
 touch /root/do_resize
-touch /root/do_recovery
+
 
 rm -f /etc/network/interfaces.d/*
 rm -f /etc/udev/rules.d/70-persistent-net.rules 
@@ -274,6 +274,9 @@ scripts/install_dependencies.sh
 
 # node controller specific code
 nodecontroller_build_script=base_build_init_script + '''\
+
+# this will make sure that an empty eMMC card will get the waggle image
+touch /root/do_recovery
 
 echo -e "10.31.81.51\textensionnode1 extensionnode" >> /etc/hosts
 for i in 2 3 4 5 ; do

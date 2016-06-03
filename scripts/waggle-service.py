@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-
 import subprocess
 from subprocess import call
 import commands, os.path, sys, argparse
 import re
 from tabulate import tabulate
+
+#if (service_commands = ['start']) and (os.geteuid() != 0):
+#    print "You need to have root privileges to start a service, exited from services." 
 
 
 class Service:
@@ -124,27 +126,35 @@ class UpStartService(Service):
         
         return {'error' : 1, 'text' : 'status unknown: '+ result, 'state': state, 'goal': goal}
         
-        
     
     def status(self):
         command = ["status", self.id]
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
-        
+
         
     def start(self):
+	if (os.geteuid() != 0):
+            print "You need to have root privileges to start a service, exited from services."
+	    exit()
         command = ["start", self.id]
         #print "command: ", ' '.join(command)
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
          
     def stop(self):
+        if (os.geteuid() != 0):
+            print "You need to have root privileges to stop a service, exited from services."
+            exit()
         command = ["stop", self.id]
         #print "command: ", ' '.join(command)
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
         return self.parse_status_line(status_line)
         
     def restart(self):
+	if (os.geteuid() != 0):
+            print "You need to have root privileges to restart a service, exited from services."
+            exit()
         command = ["restart", self.id]
         #print "command: ", ' '.join(command)
         status_line = "\n".join(subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate())
@@ -176,6 +186,8 @@ class InitService(Service):
     
     def start(self):
         call(["/etc/init.d/"+self.id, "start"])
+	if os.geteuid() != 0:
+	    print "You need to have root privileges to start something"
     
     
     def stop(self):
@@ -320,6 +332,8 @@ class UpStart:
             else:
                 data.append([s.id, goal, state])
 
+	if os.geteuid() != 0:
+    	    print "\nYou need to have root privileges to start, stop, or restart a service."
         print tabulate(data, header, tablefmt="psql")
 
 if __name__ == "__main__":

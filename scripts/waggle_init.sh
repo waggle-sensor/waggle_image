@@ -12,7 +12,6 @@
 
 
 # Testing
-# add argument "wipe" to call in /etc/init/waggle-init.conf
 # make sure to delete recovery files when you do changes
 # delete /etc/udev/rules.d/70-persistent-net.rules if you plan to change the device/network
 DEBUG=0
@@ -479,6 +478,15 @@ while [ $(mount | grep "/media/test" | wc -l) -ne 0 ] ; do
   sleep 5
 done
 set -e
+
+
+# Since we cant't recover eMMC, the test will skip this.
+if [ ${DEBUG} -eq 1 ] && [ "${ODROID_MODEL}x" == "XU3x" ] && [ "${CURRENT_DEVICE_TYPE}x" == "SDx" ] ; then
+  RECOVERY_NEEDED=0
+  WANT_WIPE=0
+  curl --retry 10 "${DEBUG_HOST}/failovertest?status=skip_recovery" || true
+fi
+
 
 if [ ${RECOVERY_NEEDED} -eq 1 ] ; then
   echo "Warning: Recovery needed !"

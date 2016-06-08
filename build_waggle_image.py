@@ -100,6 +100,15 @@ cd waggle_image
 ./configure
 
 
+
+### get plugin_manager repo
+cd /usr/lib/waggle/
+git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
+sleep 1
+cd /usr/lib/waggle/plugin_manager/
+scripts/install_dependencies.sh
+./configure
+
 # make sure serial console requires password
 sed -i -e 's:exec /bin/login -f root:exec /bin/login:' /bin/auto-root-login
 
@@ -264,11 +273,6 @@ apt-get autoremove -y
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
 
-git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
-sleep 1
-cd /usr/lib/waggle/plugin_manager/
-scripts/install_dependencies.sh
-
 
 '''+base_build_final_script
 
@@ -302,11 +306,7 @@ cd /usr/lib/waggle/nodecontroller
 ./scripts/install_dependencies.sh
 
 
-### get plugin_manager repo
-cd /usr/lib/waggle/
-git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
-cd /usr/lib/waggle/plugin_manager/
-scripts/install_dependencies.sh
+
 
 
 '''+base_build_final_script

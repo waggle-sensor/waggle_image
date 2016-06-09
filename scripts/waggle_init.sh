@@ -485,6 +485,7 @@ if [ ${DEBUG} -eq 1 ] && [ "${ODROID_MODEL}x" == "XU3x" ] && [ "${CURRENT_DEVICE
   RECOVERY_NEEDED=0
   WANT_WIPE=0
   curl --retry 10 "${DEBUG_HOST}/failovertest?status=skip_recovery" || true
+  sleep 30
 fi
 
 

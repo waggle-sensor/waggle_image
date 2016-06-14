@@ -4,6 +4,8 @@ from subprocess import call, check_call
 import os.path
 
 
+# To copy an new image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
+
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
 

@@ -216,7 +216,7 @@ if [ "${MAC_ADDRESS}x" != "x" ] ; then
     echo "wrong network device is assigned to eth0, try fixing it..."
     
     # only delete lines that prevent mapping of onboard ethernet to eth0
-    sed -i.bak -e "/${MAC_ADDRESS}/d" -e '/NAME=\"eth0/d' /etc/udev/rules.d/70-persistent-net.rules
+    sed -i.bak -e "/${MAC_ADDRESS}/Id" -e '/NAME=\"eth0/d' /etc/udev/rules.d/70-persistent-net.rules
 
     export INTERFACE=eth0
     export MATCHADDR=${MAC_ADDRESS}

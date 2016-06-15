@@ -2,7 +2,8 @@
 
 
 
-MODEL_REPORTED=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+export MODEL_REPORTED=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+export ODROID_MODEL=""
 
 if [ "${MODEL_REPORTED}x" == "x" ] ; then
   echo "no model detected"

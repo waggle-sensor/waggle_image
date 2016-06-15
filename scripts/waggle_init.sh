@@ -212,7 +212,7 @@ fi
 REBOOT=0
 if [ "${MAC_ADDRESS}x" != "x" ] ; then
   # if MAC address is assigned to eth0 than all is ok.
-  if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
+  if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep -i "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
     echo "wrong network device is assigned to eth0, try fixing it..."
     
     # only delete lines that prevent mapping of onboard ethernet to eth0

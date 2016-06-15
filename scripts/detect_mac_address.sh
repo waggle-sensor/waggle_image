@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # returns
-MAC_ADDRESS=""
-MAC_STRING=""
+export MAC_ADDRESS=""
+export MAC_STRING=""
 
 
 set +e

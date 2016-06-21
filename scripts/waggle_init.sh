@@ -185,13 +185,14 @@ fi
 #
 if [ "${MAC_ADDRESS}x" !=  "x" ] ; then
     
-    NEW_HOSTNAME="${MAC_STRING}_${CURRENT_DEVICE_TYPE}"
+    NEW_HOSTNAME="${MAC_STRING}${CURRENT_DEVICE_TYPE}"
     
-    OLD_HOSTNAME=$(cat /etc/hostname)
+    OLD_HOSTNAME=$(cat /etc/hostname | tr -d '\n')
     
     if [ "${NEW_HOSTNAME}x" != "${OLD_HOSTNAME}x" ] ; then
       echo ${NEW_HOSTNAME} > /etc/hostname
       echo "NEW_HOSTNAME: ${NEW_HOSTNAME}"
+      hostname -F /etc/hostname
     fi
     
     # add hostname to /etc/hosts

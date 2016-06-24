@@ -336,7 +336,17 @@ set -e
 # Test if other memory card actually exists
 #
 if [ ! -e ${OTHER_DEVICE} ] ; then
-  echo "Other memory card not found. Exit."
+  echo "Other memory card not found."
+ 
+  if [ "${CURRENT_DEVICE_TYPE}x" == "MMCx" ] && [ ${DEBUG} -eq 0 ]; then
+  
+    echo "Detected MMC, will go to sleep to prevent nodecontroller software from starting"
+    sleep infinity
+    exit 1
+  
+  fi
+  
+  echo "Exit."
   rm -f ${pidfile}
   exit 0
 fi

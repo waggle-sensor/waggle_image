@@ -101,7 +101,7 @@ fi
 case "$1" in
   start)
     log_daemon_msg "Starting resize2fs_once" &&
-    resize2fs [DEVICE] &&
+    resize2fs [DEVICE]p2 &&
     rm /etc/init.d/resize2fs_once &&
     update-rc.d resize2fs_once remove &&
     log_end_msg $?

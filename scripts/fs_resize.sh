@@ -113,7 +113,7 @@ case "$1" in
 esac  
 EOF
 
-  sed -i -e 's/\[DEVICE\]/'${DEVICE}'/' /etc/init.d/resize2fs_once
+  sed -i -e 's:\[DEVICE\]:'${DEVICE}':' /etc/init.d/resize2fs_once
   chmod +x /etc/init.d/resize2fs_once
   update-rc.d resize2fs_once defaults
   

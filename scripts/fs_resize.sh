@@ -82,7 +82,7 @@ EOF
 fi
 
 
-# TODO: use variable ${DEVICE}
+
 
 	cat <<\EOF > /etc/init.d/resize2fs_once
 #!/bin/sh
@@ -101,7 +101,7 @@ fi
 case "$1" in
   start)
     log_daemon_msg "Starting resize2fs_once" &&
-    resize2fs /dev/mmcblk0p2 &&
+    resize2fs [DEVICE] &&
     rm /etc/init.d/resize2fs_once &&
     update-rc.d resize2fs_once remove &&
     log_end_msg $?
@@ -113,6 +113,7 @@ case "$1" in
 esac  
 EOF
 
+  sed -i -e 's/\[DEVICE\]/'${DEVICE}'/' /etc/init.d/resize2fs_once
   chmod +x /etc/init.d/resize2fs_once
   update-rc.d resize2fs_once defaults
   

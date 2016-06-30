@@ -307,7 +307,9 @@ fi
 cd /usr/lib/waggle/nodecontroller
 ./scripts/install_dependencies.sh
 
-
+# wagman client
+cd /usr/lib/waggle/nodecontroller/wagman
+./configure
 
 
 
@@ -831,7 +833,8 @@ blocks_to_write = combined_size_kb/1024
 # write image to file
 run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_a))
 
-
+# test if file was compressed correctly
+run_command('unxz -t %s.xz_part' % format(new_image_a))
 
 try:
     os.remove(new_image_a_compressed)
@@ -928,6 +931,7 @@ if os.path.isfile( data_directory+ '/waggle-id_rsa'):
             sys.exit(1)
             
         cmd_return = 1
+        print "execute: ", cmd
         try:
             child = subprocess.Popen(['/bin/bash', '-c', cmd])
             child.wait()

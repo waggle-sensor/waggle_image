@@ -10,6 +10,7 @@ from tabulate import tabulate
 #    print "You need to have root privileges to start a service, exited from services." 
 
 
+
 class Service:
     
     service_commands = ['start', 'stop', 'restart', 'status']

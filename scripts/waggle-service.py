@@ -367,20 +367,21 @@ if __name__ == "__main__":
         
     
             
-    try:
-        while True:
+    
+    #try:
+        #while True:
             
-            print "\nList of services: \n"
-            upstart.overview(interactive=True)
+            #print "\nList of services: \n"
+            #upstart.overview(interactive=True)
             
             
-            command = raw_input('\nMain menu\nEnter your command: ')
+            #command = raw_input('\nMain menu\nEnter your command: ')
             #print "got '%s' \n" % (command)
-            print ''
-            if (not command):
-                continue
+            #print ''
+            #if (not command):
+                #continue
                 
-            upstart.execute(re.split(r"\s+", command), interactive=True) 
+            #upstart.execute(re.split(r"\s+", command), interactive=True) 
             
             
             # if (command == "l"):
@@ -406,7 +407,7 @@ if __name__ == "__main__":
                     
             
         
-    except KeyboardInterrupt:
-        print "exiting..."
-    except Exception as e:
-        print "error: "+str(e)
+    #except KeyboardInterrupt:
+        #print "exiting..."
+    #except Exception as e:
+        #print "error: "+str(e)

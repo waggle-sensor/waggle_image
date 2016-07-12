@@ -368,47 +368,4 @@ if __name__ == "__main__":
     print "\nList of services: \n"
     upstart.overview(interactive=True)        
     
-            
-   # try:
-    #    while True:
-            
-     #       print "\nList of services: \n"
-      #      upstart.overview(interactive=True)
-            
-            
-       #     command = raw_input('\nMain menu\nEnter your command: ')
-            #print "got '%s' \n" % (command)
-        #    print ''
-         #   if (not command):
-          #      continue
-                
-           # upstart.execute(re.split(r"\s+", command), interactive=True) 
-            
-            
-            # if (command == "l"):
-    #             overview(services)
-    #         elif (command == "q"):
-    #              sys.exit(0)
-    #         elif (command in "0123456789"):
-    #             index = int(command)
-    #             s=services[index]
-    #             print "service selected: "+s.id+"\n"
-    #             subcommand = raw_input('1=Start, 2=Stop, 3=Restart, 4=Status, 0=Return:')
-    #             print ''
-    #             if (subcommand == '1'):
-    #                 s.start()
-    #             elif (subcommand == '2'):
-    #                 s.stop()
-    #             elif (subcommand == '3'):
-    #                 s.restart()
-    #             elif (subcommand == '4'):
-    #                 status_int = s.status()
-    #                 status = status_code_2_text(status_int)
-    #                 print "(%d) %s  %s\n" % (index,  '', status.ljust(10, ' '))
-                    
-            
-        
-   # except KeyboardInterrupt:
-    #    print "exiting..."
-   # except Exception as e:
-    #    print "error: "+str(e)
+

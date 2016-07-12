@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import zmq, time, subprocess, datetime, argparse, json
+import sys, zmq, time, subprocess, datetime, argparse, json
 import urllib.request, urllib.error, urllib.parse
 sys.path.append('../')
 from waggle_protocol.protocol.PacketHandler import *
@@ -31,7 +31,7 @@ def get_time_from_beehive():
 			NUM_OF_RETRY -= 1
 			if NUM_OF_RETRY <= 0:
 				break
-			else
+			else:
 				time.sleep(10)
 	return t
 

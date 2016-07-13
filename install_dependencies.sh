@@ -10,6 +10,6 @@ apt-get install -y htop iotop iftop bwm-ng screen git python-dev python-serial p
 # python3
 
 apt-get install -y python3-pip
-apt-get install python3-zmq
+apt-get install -y python3-zmq
 
 pip3 install tabulate

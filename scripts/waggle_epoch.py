@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, zmq, time, subprocess, datetime, argparse, json
+import os, os.path, sys, zmq, time, subprocess, datetime, argparse, json
 import urllib.request, urllib.error, urllib.parse
 sys.path.append('../')
 from waggle_protocol.protocol.PacketHandler import *
@@ -13,6 +13,7 @@ from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 
 BEEHIVE_IP="beehive1.acs.anl.gov"
 NODE_CONTROLLER_IP="10.31.81.10"
+pid_file = "/var/run/waggle/epoch.pid"
 
 def get_time_from_beehive():
 	"""
@@ -22,10 +23,11 @@ def get_time_from_beehive():
 	NUM_OF_RETRY=5
 	t = None
 	while True:
+		t = None
 		try:
 			response = urllib.request.urlopen(HOST, timeout=10)
-			time = json.loads(response.read().decode('utf-8'))
-			t = time['epoch']
+			msg = json.loads(response.read().decode('utf-8'))
+			t = msg['epoch']
 		except Exception as e:
 			t = None
 			NUM_OF_RETRY -= 1
@@ -48,10 +50,10 @@ def get_time_from_nc():
 			socket = context.socket(zmq.REQ)
 			socket.connect ("tcp://%s:%s" % (HOST, PORT))
 			socket.send("time")
-			msg = socket.recv()
+			response = socket.recv()
 			socket.close()
-			time = json.loads(msg)
-			t = time['epoch']
+			msg = json.loads(msg)
+			t = msg['epoch']
 		except zmq.error.ZMQError as e:
 			t = None
 			NUM_OF_RETRY -= 1

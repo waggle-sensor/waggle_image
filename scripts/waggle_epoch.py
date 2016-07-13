@@ -94,6 +94,7 @@ if __name__ == "__main__":
 						try:
 							subprocess.call(["date", "-s@%s" % (d)])
 						except Exception as e:
+							time.sleep(10)
 							continue
 
 					# Set next update

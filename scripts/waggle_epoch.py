@@ -7,13 +7,14 @@ from waggle_protocol.protocol.PacketHandler import *
 from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 
 """
-	This module keeps the current time using outer sources such as beehive server or nodecontroller. To get time from beehive server this uses html request. If it does not work (e.g., no internet) the module tries to send a time request to any attached nodecontroller (even itself) according to waggle protocol.
-	The update happens periodically (e.g., everyday).
+    This module keeps the current time using outer sources such as beehive server or nodecontroller. To get time from beehive server this uses html request. If it does not work (e.g., no internet) the module tries to send a ti$
+    The update happens periodically (e.g., everyday).
 """
 
-BEEHIVE_IP="beehive1.acs.anl.gov"
+BEEHIVE_IP="beehive1.mcs.anl.gov"
 NODE_CONTROLLER_IP="10.31.81.10"
 pid_file = "/var/run/waggle/epoch.pid"
+
 
 def get_time_from_beehive():
 	"""
@@ -25,9 +26,10 @@ def get_time_from_beehive():
 	while True:
 		t = None
 		try:
-			response = urllib.request.urlopen(HOST, timeout=10)
-			msg = json.loads(response.read().decode('utf-8'))
+			response = urllib.request.urlopen(URL, timeout=10)
+			msg = json.loads(response.read().decode('iso-8859-15'))
 			t = msg['epoch']
+			break
 		except Exception as e:
 			t = None
 			NUM_OF_RETRY -= 1
@@ -49,11 +51,12 @@ def get_time_from_nc():
 			context = zmq.Context()
 			socket = context.socket(zmq.REQ)
 			socket.connect ("tcp://%s:%s" % (HOST, PORT))
-			socket.send("time")
-			response = socket.recv()
+			socket.send("time".encode('iso-8859-15'))
+			response = socket.recv().decode('iso-8859-15')
 			socket.close()
-			msg = json.loads(msg)
+			msg = json.loads(response)
 			t = msg['epoch']
+			break
 		except zmq.error.ZMQError as e:
 			t = None
 			NUM_OF_RETRY -= 1
@@ -68,7 +71,6 @@ def get_time_from_nc():
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--logging', dest='enable_logging', help='write to log files instead of stdout', action='store_true')
 	parser.add_argument('--force', dest='force', help='kill other processes and start', action='store_true')
 	args = parser.parse_args()
 
@@ -90,7 +92,7 @@ if __name__ == "__main__":
 						continue
 					else:
 						try:
-							subprocess.call(["date", "-s@%s" % (msg)])
+							subprocess.call(["date", "-s@%s" % (d)])
 						except Exception as e:
 							continue
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os, os.path, sys, zmq, time, subprocess, datetime, argparse, json
+import logging
 import urllib.request, urllib.error, urllib.parse
 sys.path.append('../')
 from waggle_protocol.protocol.PacketHandler import *
@@ -10,6 +11,12 @@ from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
     This module keeps the current time using outer sources such as beehive server or nodecontroller. To get time from beehive server this uses html request. If it does not work (e.g., no internet) the module tries to send a ti$
     The update happens periodically (e.g., everyday).
 """
+
+loglevel=logging.DEBUG
+LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
+
+logger = logging.getLogger(__name__)
+logger.setLevel(loglevel)
 
 BEEHIVE_IP="beehive1.mcs.anl.gov"
 NODE_CONTROLLER_IP="10.31.81.10"
@@ -29,9 +36,11 @@ def get_time_from_beehive():
 			response = urllib.request.urlopen(URL, timeout=10)
 			msg = json.loads(response.read().decode('iso-8859-15'))
 			t = msg['epoch']
+			logger.debug("Got time from %s: %s" % (URL, msg))
 			break
 		except Exception as e:
 			t = None
+			logger.debug("failed")
 			NUM_OF_RETRY -= 1
 			if NUM_OF_RETRY <= 0:
 				break
@@ -103,8 +112,8 @@ if __name__ == "__main__":
 				else:
 					time.sleep(60)
 	except AlreadyRunning as e:
-		print("Please use supervisorctl to start and stop the Waggle Plugin Manager.")
+		logger.debug("Please use waggle-service to start and stop this service.")
 	except KeyboardInterrupt:
-		print("exiting...")
+		logger.debug("exiting...")
 	except Exception as e:
-		print("Error (%s): %s" % ( str(type(e)), str(e)))
+		logger.debug("Error (%s): %s" % ( str(type(e)), str(e)))

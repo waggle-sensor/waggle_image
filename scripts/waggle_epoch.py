@@ -12,13 +12,15 @@ from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
     The update happens periodically (e.g., everyday).
 """
 
+#TODO: 
+
 loglevel=logging.DEBUG
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
 
 logger = logging.getLogger(__name__)
 logger.setLevel(loglevel)
 
-BEEHIVE_IP="beehive1.mcs.anl.gov"
+BEEHIVE_HOST="beehive1.mcs.anl.gov"
 NODE_CONTROLLER_IP="10.31.81.10"
 pid_file = "/var/run/waggle/epoch.pid"
 
@@ -27,7 +29,7 @@ def get_time_from_beehive():
 	"""
 		Tries to get data from beehive server. It retries NUM_OF_RETRY with a delay of 10 sec.
 	"""
-	URL = "http://%s/api/1/epoch" % (BEEHIVE_IP)
+	URL = "http://%s/api/1/epoch" % (BEEHIVE_HOST)
 	NUM_OF_RETRY=5
 	t = None
 	while True:
@@ -40,7 +42,7 @@ def get_time_from_beehive():
 			break
 		except Exception as e:
 			t = None
-			logger.debug("failed")
+			logger.debug("Failed to get time from the server")
 			NUM_OF_RETRY -= 1
 			if NUM_OF_RETRY <= 0:
 				break
@@ -61,16 +63,19 @@ def get_time_from_nc():
 			socket = context.socket(zmq.REQ)
 			socket.connect ("tcp://%s:%s" % (HOST, PORT))
 			socket.send("time".encode('iso-8859-15'))
-			response = socket.recv().decode('iso-8859-15')
+			response = socket.recv(timout=5).decode('iso-8859-15')
 			socket.close()
 			msg = json.loads(response)
 			t = msg['epoch']
+			logger.debug("Got time from %s:%d: %s" % (HOST, PORT, msg))
 			break
 		except zmq.error.ZMQError as e:
 			t = None
+			logger.debug("Failed to get time from NC:%s", (str(e)))
 			NUM_OF_RETRY -= 1
 		except Exception as e:
 			t = None
+			logger.debug("Failed to get time from NC:%s", (str(e)))
 			NUM_OF_RETRY -= 1
 			if NUM_OF_RETRY <= 0:
 				break
@@ -85,12 +90,14 @@ if __name__ == "__main__":
 
 	try:
 		with PidFile(pid_file, force=args.force, name=os.path.basename(__file__)):
+			logger.info("epoch service started")
 			current_time = datetime.datetime.now()
 			next_period = current_time + datetime.timedelta(days=1)
 
 			while True:
 				current_time = datetime.datetime.now()
 				if datetime.datetime.now().year < 2016 or next_period < current_time:
+					logger.info("current time: %s, update needed" % (current_time))
 					# Try to get time from NC
 					d = get_time_from_beehive()
 					if not d:
@@ -104,6 +111,7 @@ if __name__ == "__main__":
 							subprocess.call(["date", "-s@%s" % (d)])
 						except Exception as e:
 							time.sleep(10)
+							logger.debug("Failed to set time:%s", (str(e)))
 							continue
 
 					# Set next update

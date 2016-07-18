@@ -71,8 +71,8 @@ def get_time_from_nc():
 		try:
 			context = zmq.Context()
 			socket = context.socket(zmq.REQ)
-			socket.set(zmq.ZMQ_RCVTIMEO, 3000)
-			socket.set(zmq.ZMQ_SNDTIMEO, 3000)
+			socket.setsockopt(zmq.RCVTIMEO, 3000)
+			#socket.setsockopt(zmq.SNDTIMEO, 3000)
 			socket.connect ("tcp://%s:%s" % (HOST, PORT))
 			socket.send("time".encode('iso-8859-15'))
 			response = socket.recv().decode('iso-8859-15')
@@ -85,6 +85,9 @@ def get_time_from_nc():
 			t = None
 			logger.debug("ZMQ Failed to get time from NC:%s", (str(e)))
 			NUM_OF_RETRY -= 1
+			socket.close()
+			if NUM_OF_RETRY <= 0:
+				break
 		except Exception as e:
 			t = None
 			logger.debug("Failed to get time from NC:%s", (str(e)))

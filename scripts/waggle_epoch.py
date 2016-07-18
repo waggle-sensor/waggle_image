@@ -17,6 +17,16 @@ from waggle_protocol.utilities.pidfile import PidFile, AlreadyRunning
 loglevel=logging.DEBUG
 LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s - line=%(lineno)d - %(message)s'
 
+root_logger = logging.getLogger()
+root_logger.setLevel(loglevel)
+formatter = logging.Formatter(LOG_FORMAT)
+
+handler = logging.StreamHandler(stream=sys.stdout)
+handler.setFormatter(formatter)
+
+root_logger.handlers = []
+root_logger.addHandler(handler)
+
 logger = logging.getLogger(__name__)
 logger.setLevel(loglevel)
 
@@ -61,9 +71,11 @@ def get_time_from_nc():
 		try:
 			context = zmq.Context()
 			socket = context.socket(zmq.REQ)
+			socket.set(zmq.ZMQ_RCVTIMEO, 3000)
+			socket.set(zmq.ZMQ_SNDTIMEO, 3000)
 			socket.connect ("tcp://%s:%s" % (HOST, PORT))
 			socket.send("time".encode('iso-8859-15'))
-			response = socket.recv(timout=5).decode('iso-8859-15')
+			response = socket.recv().decode('iso-8859-15')
 			socket.close()
 			msg = json.loads(response)
 			t = msg['epoch']
@@ -71,7 +83,7 @@ def get_time_from_nc():
 			break
 		except zmq.error.ZMQError as e:
 			t = None
-			logger.debug("Failed to get time from NC:%s", (str(e)))
+			logger.debug("ZMQ Failed to get time from NC:%s", (str(e)))
 			NUM_OF_RETRY -= 1
 		except Exception as e:
 			t = None

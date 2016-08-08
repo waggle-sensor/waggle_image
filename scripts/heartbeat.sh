@@ -112,8 +112,23 @@ echo "Starting heartbeat..."
 
 set +x
 
+LAST_TIME=`date +%s`
 while [ 1 ] ; do 
-  echo 1 > /sys/class/gpio/gpio${GPIO_EXPORT}/value
+  PIN_HIGH=1
+  if [ ${DEVICE}x == "Cx" ] ; then
+    CURRENT_TIME=`date +%s`
+    CHECK_DURATION=`expr ${CURRENT_TIME} - ${LAST_TIME}`
+    if [ ${CHECK_DURATION} -ge 30 ]; then
+      LAST_TIME=${CURRENT_TIME}
+      ALIVE_TIME=`stat -c %Y /usr/lib/waggle/alive`
+      ALIVE_DURATION=`expr ${CURRENT_TIME} - ${ALIVE_TIME}`
+      if [ ${ALIVE_DURATION} -gt 60]; then
+        # Skip this heartbeat
+        PIN_HIGH=0
+      fi
+    fi
+  fi
+  echo ${PIN_HIGH} > /sys/class/gpio/gpio${GPIO_EXPORT}/value
   sleep ${TIME_HIGH}
   echo 0  > /sys/class/gpio/gpio${GPIO_EXPORT}/value
   sleep ${TIME_LOW}

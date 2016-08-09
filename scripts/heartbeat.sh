@@ -115,7 +115,7 @@ while [ 1 ] ; do
     CURRENT_TIME=`date +%s`
     ALIVE_TIME=`stat -c %Y /usr/lib/waggle/alive`
     ALIVE_DURATION=`python -c "print(${CURRENT_TIME} - ${ALIVE_TIME})"`
-    if [ ${ALIVE_DURATION} -gt 10 ]; then
+    if [ ${ALIVE_DURATION} -gt 60 ]; then
       # Skip this heartbeat
       PIN_HIGH=0
     fi

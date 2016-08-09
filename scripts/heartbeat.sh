@@ -113,7 +113,7 @@ while [ 1 ] ; do
   PIN_HIGH=1
   if [ ${DEVICE}x == "Cx" ] ; then
     CURRENT_TIME=`date +%s`
-    ALIVE_TIME=`stat -c %Y /usr/lib/waggle/alive`
+    ALIVE_TIME=`stat -c %Y /usr/lib/waggle/waggle_image/alive`
     ALIVE_DURATION=`python -c "print(${CURRENT_TIME} - ${ALIVE_TIME})"`
     if [ ${ALIVE_DURATION} -gt 60 ]; then
       # Skip this heartbeat

@@ -11,6 +11,8 @@ if [ ! -e ${current_dir}/scripts/heartbeat.sh ] ; then
   exit 1
 fi
 
+touch ${current_dir}/alive
+
 set -x
 #mkdir -p /etc/supervisor/conf.d/
 mkdir -p /var/log/waggle/

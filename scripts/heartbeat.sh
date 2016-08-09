@@ -117,11 +117,13 @@ while [ 1 ] ; do
   PIN_HIGH=1
   if [ ${DEVICE}x == "Cx" ] ; then
     CURRENT_TIME=`date +%s`
-    CHECK_DURATION=`expr ${CURRENT_TIME} - ${LAST_TIME}`
+    #CHECK_DURATION=`expr ${CURRENT_TIME} - ${LAST_TIME}`
+    CHECK_DURATION=`python -c "print(${CURRENT_TIME} - ${LAST_TIME})"`
     if [ ${CHECK_DURATION} -ge 30 ]; then
       LAST_TIME=${CURRENT_TIME}
       ALIVE_TIME=`stat -c %Y /usr/lib/waggle/alive`
-      ALIVE_DURATION=`expr ${CURRENT_TIME} - ${ALIVE_TIME}`
+      #ALIVE_DURATION=`expr ${CURRENT_TIME} - ${ALIVE_TIME}`
+      ALIVE_DURATION=`python -c "print(${CURRENT_TIME} - ${ALIVE_TIME})"`
       if [ ${ALIVE_DURATION} -gt 60]; then
         # Skip this heartbeat
         PIN_HIGH=0

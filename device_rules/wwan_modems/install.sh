@@ -8,5 +8,9 @@ cp 75-wwan-net.rules /etc/udev/rules.d/
 rm -f /etc/wvdial.conf
 cp ./wvdial.conf /etc/
 
+rm -f /usr/bin/wvwaggle.sh
+cp ./wvwaggle.sh /usr/bin/
+chmod +x /usr/bin/wvwaggle.sh
+
 set +x
 echo "run: udevadm control --reload-rules"

@@ -79,7 +79,9 @@ rm -f /var/lib/apt/lists/partial/*
 apt-get clean
 apt-get update
 
-
+# disable software updates (don't want the node connecting to anything other
+# than the beehive server)
+apt-get remove update-manager-core
 
 mkdir -p /etc/waggle/
 echo "10.31.81.10" > /etc/waggle/node_controller_host

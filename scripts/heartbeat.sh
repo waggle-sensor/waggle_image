@@ -109,11 +109,18 @@ set +x
 echo "Starting heartbeat..."
 
 
-
-set +x
-
 while [ 1 ] ; do 
-  echo 1 > /sys/class/gpio/gpio${GPIO_EXPORT}/value
+  PIN_HIGH=1
+  if [ ${DEVICE}x == "Cx" ] ; then
+    CURRENT_TIME=`date +%s`
+    ALIVE_TIME=`stat -c %Y /usr/lib/waggle/waggle_image/alive`
+    ALIVE_DURATION=`python -c "print(${CURRENT_TIME} - ${ALIVE_TIME})"`
+    if [ ${ALIVE_DURATION} -gt 60 ]; then
+      # Skip this heartbeat
+      PIN_HIGH=0
+    fi
+  fi
+  echo ${PIN_HIGH} > /sys/class/gpio/gpio${GPIO_EXPORT}/value
   sleep ${TIME_HIGH}
   echo 0  > /sys/class/gpio/gpio${GPIO_EXPORT}/value
   sleep ${TIME_LOW}

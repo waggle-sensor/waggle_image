@@ -227,6 +227,8 @@ chmod 700 /home/waggle/.ssh/
 chmod 600 /home/waggle/.ssh/authorized_keys
 chown waggle:waggle /home/waggle/.ssh/ /home/waggle/.ssh/authorized_keys
 
+# add AoT test cert
+echo "command=\"/bin/date\" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCedz4oU6YdvFjbWiJTpJiREplTizAk2s2dH0/aBMLmslSXzMXCgAh0EZOjsA3CW+P2SIn3NY8Hx3DmMR9+a1ISd3OcBcH/5F48pejK1MBtdLOnai64JmI80exT3CR34m3wXpmFbbzQ5jrtGFb63q/n89iVDb+BwY4ctrBn+J7BPEJbhh/aepoUNSG5yICWtjC0q8mDhHzr+40rYsxPXjp9HTaEzgLu+fNhJ0rK+4891Lr08MTud2n8TEntjBRlWQUciGrPn1w3jzIz+q2JdJ35a/MgLg6aRSQOMg6AdanZH2XBTqHbaeYOWrMhmDTjC/Pw9Jczl7S+wr0648bzXz2T AoT_key_test" >> home/waggle/.ssh/authorized_keys
 
 ### mark image for first boot 
 

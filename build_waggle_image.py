@@ -81,8 +81,8 @@ apt-get update
 
 # disable software update and new release checks
 # (don't want the node connecting to anything other than the beehive server)
-apt-get remove update-manager-core
-apt-get remove ubuntu-release-upgrader-core
+apt-get remove --yes update-manager-core
+apt-get remove --yes ubuntu-release-upgrader-core
 
 mkdir -p /etc/waggle/
 echo "10.31.81.10" > /etc/waggle/node_controller_host

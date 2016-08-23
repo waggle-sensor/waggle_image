@@ -48,10 +48,6 @@ if create_b_image and not os.path.isfile(change_partition_uuid_script):
     print change_partition_uuid_script, " not found"
     sys.exit(1)
 
-if not os.path.isfile( data_directory+ '/waggle-id_rsa'):
-    print data_directory+ '/waggle-id_rsa not found. Disable this check in the script to continue anyway.' 
-    sys.exit(1)
-
 
 ###                              ###
 ###  Script for chroot execution ###

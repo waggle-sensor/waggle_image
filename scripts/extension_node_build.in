@@ -1,0 +1,21 @@
+
+
+
+### Extension Node Specific Commands ###
+
+echo -e "10.31.81.10\tnodecontroller" >> /etc/hosts
+
+apt-get --no-install-recommends install -y network-manager
+apt-get autoclean
+apt-get autoremove -y
+
+
+
+
+mkdir -p /usr/lib/waggle/
+cd /usr/lib/waggle/
+
+########################################
+
+
+

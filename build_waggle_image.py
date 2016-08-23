@@ -33,7 +33,7 @@ base_images=   {
 
 create_b_image = 0 # will be 1 for XU3/4
 
-change_partition_uuid_script = os.path.abspath(os.path.curdir) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
+change_partition_uuid_script = os.path.dirname(os.path.abspath(__file__)) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
 mount_point_A="/mnt/newimage_A"
 mount_point_B="/mnt/newimage_B"
@@ -56,272 +56,6 @@ if not os.path.isfile( data_directory+ '/waggle-id_rsa'):
 ###                              ###
 ###  Script for chroot execution ###
 ###                              ###
-
-#TODO move everything into scripts
-
-base_build_init_script = '''\
-#!/bin/bash
-set -x
-set -e
-
-###locale
-locale-gen "en_US.UTF-8"
-dpkg-reconfigure locales
-
-### timezone 
-echo "Etc/UTC" > /etc/timezone 
-dpkg-reconfigure --frontend noninteractive tzdata
-
-# because of "Failed to fetch http://ports.ubuntu.com/... ...Hash Sum mismatch"
-#rm -rf /var/lib/apt/lists/*
-touch -t 1501010000 /var/lib/apt/lists/*
-rm -f /var/lib/apt/lists/partial/*
-apt-get clean
-apt-get update
-
-# disable software update and new release checks
-# (don't want the node connecting to anything other than the beehive server)
-apt-get remove --yes update-manager-core
-apt-get remove --yes ubuntu-release-upgrader-core
-
-mkdir -p /etc/waggle/
-echo "10.31.81.10" > /etc/waggle/node_controller_host
-
-# Packages are installed via waggle_image/install_dependencies.sh
-set -e
-
-
-# Every waggle image needs this repository
-mkdir -p /usr/lib/waggle/
-cd /usr/lib/waggle/
-if [ ! -e waggle_image ] ; then
-  # this repor should already have been checked out earlier.
-  git clone https://github.com/waggle-sensor/waggle_image.git
-fi
-cd waggle_image
-
-./scripts/remove_packages.sh
-./install_dependencies.sh
-./configure
-
-
-
-### get plugin_manager repo
-cd /usr/lib/waggle/
-git clone --recursive https://github.com/waggle-sensor/plugin_manager.git
-sleep 1
-cd /usr/lib/waggle/plugin_manager/
-scripts/install_dependencies.sh
-./configure
-
-# make sure serial console requires password
-sed -i -e 's:exec /bin/login -f root:exec /bin/login:' /bin/auto-root-login
-
-'''
-
-
-base_build_final_script='''\
-
-
-### kill X processses
-set +e
-killall -u lightdm -9
-
-
-
-### username
-export odroid_exists=$(id -u odroid > /dev/null 2>&1; echo $?)
-export waggle_exists=$(id -u waggle > /dev/null 2>&1; echo $?)
-
-# rename existing user odroid to waggle
-if [ ${{odroid_exists}} == 0 ] && [ ${{waggle_exists}} != 0 ] ; then
-  echo "I will kill all processes of the user \"odroid\" now."
-  sleep 1
-  killall -u odroid -9
-  sleep 2
-
-  set -e
-
-  #This will change the user's login name. It requires you logged in as another user, e.g. root
-  usermod -l waggle odroid
-
-  # real name
-  usermod -c "waggle user" waggle
-
-  #change home directory
-  usermod -m -d /home/waggle/ waggle
-
-  set +e
-fi
-
-# create new user waggle
-if [ ${{odroid_exists}} != 0 ] && [ ${{waggle_exists}} != 0 ] ; then
-  
-  
-  set -e
-  
-  adduser --disabled-password --gecos "" waggle
-
-  # real name
-  usermod -c "waggle user" waggle
-
-
-  set +e
-fi
-
-
-# verify waggle user has been created
-set +e
-id -u waggle > /dev/null 2>&1
-if [ $? -ne 0 ]; then 
-  echo "error: unix user waggle was not created"
-  exit 1 
-fi
-
-
-# check if odroid group exists
-getent group odroid > /dev/null 2>&1
-if [ $? -eq 0 ]; then 
-  echo "\"odroid\" group exists, will rename it to \"waggle\""
-  groupmod -n waggle odroid || exit 1 
-else
-  getent group waggle > /dev/null 2>&1 
-  if [ $? -eq 0 ]; then 
-    echo "Neither waggle nor odroid group exists. Will create odroid group."
-    addgroup waggle
-  fi
-fi
-
-
-
-# verify waggle group has been created
-getent group waggle > /dev/null 2>&1 
-if [ $? -ne 0 ]; then 
-  echo "error: unix group waggle was not created"
-  exit 1 
-fi
-
-echo "adding user waggle to group waggle"
-adduser waggle waggle
-
-echo "sudo access for user waggle"
-adduser waggle sudo
-
-set -e
-
-
-### disallow root access
-sed -i 's/\(PermitRootLogin\) .*/\\1 no/' /etc/ssh/sshd_config
-
-### default password
-echo waggle:waggle | chpasswd
-echo root:waggle | chpasswd
-
-### Remove ssh host files. Those will be recreated by the /etc/rc.local script by default.
-rm -f /etc/ssh/ssh_host*
-
-
-# set AoT_key
-mkdir -p /home/waggle/.ssh/
-echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsYPMSrC6k33vqzulXSx8141ThfNKXiyFxwNxnudLCa0NuE1SZTMad2ottHIgA9ZawcSWOVkAlwkvufh4gjA8LVZYAVGYHHfU/+MyxhK0InI8+FHOPKAnpno1wsTRxU92xYAYIwAz0tFmhhIgnraBfkJAVKrdezE/9P6EmtKCiJs9At8FjpQPUamuXOy9/yyFOxb8DuDfYepr1M0u1vn8nTGjXUrj7BZ45VJq33nNIVu8ScEdCN1b6PlCzLVylRWnt8+A99VHwtVwt2vHmCZhMJa3XE7GqoFocpp8TxbxsnzSuEGMs3QzwR9vHZT9ICq6O8C1YOG6JSxuXupUUrHgd AoT_key" >> /home/waggle/.ssh/authorized_keys
-chmod 700 /home/waggle/.ssh/
-chmod 600 /home/waggle/.ssh/authorized_keys
-chown waggle:waggle /home/waggle/.ssh/ /home/waggle/.ssh/authorized_keys
-
-# add AoT test cert
-echo "command=\"/bin/date\" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCedz4oU6YdvFjbWiJTpJiREplTizAk2s2dH0/aBMLmslSXzMXCgAh0EZOjsA3CW+P2SIn3NY8Hx3DmMR9+a1ISd3OcBcH/5F48pejK1MBtdLOnai64JmI80exT3CR34m3wXpmFbbzQ5jrtGFb63q/n89iVDb+BwY4ctrBn+J7BPEJbhh/aepoUNSG5yICWtjC0q8mDhHzr+40rYsxPXjp9HTaEzgLu+fNhJ0rK+4891Lr08MTud2n8TEntjBRlWQUciGrPn1w3jzIz+q2JdJ35a/MgLg6aRSQOMg6AdanZH2XBTqHbaeYOWrMhmDTjC/Pw9Jczl7S+wr0648bzXz2T AoT_key_test" >> /home/waggle/.ssh/authorized_keys
-
-# add AoT guest node cert
-echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4ohQv1Qksg2sLIqpvjJuZEsIkeLfbPusEaJQerRCqI71g8hwBkED3BBv5FehLcezTg+cFJFhf2vBGV5SbV0NzbouIM+n0lAr6+Ei/XYjO0B1juDm6cUmloD4HSzQWv+cSyNmb7aXjup7V0GP1DZH3zlmvwguhMUTDrWxQxDpoV28m72aZ4qPH7VmQIeN/JG3BF9b9F8P4myOPGuk5XTjY1rVG+1Tm2mxw0L3WuL6w3DsiUrvlXsGE72KcyFBDiFqOHIdnIYWXDLZz61KXctVLPVLMevwU0YyWg70F9pb0d2LZt7Ztp9GxXBRj5WnU9IClaRh58RsYGhPjdfGuoC3P AoT_guest_node_key" >> /home/waggle/.ssh/authorized_keys
-
-### mark image for first boot 
-
-touch /root/first_boot
-touch /root/do_resize
-
-
-rm -f /etc/network/interfaces.d/*
-rm -f /etc/udev/rules.d/70-persistent-net.rules 
-
-### for paranoids
-echo > /root/.bash_history
-echo > /home/waggle/.bash_history
-
-set +e
-# monit accesses /dev/null even after leaving chroot, which makes it impossible unmount the new image
-/etc/init.d/monit stop
-killall monit
-sleep 3
-
-
-### create report
-
-echo "image created: " > {0}
-date >> {0}
-echo "" >> {0}
-uname -a >> {0}
-echo "" >> {0}
-cat /etc/os-release >> {0}
-dpkg -l >> {0}
-
-
-
-'''
-
-# guest node specific code
-extension_node_build_script=base_build_init_script + '''\
-
-echo -e "10.31.81.10\tnodecontroller" >> /etc/hosts
-
-apt-get --no-install-recommends install -y network-manager
-apt-get autoclean
-apt-get autoremove -y
-
-
-
-
-mkdir -p /usr/lib/waggle/
-cd /usr/lib/waggle/
-
-
-'''+base_build_final_script
-
-# node controller specific code
-nodecontroller_build_script=base_build_init_script + '''\
-
-# this will make sure that an empty eMMC card will get the waggle image
-touch /root/do_recovery
-
-echo -e "10.31.81.51\textensionnode1 extensionnode" >> /etc/hosts
-for i in 2 3 4 5 ; do
-  echo -e "10.31.81.5${{i}}\textensionnode${{i}}" >> /etc/hosts
-done
-
-
-echo -e "127.0.0.1\tnodecontroller" >> /etc/hosts
-
-set +e
-
-
-### get nodecontroller repo
-if [ ! -d /usr/lib/waggle/nodecontroller ] ; then
-  mkdir -p /usr/lib/waggle/
-  git clone --recursive https://github.com/waggle-sensor/nodecontroller.git /usr/lib/waggle/nodecontroller
-else  
-  cd /usr/lib/waggle/nodecontroller
-  git pull
-fi
-
-cd /usr/lib/waggle/nodecontroller
-./scripts/install_dependencies.sh
-
-# wagman client
-cd /usr/lib/waggle/nodecontroller/wagman
-./configure
-
-
-
-'''+base_build_final_script
 
 
 nodecontroller_etc_network_interfaces_d ='''
@@ -399,6 +133,22 @@ def write_file(filename, content):
     print "writing file "+filename
     with open(filename, "w") as text_file:
         text_file.write(content)
+
+
+def write_build_script(filename, node_script_filename):
+  base_build_init_script_filename = os.path.dirname(os.path.abspath(__file__)) + '/scripts/base_build_init.in'
+  with open(base_build_init_script_filename) as script:
+    init_script = script.read()
+
+  abs_node_script_filename = os.path.dirname(os.path.abspath(__file__)) + '/scripts/' + node_script_filename
+  with open(abs_node_script_filename) as script:
+    node_script = script.read()
+
+  base_build_final_script_filename = os.path.dirname(os.path.abspath(__file__)) + '/scripts/base_build_final.in'
+  with open(base_build_final_script_filename) as script:
+    final_script = script.read()
+
+  write_file(filename, init_script+node_script+final_script)
             
 
 def unmount_mountpoint(mp):
@@ -681,12 +431,12 @@ mount_mountpoint(0, mount_point_A)
 run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
 
 if is_extension_node:
-    local_build_script = extension_node_build_script.format(report_file)
+    local_build_script_in = 'extension_node_build.in'
 else: 
-    local_build_script = nodecontroller_build_script.format(report_file)
+    local_build_script_in = 'nodecontroller_build.in'
 
 
-write_file( mount_point_A+'/root/build_image.sh',  local_build_script)
+write_build_script( mount_point_A+'/root/build_image.sh',  local_build_script_in)
 
 print "-------------------------\n"
 print local_build_script

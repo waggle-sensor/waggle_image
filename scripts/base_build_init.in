@@ -1,5 +1,9 @@
 #!/bin/bash
 
+###                              ###
+###  Script for chroot execution ###
+###                              ###
+
 set -x
 set -e
 
@@ -18,10 +22,12 @@ rm -f /var/lib/apt/lists/partial/*
 apt-get clean
 apt-get update
 
-# disable software update and new release checks
+# disable software update and new release checks and messages
 # (don't want the node connecting to anything other than the beehive server)
 apt-get remove --yes update-manager-core
 apt-get remove --yes ubuntu-release-upgrader-core
+cat /etc/pam.d/sshd | sed 's/^\(..*pam_motd..*\)/# \1/' > /tmp/sshd
+mv /tmp/sshd /etc/pam.d/sshd
 
 mkdir -p /etc/waggle/
 echo "10.31.81.10" > /etc/waggle/node_controller_host
@@ -34,7 +40,7 @@ set -e
 mkdir -p /usr/lib/waggle/
 cd /usr/lib/waggle/
 if [ ! -e waggle_image ] ; then
-  # this repor should already have been checked out earlier.
+  # this repo should already have been checked out earlier.
   git clone https://github.com/waggle-sensor/waggle_image.git
 fi
 cd waggle_image

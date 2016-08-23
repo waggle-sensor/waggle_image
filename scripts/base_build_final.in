@@ -90,7 +90,12 @@ sed -i 's/\(PermitRootLogin\) .*/\\1 no/' /etc/ssh/sshd_config
 
 ### default password
 echo waggle:waggle | chpasswd
-echo root:waggle | chpasswd
+
+if [ ! -e /root/id_rsa_aot_config ] ; then
+  echo root:waggle | chpasswd
+elif [ -e /root/private_config/encrypted_waggle_password ]; then
+  echo root:$(openssl rsautl -decrypt -inkey /root/id_rsa_aot_config -in encrypted_waggle_password) | chpasswd
+fi
 
 ### Remove ssh host files. Those will be recreated by the /etc/rc.local script by default.
 rm -f /etc/ssh/ssh_host*

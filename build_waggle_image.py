@@ -4,7 +4,8 @@ from subprocess import call, check_call
 import os.path
 
 
-# To copy an new image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
+# To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
+# To generate a functional AoT image with private configuration, put id_rsa_aot_config and a clone of git@github.com:waggle-sensor/private_config.git in /root
 
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
@@ -48,10 +49,6 @@ if create_b_image and not os.path.isfile(change_partition_uuid_script):
     print change_partition_uuid_script, " not found"
     sys.exit(1)
 
-
-###                              ###
-###  Script for chroot execution ###
-###                              ###
 
 
 nodecontroller_etc_network_interfaces_d ='''
@@ -337,8 +334,13 @@ date_today=get_output('date +"%Y%m%d"').rstrip()
 
 if is_extension_node:
     image_type = "extension_node"
+    local_build_script_in = 'extension_node_build.in'
 else:
     image_type = "nodecontroller"
+    local_build_script_in = 'nodecontroller_build.in'
+
+
+write_build_script( '/root/build_image.sh', local_build_script_in)
 
 
 print "image_type: ", image_type
@@ -426,18 +428,11 @@ mount_mountpoint(0, mount_point_A)
 
 run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
 
-if is_extension_node:
-    local_build_script_in = 'extension_node_build.in'
-else: 
-    local_build_script_in = 'nodecontroller_build.in'
-
-
-write_build_script( mount_point_A+'/root/build_image.sh',  local_build_script_in)
-
 print "-------------------------\n"
 print local_build_script
 print "-------------------------\n"
 
+os.rename('/root/build_image.sh', '%s/root/build_image.sh' % (mount_point_A))
 run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
 
 #

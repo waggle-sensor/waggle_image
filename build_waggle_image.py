@@ -15,6 +15,7 @@ print "usage: python -u ./build_waggle_image.py 2>&1 | tee build.log"
 
 debug=0 # skip chroot environment if 1
 
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 data_directory="/root"
 
 report_file="/root/report.txt"
@@ -34,7 +35,7 @@ base_images=   {
 
 create_b_image = 0 # will be 1 for XU3/4
 
-change_partition_uuid_script = os.path.dirname(os.path.abspath(__file__)) + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
+change_partition_uuid_script = waggle_image_directory + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
 mount_point_A="/mnt/newimage_A"
 mount_point_B="/mnt/newimage_B"
@@ -129,15 +130,15 @@ def write_file(filename, content):
 
 
 def write_build_script(filename, node_script_filename):
-  base_build_init_script_filename = os.path.dirname(os.path.abspath(__file__)) + '/scripts/base_build_init.in'
+  base_build_init_script_filename = waggle_image_directory + '/scripts/base_build_init.in'
   with open(base_build_init_script_filename) as script:
     init_script = script.read()
 
-  abs_node_script_filename = os.path.dirname(os.path.abspath(__file__)) + '/scripts/' + node_script_filename
+  abs_node_script_filename = waggle_image_directory + '/scripts/' + node_script_filename
   with open(abs_node_script_filename) as script:
     node_script = script.read()
 
-  base_build_final_script_filename = os.path.dirname(os.path.abspath(__file__)) + '/scripts/base_build_final.in'
+  base_build_final_script_filename = waggle_image_directory + '/scripts/base_build_final.in'
   with open(base_build_final_script_filename) as script:
     final_script = script.read()
 
@@ -334,13 +335,8 @@ date_today=get_output('date +"%Y%m%d"').rstrip()
 
 if is_extension_node:
     image_type = "extension_node"
-    local_build_script_in = 'extension_node_build.in'
 else:
     image_type = "nodecontroller"
-    local_build_script_in = 'nodecontroller_build.in'
-
-
-write_build_script( '/root/build_image.sh', local_build_script_in)
 
 
 print "image_type: ", image_type
@@ -428,12 +424,34 @@ mount_mountpoint(0, mount_point_A)
 
 run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
 
+### Create the image build script ###
+if is_extension_node:
+    local_build_script_in = 'extension_node_build.in'
+else:
+    local_build_script_in = 'nodecontroller_build.in'
+write_build_script('%s/root/build_image.sh' % (mount_point_A), local_build_script_in)
+
 print "-------------------------\n"
-print local_build_script
+with open('%s/root/build_image.sh' % (mount_point_A)) as local_build_script:
+  for line in local_build_script:
+    print(line)
 print "-------------------------\n"
 
-os.rename('/root/build_image.sh', '%s/root/build_image.sh' % (mount_point_A))
 run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
+
+configure_aot = False
+if os.path.exists('/root/id_rsa_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
+  try:
+    run_command('git clone git@github.com:waggle-sensor/private_config.git')
+    shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+    shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
+    shutil.rmtree('/root/private_config')
+    configure_aot = True
+  except:
+    shutil.rmtree('/root/private_config')
+else:
+  # copy the default, unconfigured wvdial.conf file
+  shutil.copyfile(waggle_image_directory + '/device_rules/wwan_modems/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
 
 #
 # CHROOT HERE
@@ -451,6 +469,11 @@ print "################### end of chroot ###################"
 # 
 # After changeroot
 #
+
+# make sure the encrypted Waggle password has been removed
+if configure_aot and os.path.exists(mount_point_A+'/root/encrypted_waggle_password'):
+  os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
+
 try:
     os.remove(new_image_a+'.report.txt')
 except:
@@ -664,7 +687,7 @@ if create_b_image:
 #
 # Upload files to waggle download directory
 #
-if os.path.isfile( data_directory+ '/waggle-id_rsa'):
+if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/{0}/{1}/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
     run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) ) 

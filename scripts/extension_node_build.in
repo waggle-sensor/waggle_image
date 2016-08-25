@@ -9,7 +9,9 @@ apt-get --no-install-recommends install -y network-manager
 apt-get autoclean
 apt-get autoremove -y
 
-
+# Restrict SSH connections to local port bindings and ethernet card subnet
+cat /etc/ssh/sshd_config | sed -e '{s/^#ListenAddress ::$/ListenAddress 127.0.0.1/}' -e '{s/^#ListenAddress 0.0.0.0$/ListenAddress 10.31.81.51/}' > /tmp/sshd_config
+mv /tmp/sshd_config /etc/ssh/sshd_config
 
 
 mkdir -p /usr/lib/waggle/

@@ -12,6 +12,7 @@ import os.path
 
 print "usage: python -u ./build_waggle_image.py 2>&1 | tee build.log"
 
+start_time = time.time()
 
 debug=0 # skip chroot environment if 1
 
@@ -441,17 +442,20 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
 
 configure_aot = False
 if os.path.exists('/root/id_rsa_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
+  configure_aot = True
+
+
+if configure_aot:
   try:
-    run_command('git clone git@github.com:waggle-sensor/private_config.git')
-    shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+    # clone the private_config repository
+    run_command('git clone git@github.com:waggle-sensor/private_config.git', die=False)
+
+    # allow the node setup script to change the root password to the AoT password
+    shutil.copyfile('/root/id_rsa_aot_config', '%s/root/id_rsa_aot_config' % (mount_point_A))
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
-    shutil.rmtree('/root/private_config')
-    configure_aot = True
-  except:
-    shutil.rmtree('/root/private_config')
-else:
-  # copy the default, unconfigured wvdial.conf file
-  shutil.copyfile(waggle_image_directory + '/device_rules/wwan_modems/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+  except Exception as e:
+    print("Error in private AoT configuration: %s" % str(e))
+    pass
 
 #
 # CHROOT HERE
@@ -470,9 +474,19 @@ print "################### end of chroot ###################"
 # After changeroot
 #
 
-# make sure the encrypted Waggle password has been removed
-if configure_aot and os.path.exists(mount_point_A+'/root/encrypted_waggle_password'):
+if configure_aot:
+  # install a copy of wvdial.conf with the AoT secret APN
+  shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+
+  # remove temporary password setup files from image
+  os.remove('%s/root/id_rsa_aot_config' % (mount_point_A))
   os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
+
+  # remove the private_config repository
+  shutil.rmtree('/root/private_config')
+else:
+  # copy the default, unconfigured wvdial.conf file
+  shutil.copyfile(waggle_image_directory + '/device_rules/wwan_modems/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
 
 try:
     os.remove(new_image_a+'.report.txt')
@@ -734,6 +748,7 @@ if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
   
     if os.path.isfile( new_image_a+'.build_log.txt'): 
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_a,scp_target))
-      
-  
 
+end_time = time.time()
+build_duration = end_time - start_time
+print("Build Duration: %ds" % build_duration)

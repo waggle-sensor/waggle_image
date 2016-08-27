@@ -2,6 +2,7 @@
 import time, os, commands, subprocess, shutil, sys, glob
 from subprocess import call, check_call
 import os.path
+import uuid
 
 
 # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
@@ -16,9 +17,15 @@ start_time = time.time()
 
 debug=0 # skip chroot environment if 1
 
+build_uuid = uuid.uuid1()
+
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 print("### Run directory for build_waggle_image.py: %s" % waggle_image_directory)
 data_directory="/root"
+
+uuid_file = '%s/build_uuid' % data_directory
+with open(uuid_file) as uuid:
+  uuid.writeline(str(build_uuid))
 
 report_file="/root/report.txt"
 
@@ -443,6 +450,8 @@ mount_mountpoint(0, mount_point_A)
 loop_mount_time = time.time()
 print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 ####################
+
+shutil.copyfile(uuid_file, mount_point_A+uuid_file)
 
 # FIXME -- REVERT BEFORE MERGING WITH MASTER BRANCH!!!
 #run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))

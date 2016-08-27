@@ -363,7 +363,7 @@ base_image_xz = base_image + '.xz'
 
 ###### TIMING ######
 init_setup_time = time.time()
-print("Initial Setup Duration: %ds" % init_setup_time - start_time)
+print("Initial Setup Duration: %ds" % (init_setup_time - start_time))
 ####################
 
 if not os.path.isfile(base_image_xz):
@@ -371,7 +371,7 @@ if not os.path.isfile(base_image_xz):
 
 ###### TIMING ######
 image_fetch_time = time.time()
-print("Base Image Fetch Duration: %ds" % image_fetch_time - init_setup_time)
+print("Base Image Fetch Duration: %ds" % (image_fetch_time - init_setup_time))
 ####################
 
 if not os.path.isfile(base_image):
@@ -379,7 +379,7 @@ if not os.path.isfile(base_image):
 
 ###### TIMING ######
 image_unpack_time = time.time()
-print("Base Image Unpacking Duration: %ds" % image_unpack_time - image_fetch_time)
+print("Base Image Unpacking Duration: %ds" % (image_unpack_time - image_fetch_time))
 ####################
 
 try:
@@ -392,7 +392,7 @@ shutil.copyfile(base_image, new_image_a)
 
 ###### TIMING ######
 image_copy_time = time.time()
-print("Base Image Copy Duration: %ds" % image_copy_time - image_unpack_time)
+print("Base Image Copy Duration: %ds" % (image_copy_time - image_unpack_time))
 ####################
 
 #
@@ -441,12 +441,12 @@ mount_mountpoint(0, mount_point_A)
 
 ###### TIMING ######
 loop_mount_time = time.time()
-print("Loop Mount Duration: %ds" % loop_mount_time - image_copy_time)
+print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 ####################
 
 # FIXME -- REVERT BEFORE MERGING WITH MASTER BRANCH!!!
 #run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
-run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git && git checkout production_node'.format(mount_point_A))
+run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git && cd waggle_image && git checkout production_node'.format(mount_point_A))
 
 ### Create the image build script ###
 if is_extension_node:
@@ -484,7 +484,7 @@ if configure_aot:
 
 ###### TIMING ######
 pre_chroot_time = time.time()
-print("Additional Pre-chroot Setup Duration: %ds" % pre_chroot_time - loop_mount_time)
+print("Additional Pre-chroot Setup Duration: %ds" % (pre_chroot_time - loop_mount_time))
 ####################
 
 #
@@ -502,7 +502,7 @@ print "################### end of chroot ###################"
 
 ###### TIMING ######
 chroot_setup_time = time.time()
-print("Chroot Node Setup Duration: %ds" % chroot_setup_time - pre_chroot_time)
+print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 ####################
 
 # 
@@ -567,7 +567,7 @@ time.sleep(3)
 
 ###### TIMING ######
 post_chroot_time = time.time()
-print("Additional Post-chroot Setup Duration: %ds" % post_chroot_time - chroot_setup_time)
+print("Additional Post-chroot Setup Duration: %ds" % (post_chroot_time - chroot_setup_time))
 ####################
 
 estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop0p2 | grep -o "[0-9]*"') )
@@ -586,7 +586,7 @@ new_fs_size_kb = estimated_fs_size_kb + (1024*100)
 
 ###### TIMING ######
 expansion_time = time.time()
-print("Partition Expansion Duration: %ds" % expansion_time - post_chroot_time)
+print("Partition Expansion Duration: %ds" % (expansion_time - post_chroot_time))
 ####################
 
 # verify partition:
@@ -595,7 +595,7 @@ run_command('e2fsck -f -y /dev/loop0p2')
 
 ###### TIMING ######
 check_time = time.time()
-print("Partition Check Duration: %ds" % check_time - expansion_time)
+print("Partition Check Duration: %ds" % (check_time - expansion_time))
 ####################
 
 sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_a)))
@@ -652,7 +652,7 @@ else:
 
 ###### TIMING ######
 check2_time = time.time()
-print("Conditional Partition Check Duration: %ds" % check2_time - check_time)
+print("Conditional Partition Check Duration: %ds" % (check2_time - check_time))
 ####################
 
 print "check boot partition"
@@ -673,7 +673,7 @@ blocks_to_write = combined_size_kb/1024
 
 ###### TIMING ######
 check3_time = time.time()
-print("Boot Partition Check Duration: %ds" % check3_time - check2_time)
+print("Boot Partition Check Duration: %ds" % (check3_time - check2_time))
 ####################
 
 
@@ -682,7 +682,7 @@ run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count
 
 ###### TIMING ######
 image_write_time = time.time()
-print("New Image Write Duration: %ds" % image_write_time - check3_time)
+print("New Image Write Duration: %ds" % (image_write_time - check3_time))
 ####################
 
 # test if file was compressed correctly
@@ -698,7 +698,7 @@ os.rename(new_image_a+'.xz_part',  new_image_a_compressed)
 
 ###### TIMING ######
 compression_check_time = time.time()
-print("New Image Compression Check Duration: %ds" % compression_check_time - image_write_time)
+print("New Image Compression Check Duration: %ds" % (compression_check_time - image_write_time))
 ####################
 
 
@@ -771,7 +771,7 @@ if create_b_image:
 
 ###### TIMING ######
 bimage_time = time.time()
-print("\"B\" Image Creation Duration: %ds" % bimage_time - compression_check_time)
+print("\"B\" Image Creation Duration: %ds" % (bimage_time - compression_check_time))
 ####################
 
 #
@@ -827,10 +827,10 @@ if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
 
 ###### TIMING ######
 upload_time = time.time()
-print("Image Upload Duration: %ds" % upload_time - bimage_time)
+print("Image Upload Duration: %ds" % (upload_time - bimage_time))
 ####################
 
 ###### TIMING ######
 end_time = time.time()
-print("Build Duration: %ds" % end_time - start_time)
+print("Build Duration: %ds" % (end_time - start_time))
 ####################

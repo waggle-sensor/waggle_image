@@ -30,9 +30,9 @@ try_set_time()
   # get epoch from server
   set +e
   if [ "x$ODROID_MODEL" == "xODROIDXU" ]; then
-    EPOCH=$(ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -o "StrictHostKeyChecking no" -o "ConnectTimeout 30" waggle@${NODE_CONTROLLER_IP} -x date +%s)
+    EPOCH=$(ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -o "StrictHostKeyChecking no" -o "ConnectTimeout 30" waggle@${NODE_CONTROLLER_IP} -x date +%s) || true
   else
-    EPOCH=$(curl --connect-timeout 10 --retry 100 --retry-delay 10 http://${SERVER_HOST}/api/1/epoch | grep -oP '{"epoch": \d+}' | grep -oP '\d+')
+    EPOCH=$(curl --connect-timeout 10 --retry 100 --retry-delay 10 http://${SERVER_HOST}/api/1/epoch | grep -oP '{"epoch": \d+}' | grep -oP '\d+') || true
   fi
   set -e
 
@@ -47,12 +47,17 @@ try_set_time()
     return 1
   elif [ "x$ODROID_MODEL" == "xODROIDC" ]; then
     system_date=$(date +%s)
-    wagman_date=$(wagman-client epoch) || true
+    wagman_date=$(wagman-client epoch) || wagman_date=0
     wagman_build_date=$(wagman-client ver | sed -n -e 's/time //p') || true
     guest_node_date=$(ssh -i /usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node -o "StrictHostKeyChecking no" -o "ConnectTimeout 30" waggle@10.31.81.51 -x date +%s) || true
     dates=($system_date $wagman_date $wagman_build_date $guest_node_date)
     IFS=$'\n'
-    date -s @$(echo "${dates[*]}" | sort -nr | head -n1)
+    date=$(echo "${dates[*]}" | sort -nr | head -n1)
+    date -s @$date
+
+    if [ $date \> $wagman_date ]; then
+      wagman-client date $(date +"%Y %m %d %H %M %S") || true
+    fi
     return 0
   fi
   return 1

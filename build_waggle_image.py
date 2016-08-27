@@ -17,6 +17,7 @@ start_time = time.time()
 debug=0 # skip chroot environment if 1
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+print("### Run directory for build_waggle_image.py: %s" % waggle_image_directory)
 data_directory="/root"
 
 report_file="/root/report.txt"
@@ -48,7 +49,7 @@ is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detec
 
 
 if create_b_image and not os.path.isfile(change_partition_uuid_script):
-    print change_partition_uuid_script, " not found"
+    print(change_partition_uuid_script, " not found")
     sys.exit(1)
 
 
@@ -349,7 +350,6 @@ new_image_a_compressed = new_image_a+'.xz'
 
 new_image_b="%s_B.img" % (new_image_prefix)
 
-
 os.chdir(data_directory)
 
 
@@ -361,13 +361,26 @@ except:
 
 base_image_xz = base_image + '.xz'
 
+###### TIMING ######
+init_setup_time = time.time()
+print("Initial Setup Duration: %ds" % init_setup_time - start_time)
+####################
+
 if not os.path.isfile(base_image_xz):
     run_command('wget '+ base_images[odroid_model]['url'] + base_image_xz)
 
+###### TIMING ######
+image_fetch_time = time.time()
+print("Base Image Fetch Duration: %ds" % image_fetch_time - init_setup_time)
+####################
 
 if not os.path.isfile(base_image):
     run_command('unxz --keep '+base_image_xz)
 
+###### TIMING ######
+image_unpack_time = time.time()
+print("Base Image Unpacking Duration: %ds" % image_unpack_time - image_fetch_time)
+####################
 
 try:
     os.remove(new_image_a)
@@ -377,6 +390,10 @@ except:
 print "Copying file %s to %s ..." % (base_image, new_image_a)
 shutil.copyfile(base_image, new_image_a)
 
+###### TIMING ######
+image_copy_time = time.time()
+print("Base Image Copy Duration: %ds" % image_copy_time - image_unpack_time)
+####################
 
 #
 # LOOP DEVICES HERE
@@ -422,8 +439,14 @@ check_partition(0)
 
 mount_mountpoint(0, mount_point_A)
 
+###### TIMING ######
+loop_mount_time = time.time()
+print("Loop Mount Duration: %ds" % loop_mount_time - image_copy_time)
+####################
 
-run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
+# FIXME -- REVERT BEFORE MERGING WITH MASTER BRANCH!!!
+#run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
+run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git && git checkout production_node'.format(mount_point_A))
 
 ### Create the image build script ###
 if is_extension_node:
@@ -443,6 +466,7 @@ run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
 configure_aot = False
 if os.path.exists('/root/id_rsa_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
   configure_aot = True
+  print "################### AoT Configuration Enabled ###################"
 
 
 if configure_aot:
@@ -457,6 +481,12 @@ if configure_aot:
     print("Error in private AoT configuration: %s" % str(e))
     pass
 
+
+###### TIMING ######
+pre_chroot_time = time.time()
+print("Additional Pre-chroot Setup Duration: %ds" % pre_chroot_time - loop_mount_time)
+####################
+
 #
 # CHROOT HERE
 #
@@ -469,6 +499,11 @@ if debug == 0:
 
 print "################### end of chroot ###################"
 
+
+###### TIMING ######
+chroot_setup_time = time.time()
+print("Chroot Node Setup Duration: %ds" % chroot_setup_time - pre_chroot_time)
+####################
 
 # 
 # After changeroot
@@ -487,6 +522,7 @@ if configure_aot:
 else:
   # copy the default, unconfigured wvdial.conf file
   shutil.copyfile(waggle_image_directory + '/device_rules/wwan_modems/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+
 
 try:
     os.remove(new_image_a+'.report.txt')
@@ -529,6 +565,11 @@ check_partition(0)
 time.sleep(3)
 
 
+###### TIMING ######
+post_chroot_time = time.time()
+print("Additional Post-chroot Setup Duration: %ds" % post_chroot_time - chroot_setup_time)
+####################
+
 estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop0p2 | grep -o "[0-9]*"') )
 
 block_size=int(get_output('blockdev --getbsz /dev/loop0p2'))
@@ -543,9 +584,19 @@ new_partition_size_kb = estimated_fs_size_kb + (1024*500)
 # add 100MB
 new_fs_size_kb = estimated_fs_size_kb + (1024*100)
 
+###### TIMING ######
+expansion_time = time.time()
+print("Partition Expansion Duration: %ds" % expansion_time - post_chroot_time)
+####################
+
 # verify partition:
 run_command('e2fsck -f -y /dev/loop0p2')
 
+
+###### TIMING ######
+check_time = time.time()
+print("Partition Check Duration: %ds" % check_time - expansion_time)
+####################
 
 sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_a)))
 
@@ -599,6 +650,11 @@ if new_partition_size_kb < old_partition_size_kb:
 else:
     print "new_partition_size_kb is NOT smaller than old_partition_size_kb"
 
+###### TIMING ######
+check2_time = time.time()
+print("Conditional Partition Check Duration: %ds" % check2_time - check_time)
+####################
+
 print "check boot partition"
 run_command_f('fsck.vfat -py /dev/loop0p1')
 
@@ -615,9 +671,19 @@ combined_size_bytes = (new_partition_size_kb + front_size_kb) * 1024
 # from kb to mb
 blocks_to_write = combined_size_kb/1024
 
+###### TIMING ######
+check3_time = time.time()
+print("Boot Partition Check Duration: %ds" % check3_time - check2_time)
+####################
+
 
 # write image to file
 run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_a))
+
+###### TIMING ######
+image_write_time = time.time()
+print("New Image Write Duration: %ds" % image_write_time - check3_time)
+####################
 
 # test if file was compressed correctly
 run_command('unxz -t %s.xz_part' % format(new_image_a))
@@ -629,6 +695,11 @@ except:
 
 os.rename(new_image_a+'.xz_part',  new_image_a_compressed)
 
+
+###### TIMING ######
+compression_check_time = time.time()
+print("New Image Compression Check Duration: %ds" % compression_check_time - image_write_time)
+####################
 
 
 
@@ -698,6 +769,11 @@ if create_b_image:
     #os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')    
 
 
+###### TIMING ######
+bimage_time = time.time()
+print("\"B\" Image Creation Duration: %ds" % bimage_time - compression_check_time)
+####################
+
 #
 # Upload files to waggle download directory
 #
@@ -749,6 +825,12 @@ if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     if os.path.isfile( new_image_a+'.build_log.txt'): 
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_a,scp_target))
 
+###### TIMING ######
+upload_time = time.time()
+print("Image Upload Duration: %ds" % upload_time - bimage_time)
+####################
+
+###### TIMING ######
 end_time = time.time()
-build_duration = end_time - start_time
-print("Build Duration: %ds" % build_duration)
+print("Build Duration: %ds" % end_time - start_time)
+####################

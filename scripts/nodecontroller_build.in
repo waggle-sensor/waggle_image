@@ -39,7 +39,6 @@ cd /usr/lib/waggle/nodecontroller/wagman
 
 # Over-air WagMan firmware update tools
 apt-get install --yes bossa-cli
-apt-get install --yes avrdude
 
 #########################################
 

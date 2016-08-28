@@ -453,9 +453,7 @@ print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 
 shutil.copyfile(uuid_file, mount_point_A+uuid_file)
 
-# FIXME -- REVERT BEFORE MERGING WITH MASTER BRANCH!!!
-#run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
-run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git && cd waggle_image && git checkout production_node'.format(mount_point_A))
+run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point_A))
 
 ### Create the image build script ###
 if is_extension_node:

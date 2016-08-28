@@ -24,8 +24,8 @@ print("### Run directory for build_waggle_image.py: %s" % waggle_image_directory
 data_directory="/root"
 
 uuid_file = '%s/build_uuid' % data_directory
-with open(uuid_file) as uuid:
-  uuid.writeline(str(build_uuid))
+with open(uuid_file, 'w') as uuid:
+  uuid.write(str(build_uuid))
 
 report_file="/root/report.txt"
 

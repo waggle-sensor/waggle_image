@@ -79,6 +79,9 @@ fi
 echo "adding user \"waggle\" to group \"waggle\""
 adduser waggle waggle
 
+echo "removing user \"waggle\" from group \"sudo\""
+deluser waggle sudo
+
 set -e
 
 

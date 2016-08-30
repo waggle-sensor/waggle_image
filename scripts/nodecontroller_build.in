@@ -33,10 +33,6 @@ fi
 cd /usr/lib/waggle/nodecontroller
 ./configure
 
-# wagman client
-cd /usr/lib/waggle/nodecontroller/wagman
-./configure
-
 # Over-air WagMan firmware update tools
 apt-get install --yes bossa-cli
 

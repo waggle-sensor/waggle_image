@@ -31,7 +31,7 @@ else
 fi
 
 cd /usr/lib/waggle/nodecontroller
-./scripts/install_dependencies.sh
+./configure
 
 # wagman client
 cd /usr/lib/waggle/nodecontroller/wagman

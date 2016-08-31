@@ -53,7 +53,8 @@ echo ""
 echo "TIME_LOW  : ${TIME_LOW}"
 echo "TIME_HIGH : ${TIME_HIGH}"
 
-
+ALIVE_FILE=/usr/lib/waggle/waggle_image/alive
+touch ${ALIVE_FILE}
 
 # Check if the current device is a C1+ or XU4. 
 
@@ -113,7 +114,7 @@ while [ 1 ] ; do
   PIN_HIGH=1
   if [ ${DEVICE}x == "Cx" ] ; then
     CURRENT_TIME=`date +%s`
-    ALIVE_TIME=`stat -c %Y /usr/lib/waggle/waggle_image/alive`
+    ALIVE_TIME=`stat -c %Y ${ALIVE_FILE}`
     ALIVE_DURATION=`python -c "print(${CURRENT_TIME} - ${ALIVE_TIME})"`
     if [ ${ALIVE_DURATION} -gt 60 ]; then
       # Skip this heartbeat

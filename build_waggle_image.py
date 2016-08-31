@@ -6,7 +6,7 @@ import uuid
 
 
 # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
-# To generate a functional AoT image with private configuration, put id_rsa_aot_config and a clone of git@github.com:waggle-sensor/private_config.git in /root
+# To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@github.com:waggle-sensor/private_config.git in /root
 
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
@@ -471,7 +471,7 @@ print "-------------------------\n"
 run_command('chmod +x %s/root/build_image.sh' % (mount_point_A))
 
 configure_aot = False
-if os.path.exists('/root/id_rsa_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
+if os.path.exists('/root/id_rsa_waggle_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
   configure_aot = True
   print "################### AoT Configuration Enabled ###################"
 
@@ -482,8 +482,11 @@ if configure_aot:
     run_command('git clone git@github.com:waggle-sensor/private_config.git', die=False)
 
     # allow the node setup script to change the root password to the AoT password
-    shutil.copyfile('/root/id_rsa_aot_config', '%s/root/id_rsa_aot_config' % (mount_point_A))
+    shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
+
+    # allow the node the register in the field
+    shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
   except Exception as e:
     print("Error in private AoT configuration: %s" % str(e))
     pass
@@ -521,7 +524,7 @@ if configure_aot:
   shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
 
   # remove temporary password setup files from image
-  os.remove('%s/root/id_rsa_aot_config' % (mount_point_A))
+  os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
   os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
 
   # remove the private_config repository

@@ -20,6 +20,7 @@ dpkg-reconfigure --frontend noninteractive tzdata
 touch -t 1501010000 /var/lib/apt/lists/*
 rm -f /var/lib/apt/lists/partial/*
 apt-get clean
+apt-key update
 apt-get update
 
 # disable software update and new release checks and messages

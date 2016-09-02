@@ -212,6 +212,10 @@ fi
 #
 REBOOT=0
 if [ "${MAC_ADDRESS}x" != "x" ] ; then
+  if [ ! -e /etc/udev/rules.d/70-persistent-net.rules ] ; then
+    # give the system time to create the default udev rules file
+    sleep 20
+  fi
   # if MAC address is assigned to eth0 than all is ok.
   if [ $(cat /etc/udev/rules.d/70-persistent-net.rules | grep -v "^#" | grep -i "ATTR{address}\=\=\"${MAC_ADDRESS}" | grep "NAME\=\"eth0\"" | wc -l) -ne 1 ] ; then
     echo "wrong network device is assigned to eth0, try fixing it..."

@@ -246,26 +246,18 @@ def destroy_loop_devices():
 
 
 def detect_odroid_model():
-    odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
-    odroid_model=""
+    #odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
+    odroid_model_raw = get_output('cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$"')
 
-    # The XU4 is actually a XU3.
-    if odroid_model_raw == "ODROIDXU":
-        print "Detected device: %s" % (odroid_model_raw)
-        if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
-            odroid_model="odroid-xu3"
-            #is_extension_node = 1
-        else:
-            odroid_model="odroid-xu"
-            print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
-            return None
-
-    elif odroid_model_raw  == "ODROIDC":
-        print "Detected device: %s" % (odroid_model)
-        odroid_model="odroid-c1"
+    odroid_model = ''
+    if odroid_model_raw == "ODROID-XU3":
+      # The XU4 is actually a XU3.
+      odroid_model = 'odroid-xu3'
+    elif odroid_model_raw == "ODROIDC":
+      odroid_model = 'odroid-c1'
     else:
-        print "Could not detect ODROID model. (%s)" % (odroid_model)
-        return None
+      print "Could not detect ODROID model. (%s)" % (odroid_model)
+      return None
 
     return odroid_model
 

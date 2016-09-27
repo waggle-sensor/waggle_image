@@ -9,7 +9,6 @@ import shutil
 import subprocess
 import sys
 import time
-import uuid
 
 
 
@@ -442,8 +441,6 @@ mount_mountpoint(0, mount_point)
 loop_mount_time = time.time()
 print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 ####################
-
-shutil.copyfile(uuid_file, mount_point+uuid_file)
 
 run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 

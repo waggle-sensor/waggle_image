@@ -121,7 +121,7 @@ def run_command_f(cmd):
     try:
         child = subprocess.Popen(['/bin/bash', '-c', cmd])
         child.wait()
-    except Exception as e:
+    except Exception:
         pass
 
 def get_output(cmd):
@@ -284,10 +284,11 @@ def min_used_minor(device_minor_used):
 
 
 # clean up first
-
+print("Unmounting lingering images.")
 unmount_mountpoint(mount_point)
 
 
+print("Destroying loop devices.")
 time.sleep(3)
 destroy_loop_devices()
 

@@ -1,7 +1,14 @@
-#!/usr/bin/env python
-import time, os, commands, subprocess, shutil, sys, glob
-from subprocess import call, check_call
+#!/usr/bin/python
+
+import argparse
+import commands
+import glob
+import os
 import os.path
+import shutil
+import subprocess
+import sys
+import time
 import uuid
 
 
@@ -303,11 +310,11 @@ for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
 
 
 # install parted
-if call('hash partprobe > /dev/null 2>&1', shell=True):
+if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')
 
 # install pipeviewer
-if call('hash pv > /dev/null 2>&1', shell=True):
+if subprocess.call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 

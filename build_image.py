@@ -466,12 +466,12 @@ if configure_aot:
 
 ### Pull the appropriate Waggle repositories
 os.chdir('%s/usr/lib/waggle' % mount_point_A)
-run_command('https://github.com/waggle-sensor/core.git', die=True)
-run_command('https://github.com/waggle-sensor/plugin_manager.git', die=True)
+run_command('git clone https://github.com/waggle-sensor/core.git', die=True)
+run_command('git clone https://github.com/waggle-sensor/plugin_manager.git', die=True)
 if is_extension_node:
-  run_command('https://github.com/waggle-sensor/guestnode.git', die=True)
+  run_command('git clone https://github.com/waggle-sensor/guestnode.git', die=True)
 else:
-  run_command('https://github.com/waggle-sensor/nodecontroller.git', die=True)
+  run_command('git clone https://github.com/waggle-sensor/nodecontroller.git', die=True)
 
 
 ###### TIMING ######

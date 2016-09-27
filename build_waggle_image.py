@@ -1,8 +1,20 @@
-#!/usr/bin/env python
-import time, os, commands, subprocess, shutil, sys, glob
-from subprocess import call, check_call
+#!/usr/bin/python
+
+import argparse
+import commands
+import glob
+import os
 import os.path
+import shutil
+import subprocess
+import sys
+import time
 import uuid
+
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+print("### Run directory for build_image.py: %s" % waggle_image_directory)
+sys.path.append('%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
 
 
 # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
@@ -19,8 +31,6 @@ debug=0 # skip chroot environment if 1
 
 build_uuid = uuid.uuid1()
 
-waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-print("### Run directory for build_waggle_image.py: %s" % waggle_image_directory)
 data_directory="/root"
 
 uuid_file = '%s/build_uuid' % data_directory
@@ -246,8 +256,8 @@ def destroy_loop_devices():
 
 
 def detect_odroid_model():
-    #odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
-    odroid_model_raw = get_output('cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$"')
+    odroid_model_raw = get_output('cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$"').rstrip()
+    print("Detected device: %s" % odroid_model_raw)
 
     odroid_model = ''
     if odroid_model_raw == "ODROID-XU3":

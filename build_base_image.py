@@ -346,7 +346,7 @@ print "image_type: ", image_type
 new_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today) 
 new_image_prefix="%s/%s" % (data_directory, new_image_base)
 new_image="%s.img" % (new_image_prefix)
-new_image_compressed = new_image+'.xz'
+new_image_xz = new_image + '.xz'
 
 os.chdir(data_directory)
 
@@ -372,25 +372,24 @@ image_fetch_time = time.time()
 print("Base Image Fetch Duration: %ds" % (image_fetch_time - init_setup_time))
 ####################
 
-if not os.path.isfile(base_image):
-    run_command('unxz --keep '+base_image_xz)
-
-###### TIMING ######
-image_unpack_time = time.time()
-print("Base Image Unpacking Duration: %ds" % (image_unpack_time - image_fetch_time))
-####################
-
 try:
-    os.remove(new_image)
+    os.remove(new_image_xz)
 except:
     pass
 
 print "Copying file %s to %s ..." % (base_image, new_image)
-shutil.copyfile(base_image, new_image)
+shutil.copyfile(base_image_xz, new_image_xz)
 
 ###### TIMING ######
 image_copy_time = time.time()
-print("Base Image Copy Duration: %ds" % (image_copy_time - image_unpack_time))
+print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
+####################
+
+run_command('unxz --keep ' + new_image_xz)
+
+###### TIMING ######
+image_unpack_time = time.time()
+print("New Image Unpacking Duration: %ds" % (image_unpack_time - image_copy_time))
 ####################
 
 #
@@ -683,11 +682,11 @@ print("New Image Write Duration: %ds" % (image_write_time - check3_time))
 run_command('unxz -t %s.xz_part' % format(new_image))
 
 try:
-    os.remove(new_image_compressed)
+    os.remove(new_image_xz)
 except:
     pass
 
-os.rename(new_image+'.xz_part',  new_image_compressed)
+os.rename(new_image+'.xz_part',  new_image_xz)
 
 
 ###### TIMING ######

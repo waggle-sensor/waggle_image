@@ -203,7 +203,7 @@ try:
 except:
     pass
 
-print "Copying file %s to %s ..." % (base_image, new_image)
+print("Copying file %s to %s ..." % (base_image_xz, new_image_xz))
 shutil.copyfile(base_image_xz, new_image_xz)
 
 ###### TIMING ######
@@ -211,6 +211,7 @@ image_copy_time = time.time()
 print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
+print("Uncompressing file %s ..." % new_image_xz)
 run_command('unxz --keep ' + new_image_xz)
 
 ###### TIMING ######

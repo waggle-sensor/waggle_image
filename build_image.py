@@ -173,10 +173,10 @@ print "image_type: ", image_type
 
 new_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today)
 new_image_prefix="%s/%s" % (data_directory, new_image_base)
-new_image_a="%s.img" % (new_image_prefix)
-new_image_a_compressed = new_image_a+'.xz'
+new_image_A="%s.img" % (new_image_prefix)
+new_image_A_xz = new_image_A+'.xz'
 
-new_image_b="%s_B.img" % (new_image_prefix)
+new_image_B="%s_B.img" % (new_image_prefix)
 
 os.chdir(data_directory)
 
@@ -202,32 +202,32 @@ image_fetch_time = time.time()
 print("Base Image Fetch Duration: %ds" % (image_fetch_time - init_setup_time))
 ####################
 
-if not os.path.isfile(base_image):
-    run_command('unxz --keep '+base_image_xz)
-
-###### TIMING ######
-image_unpack_time = time.time()
-print("Base Image Unpacking Duration: %ds" % (image_unpack_time - image_fetch_time))
-####################
-
 try:
-    os.remove(new_image_a)
+    os.remove(new_image_A_xz)
 except:
     pass
 
-print "Copying file %s to %s ..." % (base_image, new_image_a)
-shutil.copyfile(base_image, new_image_a)
+print("Copying file %s to %s ..." % (base_image_xz, new_image_A_xz))
+shutil.copyfile(base_image_xz, new_image_A_xz)
 
 ###### TIMING ######
 image_copy_time = time.time()
-print("Base Image Copy Duration: %ds" % (image_copy_time - image_unpack_time))
+print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
+####################
+
+print("Uncompressing file %s ..." % new_image_A_xz)
+run_command('unxz ' + new_image_A_xz)
+
+###### TIMING ######
+image_unpack_time = time.time()
+print("New Image Unpacking Duration: %ds" % (image_unpack_time - image_copy_time))
 ####################
 
 #
 # LOOP DEVICES HERE
 #
 
-start_block_boot, start_block_data = create_loop_devices(new_image_a, 0, None, None)
+start_block_boot, start_block_data = create_loop_devices(new_image_A, 0, None, None)
 
 
 
@@ -259,7 +259,7 @@ unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(2)
-create_loop_devices(new_image_a, 0,  None, start_block_data)
+create_loop_devices(new_image_A, 0,  None, start_block_data)
 print "filesystem check on /dev/loop0p2 after first mount"
 check_partition(0)
 
@@ -294,8 +294,9 @@ if configure_aot:
     shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
 
-    # allow the node the register in the field
-    shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
+    if not is_extension_node:
+      # allow the node the register in the field
+      shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
   except Exception as e:
     print("Error in private AoT configuration: %s" % str(e))
     pass
@@ -339,8 +340,9 @@ print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 #
 
 if configure_aot and not is_extension_node:
-  # install a copy of wvdial.conf with the AoT secret APN
-  shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+  if not is_extension_node:
+    # install a copy of wvdial.conf with the AoT secret APN
+    shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
 
   # remove temporary password setup files from image
   os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
@@ -354,14 +356,14 @@ else:
 
 
 try:
-    os.remove(new_image_a+'.report.txt')
+    os.remove(new_image_A+'.report.txt')
 except:
     pass
 
-print "copy: ", mount_point_A+'/'+report_file, new_image_a+'.report.txt'
+print "copy: ", mount_point_A+'/'+report_file, new_image_A+'.report.txt'
 
 if os.path.exists(mount_point_A+'/'+report_file):
-    shutil.copyfile(mount_point_A+'/'+report_file, new_image_a+'.report.txt')
+    shutil.copyfile(mount_point_A+'/'+report_file, new_image_A+'.report.txt')
 else:
     print "file not found:", mount_point_A+'/'+report_file
 
@@ -382,7 +384,7 @@ unmount_mountpoint(mount_point_A)
 time.sleep(3)
 destroy_loop_devices()
 time.sleep(3)
-create_loop_devices(new_image_a, 0,  None, start_block_data)
+create_loop_devices(new_image_A, 0,  None, start_block_data)
 time.sleep(3)
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)
@@ -423,7 +425,7 @@ check_time = time.time()
 print("Partition Check Duration: %ds" % (check_time - expansion_time))
 ####################
 
-sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_a)))
+sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image_A)))
 
 
 front_size_kb = sector_size * start_block_data/ 1024
@@ -443,7 +445,7 @@ if new_partition_size_kb < old_partition_size_kb:
     ### fdisk (shrink partition)
     # fdisk: (d)elete partition 2 ; (c)reate new partiton 2 ; specify start position and size of new partiton
 
-    run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block_data, new_partition_size_kb, new_image_a))
+    run_command('echo -e "d\n2\nn\np\n2\n%d\n+%dK\nw\n" | fdisk %s' % (start_block_data, new_partition_size_kb, new_image_A))
 
 
 
@@ -454,7 +456,7 @@ if new_partition_size_kb < old_partition_size_kb:
     #set -e
 
     # does not show the new size
-    #fdisk -lu ${new_image_a}
+    #fdisk -lu ${new_image_A}
 
     # shows the new size (-b for bytes)
     #partx --show /dev/loop0p2 (fails)
@@ -503,7 +505,7 @@ print("Boot Partition Check Duration: %ds" % (check3_time - check2_time))
 
 
 # write image to file
-run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_a))
+run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_A, blocks_to_write, new_image_A))
 
 ###### TIMING ######
 image_write_time = time.time()
@@ -511,14 +513,14 @@ print("New Image Write Duration: %ds" % (image_write_time - check3_time))
 ####################
 
 # test if file was compressed correctly
-run_command('unxz -t %s.xz_part' % format(new_image_a))
+run_command('unxz -t %s.xz_part' % format(new_image_A))
 
 try:
-    os.remove(new_image_a_compressed)
+    os.remove(new_image_A_xz)
 except:
     pass
 
-os.rename(new_image_a+'.xz_part',  new_image_a_compressed)
+os.rename(new_image_A+'.xz_part',  new_image_A_xz)
 
 
 ###### TIMING ######
@@ -538,29 +540,29 @@ if create_b_image:
         sys.exit(1)
 
     try:
-        os.remove(new_image_b+'.part')
+        os.remove(new_image_B+'.part')
     except:
         pass
 
     #copy image a to b
-    run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d  > %s.part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
+    run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d  > %s.part' % (combined_size_bytes, new_image_A, blocks_to_write, new_image_B))
 
     # delete old b if it exists
     try:
-        os.remove(new_image_b)
+        os.remove(new_image_B)
     except:
         pass
 
     try:
-        os.remove(new_image_b+'.xz')
+        os.remove(new_image_B+'.xz')
     except:
         pass
 
 
-    os.rename(new_image_b+'.part',  new_image_b)
+    os.rename(new_image_B+'.part',  new_image_B)
 
     # create loop device
-    create_loop_devices(new_image_b, 1,  None, None)
+    create_loop_devices(new_image_B, 1,  None, None)
 
     # change UUID
     run_command(change_partition_uuid_script+ ' /dev/loop1')
@@ -568,11 +570,11 @@ if create_b_image:
 
     # the recovery image on the eMMC needs space:
 
-    new_image_a_compressed_size = os.path.getsize(new_image_a_compressed)
-    new_image_a_compressed_size_mb = new_image_a_compressed_size / 1048576
+    new_image_A_xz_size = os.path.getsize(new_image_A_xz)
+    new_image_A_xz_size_mb = new_image_A_xz_size / 1048576
 
     # increase partition size again
-    run_command('dd if=/dev/zero bs=1MiB of={} conv=notrunc oflag=append count={}'.format(new_image_b, new_image_a_compressed_size_mb+50))
+    run_command('dd if=/dev/zero bs=1MiB of={} conv=notrunc oflag=append count={}'.format(new_image_B, new_image_A_xz_size_mb+50))
     time.sleep(1)
 
 
@@ -587,11 +589,11 @@ if create_b_image:
 
 
     # compress
-    run_command('xz -1 '+new_image_b)
+    run_command('xz -1 '+new_image_B)
 
 
-    #run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
-    #os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')
+    #run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_A, blocks_to_write, new_image_B))
+    #os.rename(new_image_B+'.xz_part',  new_image_B+'.xz')
 
 
 ###### TIMING ######
@@ -605,10 +607,10 @@ print("\"B\" Image Creation Duration: %ds" % (bimage_time - compression_check_ti
 if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/{0}/{1}/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
-    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) )
+    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_A) )
 
 
-    cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_a, scp_target)
+    cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_A, scp_target)
 
     count = 0
     while 1:
@@ -637,18 +639,18 @@ if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     run_command('echo "{0}" > {1}/latest.txt'.format(new_image_base +".img.xz", data_directory))
     run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(data_directory, scp_target))
 
-    if os.path.isfile( new_image_b+'.xz'):
+    if os.path.isfile( new_image_B+'.xz'):
         # upload second image with different UUID's
-        run_command( 'md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_b))
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_b, scp_target))
+        run_command( 'md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_B))
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_B, scp_target))
 
 
-    if os.path.isfile( new_image_a+'.report.txt'):
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image_a,scp_target))
+    if os.path.isfile( new_image_A+'.report.txt'):
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image_A,scp_target))
 
 
-    if os.path.isfile( new_image_a+'.build_log.txt'):
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_a,scp_target))
+    if os.path.isfile( new_image_A+'.build_log.txt'):
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_A,scp_target))
 
 ###### TIMING ######
 upload_time = time.time()

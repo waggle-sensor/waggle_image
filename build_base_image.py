@@ -265,7 +265,7 @@ run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone h
 
 ### Copy the image build script ###
 shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)
-run_command('chmod +x %s/root/build_image.sh' % mount_point)
+run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 
 ###### TIMING ######

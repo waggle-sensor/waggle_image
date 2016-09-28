@@ -1,9 +1,20 @@
-#!/usr/bin/env python
-import time, os, commands, subprocess, shutil, sys, glob
-from subprocess import call, check_call
+#!/usr/bin/python
+
+import argparse
+import commands
+import glob
+import os
 import os.path
+import shutil
+import subprocess
+import sys
+import time
 import uuid
 
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+print("### Run directory for build_image.py: %s" % waggle_image_directory)
+sys.path.append('%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
 
 # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
 # To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@github.com:waggle-sensor/private_config.git in /root
@@ -19,8 +30,6 @@ debug=0 # skip chroot environment if 1
 
 build_uuid = uuid.uuid1()
 
-waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-print("### Run directory for build_image.py: %s" % waggle_image_directory)
 data_directory="/root"
 
 uuid_file = '%s/build_uuid' % data_directory
@@ -32,11 +41,11 @@ report_file="/root/report.txt"
 waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
 base_images=   {
                 'odroid-xu4' : {
-                        'filename': "waggle-base-extension_node-odroid-xu4-20160926.img",
+                        'filename': "waggle-base-extension_node-odroid-xu4-20160927.img",
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {
-                        'filename':"waggle-base-nodecontroller-odroid-c1-20160926.img",
+                        'filename':"waggle-base-nodecontroller-odroid-c1-20160927.img",
                         'url': waggle_stock_url
                     }
                 }
@@ -90,178 +99,6 @@ iface eth0 inet static
 
 '''
 
-
-
-
-
-def run_command(cmd, die=1):
-    '''
-    Will throw exception on execution error.
-    '''
-    print "execute: %s" % (cmd)
-    try:
-        child = subprocess.Popen(['/bin/bash', '-c', cmd])
-        child.wait()
-    except Exception as e:
-        print "Error: %s" % (str(e))
-        if not die:
-            return -1
-        sys.exit(1)
-    if die and child.returncode != 0:
-        print "Commmand exited with return code other than zero: %s" % (str(child.returncode))
-        sys.exit(1)
-
-    return child.returncode
-
-def run_command_f(cmd):
-    '''
-    Execute, wait, ignore error
-    '''
-    print "execute: %s" % (cmd)
-    try:
-        child = subprocess.Popen(['/bin/bash', '-c', cmd])
-        child.wait()
-    except Exception as e:
-        pass
-
-def get_output(cmd):
-    '''
-    Execute, get STDOUT
-    '''
-    print "execute: %s" % (cmd)
-    return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
-
-
-def write_file(filename, content):
-    print "writing file "+filename
-    with open(filename, "w") as text_file:
-        text_file.write(content)
-
-
-def unmount_mountpoint(mp):
-    for i in ['/proc', '/dev', '/sys', '']:
-        while int(get_output('mount | grep '+mp+i+' | wc -l')) != 0:
-            run_command_f('umount -d '+mp+i)
-            time.sleep(3)
-    time.sleep(3)
-
-
-
-def mount_mountpoint(device, mp):
-    run_command('mount /dev/loop%dp2 %s' % (device, mp))
-    run_command('mount -o bind /proc %s/proc' % (mp))
-    run_command('mount -o bind /dev  %s/dev' % (mp))
-    run_command('mount -o bind /sys  %s/sys' % (mp))
-    time.sleep(3)
-
-
-def check_partition(device):
-    run_command('e2fsck -f -y /dev/loop{}p2'.format(device))
-
-
-
-
-def losetup(loopdev, file, offset=0):
-    """
-    Create single loop device
-    """
-    offset_option = ''
-
-    if offset:
-        offset_option = '-o %d ' % (offset)
-
-    run_command('losetup %s %s %s' % (offset_option, loopdev, file))
-
-
-
-
-def create_loop_devices(filename, device_number, start_block_boot, start_block_data):
-    """
-    Create loop devices for complete image and for the root partition
-    startblock (optional) is the start of the second partition
-    """
-    # get partition start position
-    #fdisk -lu ${base_image}
-
-    loop_device = '/dev/loop'+str(device_number)
-    loop_partition_1 = loop_device+'p1' # boot partition
-    loop_partition_2 = loop_device+'p2' # data/root partition
-
-    if not start_block_data:
-        # example: fdisk -lu waggle-extension_node-odroid-xu4-20160601.img | grep "^waggle-extension_node-odroid-xu4-20160601.img2" | awk '{{print $2}}'
-        start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
-        start_block_data=int(start_block_data_str)
-        print "start_block_data: ", start_block_data
-
-    start_block_boot_str = get_output("fdisk -lu {0} | grep '{0}1' | awk '{{print $2}}'".format(filename))
-    start_block_boot=int(start_block_boot_str)
-    print "start_block_boot: ", start_block_boot
-
-    offset_boot=start_block_boot*512
-    print "offset_boot: ", offset_boot
-
-    offset_data=start_block_data*512
-    print "offset_data: ", offset_data
-
-    # create loop device for disk
-    losetup(loop_device, filename)
-
-    time.sleep(1)
-    # create loop device for boot partition
-    losetup(loop_partition_1, loop_device, offset_boot)
-    # create loop device for root partition
-    losetup(loop_partition_2, loop_device, offset_data)
-
-    return start_block_boot, start_block_data
-
-
-def destroy_loop_devices():
-    for device in ('/dev/loop0', '/dev/loop1' ):
-        for partition in ('p1', 'p2'):
-            loop_device = device+partition
-            while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-                run_command_f('losetup -d '+loop_device)
-                time.sleep(3)
-        loop_device = device
-        while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-            run_command_f('losetup -d '+loop_device)
-            time.sleep(3)
-
-
-
-def detect_odroid_model():
-    odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
-    odroid_model=""
-
-    # The XU4 is actually an XU3.
-    if odroid_model_raw == "ODROIDXU":
-        print "Detected device: %s" % (odroid_model_raw)
-        if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
-            odroid_model="odroid-xu4"
-            #is_extension_node = 1
-        else:
-            odroid_model="odroid-xu"
-            print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
-            return None
-
-    elif odroid_model_raw  == "ODROIDC":
-        print "Detected device: %s" % (odroid_model)
-        odroid_model="odroid-c1"
-    else:
-        print "Could not detect ODROID model. (%s)" % (odroid_model)
-        return None
-
-    return odroid_model
-
-
-
-def min_used_minor(device_minor_used):
-    for i in range(1,50):
-        print i
-        if not i in device_minor_used:
-            return i
-
-
 ##################################################################################################################################################################################################################
 ##################################################################################################################################################################################################################
 
@@ -303,11 +140,11 @@ for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
 
 
 # install parted
-if call('hash partprobe > /dev/null 2>&1', shell=True):
+if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')
 
 # install pipeviewer
-if call('hash pv > /dev/null 2>&1', shell=True):
+if subprocess.call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 
@@ -466,12 +303,12 @@ if configure_aot:
 
 ### Pull the appropriate Waggle repositories
 os.chdir('%s/usr/lib/waggle' % mount_point_A)
-run_command('https://github.com/waggle-sensor/core.git', die=True)
-run_command('https://github.com/waggle-sensor/plugin_manager.git', die=True)
+run_command('git clone https://github.com/waggle-sensor/core.git', die=True)
+run_command('git clone https://github.com/waggle-sensor/plugin_manager.git', die=True)
 if is_extension_node:
-  run_command('https://github.com/waggle-sensor/guestnode.git', die=True)
+  run_command('git clone https://github.com/waggle-sensor/guestnode.git', die=True)
 else:
-  run_command('https://github.com/waggle-sensor/nodecontroller.git', die=True)
+  run_command('git clone https://github.com/waggle-sensor/nodecontroller.git', die=True)
 
 
 ###### TIMING ######

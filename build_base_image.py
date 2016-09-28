@@ -1,11 +1,23 @@
-#!/usr/bin/env python
-import time, os, commands, subprocess, shutil, sys, glob
-from subprocess import call, check_call
+#!/usr/bin/python
+
+import argparse
+import commands
+import glob
+import os
 import os.path
-import uuid
+import shutil
+import subprocess
+import sys
+import time
+
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+print("### Run directory for build_image.py: %s" % waggle_image_directory)
+sys.path.append('%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
 
 
-# To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
+
+# To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
 # To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@gith_Aub.com:waggle-sensor/private_config.git in /root
 
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
@@ -17,8 +29,6 @@ start_time = time.time()
 
 debug=0 # skip chroot environment if 1
 
-waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-print("### Run directory for build_waggle_image.py: %s" % waggle_image_directory)
 data_directory="/root"
 
 report_file="/root/report.txt"
@@ -32,7 +42,7 @@ base_images=   {
                 'odroid-c1' : {
                         'filename':"ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img",
                         'url': waggle_stock_url
-                    } 
+                    }
                 }
 
 
@@ -64,7 +74,7 @@ iface lo inet loopback
 iface eth0 inet static
         address 10.31.81.10
         netmask 255.255.255.0
-        
+
 '''
 
 
@@ -86,201 +96,17 @@ iface eth0 inet static
 
 
 
-
-def run_command(cmd, die=1):
-    '''
-    Will throw exception on execution error.
-    '''
-    print "execute: %s" % (cmd) 
-    try:
-        child = subprocess.Popen(['/bin/bash', '-c', cmd])
-        child.wait()
-    except Exception as e:
-        print "Error: %s" % (str(e)) 
-        if not die:
-            return -1
-        sys.exit(1)
-    if die and child.returncode != 0:
-        print "Commmand exited with return code other than zero: %s" % (str(child.returncode)) 
-        sys.exit(1)
-        
-    return child.returncode
-
-def run_command_f(cmd):
-    '''
-    Execute, wait, ignore error
-    '''
-    print "execute: %s" % (cmd) 
-    try:
-        child = subprocess.Popen(['/bin/bash', '-c', cmd])
-        child.wait()
-    except Exception as e:
-        pass
-
-def get_output(cmd):
-    '''
-    Execute, get STDOUT
-    '''
-    print "execute: %s" % (cmd) 
-    return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
-
-
-def write_file(filename, content):
-    print "writing file "+filename
-    with open(filename, "w") as text_file:
-        text_file.write(content)
-
-
-def write_build_script(filename, node_script_filename):
-  base_build_init_script_filename = waggle_image_directory + '/scripts/base_build_init.in'
-  with open(base_build_init_script_filename) as script:
-    init_script = script.read()
-
-  abs_node_script_filename = waggle_image_directory + '/scripts/' + node_script_filename
-  with open(abs_node_script_filename) as script:
-    node_script = script.read()
-
-  base_build_final_script_filename = waggle_image_directory + '/scripts/base_build_final.in'
-  with open(base_build_final_script_filename) as script:
-    final_script = script.read()
-
-  write_file(filename, init_script+node_script+final_script)
-            
-
-def unmount_mountpoint(mp):
-    for i in ['/proc', '/dev', '/sys', '']:
-        while int(get_output('mount | grep '+mp+i+' | wc -l')) != 0:
-            run_command_f('umount -d '+mp+i)
-            time.sleep(3)
-    time.sleep(3)
-    
-
-
-def mount_mountpoint(device, mp):
-    run_command('mount /dev/loop%dp2 %s' % (device, mp))
-    run_command('mount -o bind /proc %s/proc' % (mp))
-    run_command('mount -o bind /dev  %s/dev' % (mp))
-    run_command('mount -o bind /sys  %s/sys' % (mp))
-    time.sleep(3)
-    
-    
-def check_partition(device):
-    run_command('e2fsck -f -y /dev/loop{}p2'.format(device))
-    
-
-
-
-def losetup(loopdev, file, offset=0):
-    """
-    Create single loop device
-    """
-    offset_option = ''
-    
-    if offset:
-        offset_option = '-o %d ' % (offset)
-        
-    run_command('losetup %s %s %s' % (offset_option, loopdev, file))
-    
-    
-    
-
-def create_loop_devices(filename, device_number, start_block_boot, start_block_data):
-    """
-    Create loop devices for complete image and for the root partition
-    startblock (optional) is the start of the second partition
-    """
-    # get partition start position
-    #fdisk -lu ${base_image}
-    
-    loop_device = '/dev/loop'+str(device_number)
-    loop_partition_1 = loop_device+'p1' # boot partition
-    loop_partition_2 = loop_device+'p2' # data/root partition
-    
-    if not start_block_data:
-        # example: fdisk -lu waggle-extension_node-odroid-xu3-20160601.img | grep "^waggle-extension_node-odroid-xu3-20160601.img2" | awk '{{print $2}}'
-        start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
-        start_block_data=int(start_block_data_str)
-        print "start_block_data: ", start_block_data
-
-    start_block_boot_str = get_output("fdisk -lu {0} | grep '{0}1' | awk '{{print $2}}'".format(filename))
-    start_block_boot=int(start_block_boot_str)
-    print "start_block_boot: ", start_block_boot
-
-    offset_boot=start_block_boot*512 
-    print "offset_boot: ", offset_boot
-
-    offset_data=start_block_data*512 
-    print "offset_data: ", offset_data
-
-    # create loop device for disk
-    losetup(loop_device, filename)
-    
-    time.sleep(1)
-    # create loop device for boot partition    
-    losetup(loop_partition_1, loop_device, offset_boot)
-    # create loop device for root partition    
-    losetup(loop_partition_2, loop_device, offset_data)
-    
-    return start_block_boot, start_block_data
-
-
-def destroy_loop_devices():
-    for device in ('/dev/loop0', '/dev/loop1' ):
-        for partition in ('p1', 'p2'):
-            loop_device = device+partition
-            while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-                run_command_f('losetup -d '+loop_device)
-                time.sleep(3)
-        loop_device = device 
-        while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
-            run_command_f('losetup -d '+loop_device)
-            time.sleep(3)
-
-
-
-def detect_odroid_model():
-    odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
-    odroid_model=""
-    
-    # The XU4 is actually a XU3.
-    if odroid_model_raw == "ODROIDXU":
-        print "Detected device: %s" % (odroid_model_raw)
-        if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
-            odroid_model="odroid-xu3"
-            #is_extension_node = 1
-        else:
-            odroid_model="odroid-xu"
-            print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
-            return None
-            
-    elif odroid_model_raw  == "ODROIDC":
-        print "Detected device: %s" % (odroid_model)
-        odroid_model="odroid-c1"
-    else:
-        print "Could not detect ODROID model. (%s)" % (odroid_model)
-        return None
-    
-    return odroid_model
-        
-
-
-def min_used_minor(device_minor_used):
-    for i in range(1,50):
-        print i
-        if not i in device_minor_used:
-            return i
-            
-            
 ##################################################################################################################################################################################################################
 ##################################################################################################################################################################################################################
-    
+
 
 
 # clean up first
-
+print("Unmounting lingering images.")
 unmount_mountpoint(mount_point)
 
-    
+
+print("Destroying loop devices.")
 time.sleep(3)
 destroy_loop_devices()
 
@@ -312,11 +138,11 @@ for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
 
 
 # install parted
-if call('hash partprobe > /dev/null 2>&1', shell=True):
+if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')
 
 # install pipeviewer
-if call('hash pv > /dev/null 2>&1', shell=True):
+if subprocess.call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 
@@ -343,7 +169,7 @@ else:
 
 print "image_type: ", image_type
 
-new_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today) 
+new_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today)
 new_image_prefix="%s/%s" % (data_directory, new_image_base)
 new_image="%s.img" % (new_image_prefix)
 new_image_xz = new_image + '.xz'
@@ -407,7 +233,7 @@ check_partition(0)
 
 
 print "execute: mkdir -p "+mount_point
-try: 
+try:
     os.mkdir(mount_point)
 except:
     pass
@@ -434,45 +260,11 @@ loop_mount_time = time.time()
 print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 ####################
 
-shutil.copyfile(uuid_file, mount_point+uuid_file)
-
 run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
-### Create the image build script ###
-if is_extension_node:
-    local_build_script_in = 'extension_node_build.in'
-else:
-    local_build_script_in = 'nodecontroller_build.in'
-write_build_script('%s/root/build_image.sh' % (mount_point), local_build_script_in)
-
-print "-------------------------\n"
-with open('%s/root/build_image.sh' % (mount_point)) as local_build_script:
-  for line in local_build_script:
-    print(line)
-print "-------------------------\n"
-
-run_command('chmod +x %s/root/build_image.sh' % (mount_point))
-
-configure_aot = False
-if os.path.exists('/root/id_rsa_waggle_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
-  configure_aot = True
-  print "################### AoT Configuration Enabled ###################"
-
-
-if configure_aot:
-  try:
-    # clone the private_config repository
-    run_command('git clone git@github.com:waggle-sensor/private_config.git', die=False)
-
-    # allow the node setup script to change the root password to the AoT password
-    shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point))
-    shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point))
-
-    # allow the node the register in the field
-    shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point))
-  except Exception as e:
-    print("Error in private AoT configuration: %s" % str(e))
-    pass
+### Copy the image build script ###
+shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)
+run_command('chmod +x %s/root/build_image.sh' % mount_point)
 
 
 ###### TIMING ######
@@ -487,7 +279,7 @@ print("Additional Pre-chroot Setup Duration: %ds" % (pre_chroot_time - loop_moun
 print "################### start of chroot ###################"
 
 if debug == 0:
-    run_command('chroot %s/ /bin/bash /root/build_image.sh' % (mount_point))
+    run_command('chroot %s/ /bin/bash /root/configure_base.sh' % (mount_point))
 
 
 print "################### end of chroot ###################"
@@ -498,23 +290,9 @@ chroot_setup_time = time.time()
 print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 ####################
 
-# 
+#
 # After changeroot
 #
-
-if configure_aot:
-  # install a copy of wvdial.conf with the AoT secret APN
-  shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point))
-
-  # remove temporary password setup files from image
-  os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point))
-  os.remove('%s/root/encrypted_waggle_password' % (mount_point))
-
-  # remove the private_config repository
-  shutil.rmtree('/root/private_config')
-else:
-  # copy the default, unconfigured wvdial.conf file
-  shutil.copyfile(waggle_image_directory + '/device_rules/wwan_modems/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point))
 
 
 try:
@@ -531,14 +309,10 @@ else:
 
 
 
-
 if is_extension_node:
     write_file(mount_point+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
 else:
     write_file(mount_point+'/etc/network/interfaces', nodecontroller_etc_network_interfaces_d)
-
-
-
 
 
 
@@ -596,7 +370,7 @@ sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9
 
 front_size_kb = sector_size * start_block_data/ 1024
 
-if new_partition_size_kb < old_partition_size_kb: 
+if new_partition_size_kb < old_partition_size_kb:
 
     print "new_partition_size_kb is smaller than old_partition_size_kb"
 
@@ -700,44 +474,44 @@ print("\"B\" Image Creation Duration: %ds" % (bimage_time - image_write_time))
 if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
-    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image) ) 
-    
-    
+    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image) )
+
+
     cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image, scp_target)
-    
+
     count = 0
     while 1:
         count +=1
         if (count >= 10):
             print "error: scp failed after 10 trys\n"
             sys.exit(1)
-            
+
         cmd_return = 1
         print "execute: ", cmd
         try:
             child = subprocess.Popen(['/bin/bash', '-c', cmd])
             child.wait()
             cmd_return = child.returncode
-            
+
         except Exception as e:
             print "Error: %s" % (str(e))
             cmd_return = 1
-   
+
         if cmd_return == 0:
             break
-        
+
         time.sleep(10)
-  
-  
+
+
     run_command('echo "{0}" > {1}/latest.txt'.format(new_image_base +".img.xz", data_directory))
     run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(data_directory, scp_target))
 
-  
-    if os.path.isfile( new_image+'.report.txt'): 
+
+    if os.path.isfile( new_image+'.report.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image,scp_target))
-      
-  
-    if os.path.isfile( new_image+'.build_log.txt'): 
+
+
+    if os.path.isfile( new_image+'.build_log.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image,scp_target))
 
 ###### TIMING ######

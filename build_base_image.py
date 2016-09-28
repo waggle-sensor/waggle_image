@@ -472,7 +472,7 @@ print("\"B\" Image Creation Duration: %ds" % (bimage_time - image_write_time))
 #
 # Upload files to waggle download directory
 #
-if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
+if os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
     run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image) )

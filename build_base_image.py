@@ -212,7 +212,7 @@ print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
 print("Uncompressing file %s ..." % new_image_xz)
-run_command('unxz --keep ' + new_image_xz)
+run_command('unxz ' + new_image_xz)
 
 ###### TIMING ######
 image_unpack_time = time.time()

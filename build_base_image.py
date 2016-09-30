@@ -12,8 +12,8 @@ import time
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 print("### Run directory for build_image.py: %s" % waggle_image_directory)
-sys.path.append('%s/lib/python/' % waggle_image_directory)
-import waggle.build
+sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
 
 
 # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.

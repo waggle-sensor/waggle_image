@@ -11,6 +11,9 @@ declare -a unwanted=("^gimp-*" "^xorg-*" "^x11*" abiword* apport* aspell aspell-
 
 export unwanted_count=${#unwanted[@]}
 
+apt-get update
+apt-key update
+
 # first try to remove what can be removed
 CHUNK_SIZE=10
 set +e

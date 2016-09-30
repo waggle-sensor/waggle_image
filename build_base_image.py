@@ -64,38 +64,6 @@ if create_b_image and not os.path.isfile(change_partition_uuid_script):
 
 
 
-nodecontroller_etc_network_interfaces_d ='''
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# created by Waggle autobuild
-
-auto lo eth0
-iface lo inet loopback
-
-iface eth0 inet static
-        address 10.31.81.10
-        netmask 255.255.255.0
-
-'''
-
-
-#set static IP
-guest_node_etc_network_interfaces_d = '''\
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# created by Waggle autobuild
-
-auto lo eth0
-iface lo inet loopback
-
-iface eth0 inet static
-      address 10.31.81.51
-      netmask 255.255.255.0
-      #gateway 10.31.81.10
-
-'''
-
-
-
-
 ##################################################################################################################################################################################################################
 ##################################################################################################################################################################################################################
 
@@ -309,16 +277,10 @@ else:
     print "file not found:", mount_point+'/'+report_file
 
 
-
-if is_extension_node:
-    write_file(mount_point+'/etc/network/interfaces', guest_node_etc_network_interfaces_d)
-else:
-    write_file(mount_point+'/etc/network/interfaces', nodecontroller_etc_network_interfaces_d)
-
-
-
+"""
 old_partition_size_kb=int(get_output('df -BK --output=size /dev/loop0p2 | tail -n 1 | grep -o "[0-9]\+"'))
 print "old_partition_size_kb: ", old_partition_size_kb
+"""
 
 
 unmount_mountpoint(mount_point)
@@ -338,6 +300,7 @@ post_chroot_time = time.time()
 print("Additional Post-chroot Setup Duration: %ds" % (post_chroot_time - chroot_setup_time))
 ####################
 
+"""
 estimated_fs_size_blocks=int(get_output('resize2fs -P /dev/loop0p2 | grep -o "[0-9]*"') )
 
 block_size=int(get_output('blockdev --getbsz /dev/loop0p2'))
@@ -351,6 +314,7 @@ new_partition_size_kb = estimated_fs_size_kb + (1024*500)
 
 # add 100MB
 new_fs_size_kb = estimated_fs_size_kb + (1024*100)
+"""
 
 ###### TIMING ######
 expansion_time = time.time()
@@ -366,6 +330,7 @@ check_time = time.time()
 print("Partition Check Duration: %ds" % (check_time - expansion_time))
 ####################
 
+"""
 sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9]*" | grep -o "[0-9]*"'.format(new_image)))
 
 
@@ -417,6 +382,7 @@ if new_partition_size_kb < old_partition_size_kb:
 
 else:
     print "new_partition_size_kb is NOT smaller than old_partition_size_kb"
+"""
 
 ###### TIMING ######
 check2_time = time.time()
@@ -431,6 +397,7 @@ destroy_loop_devices()
 
 
 
+"""
 # add size of boot partition
 
 combined_size_kb = new_partition_size_kb+front_size_kb
@@ -438,6 +405,7 @@ combined_size_bytes = (new_partition_size_kb + front_size_kb) * 1024
 
 # from kb to mb
 blocks_to_write = combined_size_kb/1024
+"""
 
 ###### TIMING ######
 check3_time = time.time()
@@ -445,23 +413,31 @@ print("Boot Partition Check Duration: %ds" % (check3_time - check2_time))
 ####################
 
 
+"""
 # write image to file
 run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image, blocks_to_write, new_image))
+"""
 
 ###### TIMING ######
 image_write_time = time.time()
 print("New Image Write Duration: %ds" % (image_write_time - check3_time))
 ####################
 
+"""
 # test if file was compressed correctly
 run_command('unxz -t %s.xz_part' % format(new_image))
+"""
 
 try:
     os.remove(new_image_xz)
 except:
     pass
 
+"""
 os.rename(new_image+'.xz_part',  new_image_xz)
+"""
+
+run_command('xz -1 %s' % new_image)
 
 
 ###### TIMING ######

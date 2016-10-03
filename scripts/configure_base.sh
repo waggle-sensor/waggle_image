@@ -2,6 +2,9 @@
 
 ### Clean-up the stock Odoid image ###
 
+apt-get update
+apt-key update
+
 export KEEP_PACKAGES="glib-networking+ libsoup2.4-1+ wpasupplicant+ policykit-1+ network-manager+ dpkg+ libselinux1+ python3+ avrdude+"
 
 set -e

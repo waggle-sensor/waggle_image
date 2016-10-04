@@ -146,7 +146,7 @@ image_copy_time = time.time()
 print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
-if skip_dup or (not skip_dup and not os.path.exists(new_image_A_xz)):
+if skip_dup or (not skip_dup and not os.path.exists(new_image_A)):
   try:
       os.remove(new_image_A)
   except:

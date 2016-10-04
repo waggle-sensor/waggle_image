@@ -11,9 +11,9 @@ import sys
 import time
 import uuid
 
-continue = False
+skip_dup = True
 if sys.argv[1] == 'continue':
-  continue = True
+  skip_dup = False
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 print("### Run directory for build_image.py: %s" % waggle_image_directory)
@@ -132,7 +132,7 @@ image_fetch_time = time.time()
 print("Base Image Fetch Duration: %ds" % (image_fetch_time - init_setup_time))
 ####################
 
-if not continue or (continue and not os.path.exists(new_image_A_xz)):
+if skip_dup or (not skip_dup and not os.path.exists(new_image_A_xz)):
   try:
     os.remove(new_image_A_xz)
   except:
@@ -146,7 +146,7 @@ image_copy_time = time.time()
 print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
-if not continue or (continue and not os.path.exists(new_image_A)):
+if skip_dup or (not skip_dup and not os.path.exists(new_image_A_xz)):
   try:
       os.remove(new_image_A)
   except:

@@ -201,7 +201,7 @@ print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 shutil.copyfile(uuid_file, mount_point_A+uuid_file)
 
 ### Copy the image build script ###
-build_script = '%/root/configure_waggle.sh' % mount_point_A
+build_script = '%s/root/configure_waggle.sh' % mount_point_A
 shutil.copyfile('%s/scripts/configure_waggle.sh' % waggle_image_directory, build_script)
 run_command('chmod +x %s' % build_script)
 

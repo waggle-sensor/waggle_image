@@ -288,8 +288,9 @@ if configure_aot and not is_extension_node:
   # remove the private_config repository
   shutil.rmtree('/root/private_config')
 else:
-  # copy the default, unconfigured wvdial.conf file
-  shutil.copyfile('%s/usr/lib/waggle/core/device_rules/wwan_modems/wvdial.conf' % mount_point_A, '%s/etc/wvdial.conf' % mount_point_A)
+  if not is_extension_node:
+    # copy the default, unconfigured wvdial.conf file
+    shutil.copyfile('%s/usr/lib/waggle/nodecontroller/device_rules/wwan_modems/wvdial.conf' % mount_point_A, '%s/etc/wvdial.conf' % mount_point_A)
 
 
 try:

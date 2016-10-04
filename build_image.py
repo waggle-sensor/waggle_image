@@ -306,6 +306,7 @@ else:
     print "file not found:", mount_point_A+'/'+report_file
 
 
+os.chdir(data_directory)
 unmount_mountpoint(mount_point_A)
 time.sleep(3)
 detach_loop_devices()

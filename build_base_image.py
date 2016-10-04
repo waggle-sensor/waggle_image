@@ -60,8 +60,6 @@ if create_b_image and not os.path.isfile(change_partition_uuid_script):
     print(change_partition_uuid_script, " not found")
     sys.exit(1)
 
-
-
 # install parted
 if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')

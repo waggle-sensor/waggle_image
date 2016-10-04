@@ -164,7 +164,7 @@ print("New Image Unpacking Duration: %ds" % (image_unpack_time - image_copy_time
 # LOOP DEVICES HERE
 #
 
-attach_loop_devices(new_image_A, 0, None, None)
+attach_loop_devices(new_image_A, 0, None)
 
 time.sleep(3)
 print "first filesystem check on /dev/loop0p2"
@@ -327,7 +327,7 @@ if create_b_image:
         pass
 
     # create loop device
-    attach_loop_devices(new_image_B, 1,  None, None)
+    attach_loop_devices(new_image_B, 1,  None)
 
     # change UUID
     run_command(change_partition_uuid_script+ ' /dev/loop1')

@@ -157,7 +157,7 @@ print("New Image Unpacking Duration: %ds" % (image_unpack_time - image_copy_time
 # LOOP DEVICES HERE
 #
 
-start_block_boot, start_block_data = attach_loop_devices(new_image, None, None)
+start_block_boot, start_block_data = attach_loop_devices(new_image, 0, None)
 
 
 time.sleep(3)
@@ -170,19 +170,6 @@ try:
     os.mkdir(mount_point)
 except:
     pass
-
-
-mount_mountpoint(0, mount_point)
-
-
-# TODO remove this test
-unmount_mountpoint(mount_point)
-time.sleep(3)
-detach_loop_devices()
-time.sleep(2)
-attach_loop_devices(new_image, None, start_block_data)
-print "filesystem check on /dev/loop0p2 after first mount"
-check_partition(0)
 
 
 mount_mountpoint(0, mount_point)
@@ -250,7 +237,7 @@ unmount_mountpoint(mount_point)
 time.sleep(3)
 detach_loop_devices()
 time.sleep(3)
-attach_loop_devices(new_image, None, start_block_data)
+attach_loop_devices(new_image, 0, start_block_data)
 time.sleep(3)
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)

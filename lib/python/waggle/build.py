@@ -106,7 +106,7 @@ def min_used_minor(device_minor_used):
             return i
 
 
-def create_loop_devices(device_minor_used):
+def create_loop_devices():
   # dict of minors that are already used
   device_minor_used = used_device_minors()
   print device_minor_used

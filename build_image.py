@@ -11,6 +11,10 @@ import sys
 import time
 import uuid
 
+continue = False
+if sys.argv[1] == 'continue':
+  continue = True
+
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 print("### Run directory for build_image.py: %s" % waggle_image_directory)
 sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
@@ -55,18 +59,28 @@ create_b_image = 0 # will be 1 for XU4
 
 change_partition_uuid_script = waggle_image_directory + '/change_partition_uuid.sh'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
 
-mount_point_A="/mnt/newimage_A"
-mount_point_B="/mnt/newimage_B"
-
-
-
-is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
-
-
-
 if create_b_image and not os.path.isfile(change_partition_uuid_script):
     print(change_partition_uuid_script, " not found")
     sys.exit(1)
+
+mount_point_A="/mnt/newimage_A"
+mount_point_B="/mnt/newimage_B"
+
+odroid_model = detect_odroid_model()
+
+if not odroid_model:
+    sys.exit(1)
+
+
+is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
+if odroid_model == "odroid-xu3":
+    is_extension_node = 1
+    create_b_image = 1
+
+if is_extension_node:
+    image_type = "extension_node"
+else:
+    image_type = "nodecontroller"
 
 # install parted
 if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
@@ -77,37 +91,9 @@ if subprocess.call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
 
-# clean up first
-
-unmount_mountpoint(mount_point_A)
-time.sleep(3)
-detach_loop_devices()
-create_loop_devices()
-
-
-
-odroid_model = detect_odroid_model()
-
-if not odroid_model:
-    sys.exit(1)
-
-
-if odroid_model == "odroid-xu3":
-    is_extension_node = 1
-    create_b_image = 1
-
-
-
-date_today=get_output('date +"%Y%m%d"').rstrip()
-
-if is_extension_node:
-    image_type = "extension_node"
-else:
-    image_type = "nodecontroller"
-
-
 print "image_type: ", image_type
 
+date_today=get_output('date +"%Y%m%d"').rstrip()
 new_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today)
 new_image_prefix="%s/%s" % (data_directory, new_image_base)
 new_image_A="%s.img" % (new_image_prefix)
@@ -117,7 +103,6 @@ new_image_B="%s_B.img" % (new_image_prefix)
 
 os.chdir(data_directory)
 
-
 try:
     base_image = base_images[odroid_model]['filename']
 except:
@@ -125,6 +110,14 @@ except:
     sys.exit(1)
 
 base_image_xz = base_image + '.xz'
+
+
+# clean up first
+unmount_mountpoint(mount_point_A)
+time.sleep(3)
+detach_loop_devices()
+create_loop_devices()
+
 
 ###### TIMING ######
 init_setup_time = time.time()
@@ -139,26 +132,28 @@ image_fetch_time = time.time()
 print("Base Image Fetch Duration: %ds" % (image_fetch_time - init_setup_time))
 ####################
 
-try:
+if not continue or (continue and not os.path.exists(new_image_A_xz)):
+  try:
     os.remove(new_image_A_xz)
-except:
+  except:
     pass
 
-print("Copying file %s to %s ..." % (base_image_xz, new_image_A_xz))
-shutil.copyfile(base_image_xz, new_image_A_xz)
+  print("Copying file %s to %s ..." % (base_image_xz, new_image_A_xz))
+  shutil.copyfile(base_image_xz, new_image_A_xz)
 
 ###### TIMING ######
 image_copy_time = time.time()
 print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
-try:
-    os.remove(new_image_A)
-except:
-    pass
+if not continue or (continue and not os.path.exists(new_image_A)):
+  try:
+      os.remove(new_image_A)
+  except:
+      pass
 
-print("Uncompressing file %s ..." % new_image_A_xz)
-run_command('unxz ' + new_image_A_xz)
+  print("Uncompressing file %s ..." % new_image_A_xz)
+  run_command('unxz ' + new_image_A_xz)
 
 ###### TIMING ######
 image_unpack_time = time.time()
@@ -317,12 +312,6 @@ print("Additional Post-chroot Setup Duration: %ds" % (post_chroot_time - chroot_
 
 # create second dd with different UUIDs
 if create_b_image:
-
-
-    if not os.path.isfile(change_partition_uuid_script):
-        print change_partition_uuid_script, " not found"
-        sys.exit(1)
-
     #copy image a to b
     shutil.copyfile(new_image_A, new_image_B)
 

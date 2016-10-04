@@ -2,7 +2,6 @@
 
 import argparse
 import commands
-import glob
 import os
 import os.path
 import shutil
@@ -63,47 +62,6 @@ if create_b_image and not os.path.isfile(change_partition_uuid_script):
 
 
 
-##################################################################################################################################################################################################################
-##################################################################################################################################################################################################################
-
-
-
-# clean up first
-print("Unmounting lingering images.")
-unmount_mountpoint(mount_point)
-
-
-print("Destroying loop devices.")
-time.sleep(3)
-destroy_loop_devices()
-
-
-
-# list devices: ls -latr /dev/loop[0-9]*
-# find minor number: stat -c %T /dev/loop2
-
-
-# dict of minors that are already used
-device_minor_used={}
-
-for device in glob.glob('/dev/loop[0-9]*'):
-    print "device: ", device
-    minor=os.minor(os.stat(device).st_rdev)
-    print "device minor: ", minor
-    device_minor_used[minor]=1
-
-
-print device_minor_used
-
-for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
-    if not os.path.exists(device):
-        # each loop device needs a different minor number.
-        new_minor = min_used_minor(device_minor_used)
-        run_command_f('mknod -m 0660 {} b 7 {}'.format(device, new_minor))
-        device_minor_used[new_minor]=1
-
-
-
 # install parted
 if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y parted')
@@ -112,6 +70,18 @@ if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
 if subprocess.call('hash pv > /dev/null 2>&1', shell=True):
     run_command('apt-get install -y pv')
 
+
+# clean up first
+print("Unmounting lingering images.")
+unmount_mountpoint(mount_point)
+
+
+print("Detaching loop devices.")
+time.sleep(3)
+detach_loop_devices()
+
+
+create_loop_devices()
 
 
 odroid_model = detect_odroid_model()
@@ -123,7 +93,6 @@ if not odroid_model:
 if odroid_model == "odroid-xu3":
     is_extension_node = 1
     create_b_image = 1
-
 
 
 date_today=get_output('date +"%Y%m%d"').rstrip()
@@ -190,14 +159,12 @@ print("New Image Unpacking Duration: %ds" % (image_unpack_time - image_copy_time
 # LOOP DEVICES HERE
 #
 
-start_block_boot, start_block_data = create_loop_devices(new_image, 0, None, None)
-
+start_block_boot, start_block_data = attach_loop_devices(new_image, None, None)
 
 
 time.sleep(3)
 print "first filesystem check on /dev/loop0p2"
 check_partition(0)
-
 
 
 print "execute: mkdir -p "+mount_point
@@ -213,12 +180,11 @@ mount_mountpoint(0, mount_point)
 # TODO remove this test
 unmount_mountpoint(mount_point)
 time.sleep(3)
-destroy_loop_devices()
+detach_loop_devices()
 time.sleep(2)
-create_loop_devices(new_image, 0,  None, start_block_data)
+attach_loop_devices(new_image, None, start_block_data)
 print "filesystem check on /dev/loop0p2 after first mount"
 check_partition(0)
-
 
 
 mount_mountpoint(0, mount_point)
@@ -284,9 +250,9 @@ print "old_partition_size_kb: ", old_partition_size_kb
 
 unmount_mountpoint(mount_point)
 time.sleep(3)
-destroy_loop_devices()
+detach_loop_devices()
 time.sleep(3)
-create_loop_devices(new_image, 0,  None, start_block_data)
+attach_loop_devices(new_image, None, start_block_data)
 time.sleep(3)
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)
@@ -391,7 +357,7 @@ print("Conditional Partition Check Duration: %ds" % (check2_time - check_time))
 print "check boot partition"
 run_command_f('fsck.vfat -py /dev/loop0p1')
 
-destroy_loop_devices()
+detach_loop_devices()
 
 
 

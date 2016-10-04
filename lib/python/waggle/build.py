@@ -1,3 +1,5 @@
+import glob
+import os
 import subprocess
 import sys
 import time
@@ -84,6 +86,40 @@ def check_partition(device):
 
 
 
+def used_device_minors():
+  device_minor_used={}
+
+  # list devices: ls -latr /dev/loop[0-9]*
+  # find minor number: stat -c %T /dev/loop2
+  for device in glob.glob('/dev/loop[0-9]*'):
+      print "device: ", device
+      minor=os.minor(os.stat(device).st_rdev)
+      print "device minor: ", minor
+      device_minor_used[minor]=1
+  return device_minor_used
+
+
+def min_used_minor(device_minor_used):
+    for i in range(1,50):
+        print(i)
+        if not i in device_minor_used:
+            return i
+
+
+def create_loop_devices(device_minor_used):
+  # dict of minors that are already used
+  device_minor_used = used_device_minors()
+  print device_minor_used
+
+  for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
+      if not os.path.exists(device):
+          # each loop device needs a different minor number.
+          new_minor = min_used_minor(device_minor_used)
+          # mknod [OPTION]... NAME TYPE [MAJOR MINOR]
+          run_command_f('mknod -m 0660 {} b 7 {}'.format(device, new_minor))
+          device_minor_used[new_minor]=1
+
+
 
 def losetup(loopdev, file, offset=0):
     """
@@ -99,7 +135,7 @@ def losetup(loopdev, file, offset=0):
 
 
 
-def create_loop_devices(filename, device_number, start_block_boot, start_block_data):
+def attach_loop_devices(filename, device_number, start_block_data):
     """
     Create loop devices for complete image and for the root partition
     startblock (optional) is the start of the second partition
@@ -139,7 +175,7 @@ def create_loop_devices(filename, device_number, start_block_boot, start_block_d
     return start_block_boot, start_block_data
 
 
-def destroy_loop_devices():
+def detach_loop_devices():
     for device in ('/dev/loop0', '/dev/loop1' ):
         for partition in ('p1', 'p2'):
             loop_device = device+partition
@@ -169,10 +205,3 @@ def detect_odroid_model():
 
     return odroid_model
 
-
-
-def min_used_minor(device_minor_used):
-    for i in range(1,50):
-        print(i)
-        if not i in device_minor_used:
-            return i

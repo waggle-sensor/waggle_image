@@ -40,7 +40,7 @@ report_file="/root/report.txt"
 
 waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
 base_images=   {
-                'odroid-xu4' : {
+                'odroid-xu3' : {
                         'filename': "waggle-base-extension_node-odroid-xu4-20160927.img",
                          'url': waggle_stock_url
                         },
@@ -60,7 +60,7 @@ mount_point_B="/mnt/newimage_B"
 
 
 
-is_extension_node = 0 # will be set automatically to 1 if an odroid-xu4 is detected !
+is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
 
 
@@ -92,7 +92,7 @@ if not odroid_model:
     sys.exit(1)
 
 
-if odroid_model == "odroid-xu4":
+if odroid_model == "odroid-xu3":
     is_extension_node = 1
     create_b_image = 1
 

@@ -152,6 +152,11 @@ image_copy_time = time.time()
 print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
+try:
+    os.remove(new_image_A)
+except:
+    pass
+
 print("Uncompressing file %s ..." % new_image_A_xz)
 run_command('unxz ' + new_image_A_xz)
 

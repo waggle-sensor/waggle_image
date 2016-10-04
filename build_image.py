@@ -153,7 +153,7 @@ if skip_dup or (not skip_dup and not os.path.exists(new_image_A)):
       pass
 
   print("Uncompressing file %s ..." % new_image_A_xz)
-  run_command('unxz ' + new_image_A_xz)
+  run_command('unxz --keep ' + new_image_A_xz)
 
 ###### TIMING ######
 image_unpack_time = time.time()
@@ -347,6 +347,11 @@ if create_b_image:
 bimage_time = time.time()
 print("\"B\" Image Creation Duration: %ds" % (bimage_time - post_chroot_time))
 ####################
+
+try:
+  os.remove(new_image_A_xz)
+except:
+  pass
 
 # compress A image
 run_command('xz -1 '+new_image_A)

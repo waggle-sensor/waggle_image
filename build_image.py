@@ -247,6 +247,7 @@ else:
   run_command('git checkout modular_image_build', die=True)
   os.chdir('%s/usr/lib/waggle' % mount_point_A)
   ##################################################################
+os.chdir(data_directory)
 
 
 ###### TIMING ######
@@ -306,7 +307,6 @@ else:
     print "file not found:", mount_point_A+'/'+report_file
 
 
-os.chdir(data_directory)
 unmount_mountpoint(mount_point_A)
 time.sleep(3)
 detach_loop_devices()

@@ -49,7 +49,7 @@ base_images=   {
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {
-                        'filename':"waggle-base-nodecontroller-odroid-c1-20160927.img",
+                        'filename':"waggle-base-nodecontroller-odroid-c1-20161005.img",
                         'url': waggle_stock_url
                     }
                 }

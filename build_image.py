@@ -285,7 +285,7 @@ if configure_aot:
     print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point_A)
     sys.exit(2)
   try:
-    shutil.copyfile('/root/private_config//root/id_rsa_waggle_aot_guest_node',
+    shutil.copyfile('/root/private_config/id_rsa_waggle_aot_guest_node',
                     '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % (mount_point_A))
 
     if not is_extension_node:

@@ -45,7 +45,7 @@ report_file="/root/report.txt"
 waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
 base_images=   {
                 'odroid-xu3' : {
-                        'filename': "waggle-base-extension_node-odroid-xu4-20160927.img",
+                        'filename': "waggle-base-extension_node-odroid-xu4-20161005.img",
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {

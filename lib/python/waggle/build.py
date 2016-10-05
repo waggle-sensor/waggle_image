@@ -65,10 +65,11 @@ def write_build_script(filename, node_script_filename):
 
 
 def unmount_mountpoint(mp):
-    for i in ['/proc', '/dev', '/sys', '']:
+    for i in ['/proc', '/dev', '/sys']:
         while int(get_output('mount | grep '+mp+i+' | wc -l')) != 0:
             run_command_f('umount -d '+mp+i)
             time.sleep(3)
+    run_command_f('umount '+mp)
     time.sleep(3)
 
 

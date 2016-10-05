@@ -12,7 +12,7 @@ import time
 import uuid
 
 skip_dup = True
-if sys.argv[1] == 'continue':
+if len(sys.argv) > 1 and sys.argv[1] == 'continue':
   skip_dup = False
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
@@ -45,7 +45,7 @@ report_file="/root/report.txt"
 waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
 base_images=   {
                 'odroid-xu3' : {
-                        'filename': "waggle-base-extension_node-odroid-xu4-20160927.img",
+                        'filename': "waggle-base-extension_node-odroid-xu4-20161005.img",
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {
@@ -256,6 +256,7 @@ else:
   run_command('git checkout modular_image_build', die=True)
   os.chdir('%s/usr/lib/waggle' % mount_point_A)
   ##################################################################
+os.chdir(data_directory)
 
 
 ###### TIMING ######
@@ -315,12 +316,10 @@ else:
     print "file not found:", mount_point_A+'/'+report_file
 
 
-os.chdir(data_directory)
 unmount_mountpoint(mount_point_A)
-time.sleep(3)
-detach_loop_devices()
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)
+detach_loop_devices()
 
 time.sleep(3)
 

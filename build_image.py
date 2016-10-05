@@ -222,7 +222,7 @@ if configure_aot:
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
 
     try:
-        os.mkdirs('%s/usr/lib/waggle/SSL/guest' % mount_point_A)
+        os.makedirs('%s/usr/lib/waggle/SSL/guest' % mount_point_A)
     except:
       print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point_A)
       sys.exit(2)

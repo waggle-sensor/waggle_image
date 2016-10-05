@@ -308,10 +308,9 @@ else:
 
 
 unmount_mountpoint(mount_point_A)
-time.sleep(3)
-detach_loop_devices()
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)
+detach_loop_devices()
 
 time.sleep(3)
 

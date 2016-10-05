@@ -286,7 +286,7 @@ print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 # After changeroot
 #
 
-if configure_aot
+if configure_aot:
   if not is_extension_node:
     # install a copy of wvdial.conf with the AoT secret APN
     shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))

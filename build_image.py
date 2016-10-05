@@ -200,6 +200,12 @@ build_script = '%s/root/configure_waggle.sh' % mount_point_A
 shutil.copyfile('%s/scripts/configure_waggle.sh' % waggle_image_directory, build_script)
 run_command('chmod +x %s' % build_script)
 
+try:
+    os.mkdir('%s/usr/lib/waggle' % mount_point_A)
+except:
+  print("ERROR: could not create /usr/lib/waggle under %s" % mount_point_A)
+  sys.exit(2)
+
 configure_aot = False
 if os.path.exists('/root/id_rsa_waggle_aot_config') and run_command('ssh -T git@github.com', die=False) == 1:
   configure_aot = True
@@ -215,6 +221,14 @@ if configure_aot:
     shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
 
+    try:
+        os.mkdirs('%s/usr/lib/waggle/SSL/guest' % mount_point_A)
+    except:
+      print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point_A)
+      sys.exit(2)
+    shutil.copyfile('/root/private_config//root/id_rsa_waggle_aot_guest_node',
+                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % (mount_point_A))
+
     if not is_extension_node:
       # allow the node the register in the field
       shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
@@ -224,11 +238,6 @@ if configure_aot:
 
 
 ### Pull the appropriate Waggle repositories
-try:
-    os.mkdir('%s/usr/lib/waggle' % mount_point_A)
-except:
-  print("ERROR: could not create /usr/lib/waggle under %s" % mount_point_A)
-  sys.exit(2)
 
 os.chdir('%s/usr/lib/waggle' % mount_point_A)
 run_command('git clone https://github.com/waggle-sensor/core.git', die=True)

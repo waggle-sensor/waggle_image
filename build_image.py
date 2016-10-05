@@ -12,7 +12,7 @@ import time
 import uuid
 
 skip_dup = True
-if sys.argv[1] == 'continue':
+if len(sys.argv) > 1 and sys.argv[1] == 'continue':
   skip_dup = False
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))

@@ -221,14 +221,6 @@ if configure_aot:
     shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
 
-    try:
-        os.makedirs('%s/usr/lib/waggle/SSL/guest' % mount_point_A)
-    except:
-      print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point_A)
-      sys.exit(2)
-    shutil.copyfile('/root/private_config//root/id_rsa_waggle_aot_guest_node',
-                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % (mount_point_A))
-
     if not is_extension_node:
       # allow the node the register in the field
       shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
@@ -287,16 +279,28 @@ print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 #
 
 if configure_aot:
-  if not is_extension_node:
-    # install a copy of wvdial.conf with the AoT secret APN
-    shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+  try:
+      os.makedirs('%s/usr/lib/waggle/SSL/guest' % mount_point_A)
+  except:
+    print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point_A)
+    sys.exit(2)
+  try:
+    shutil.copyfile('/root/private_config//root/id_rsa_waggle_aot_guest_node',
+                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % (mount_point_A))
 
-  # remove temporary password setup files from image
-  os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
-  os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
+    if not is_extension_node:
+      # install a copy of wvdial.conf with the AoT secret APN
+      shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
 
-  # remove the private_config repository
-  shutil.rmtree('/root/private_config')
+    # remove temporary password setup files from image
+    os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
+    os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
+
+    # remove the private_config repository
+    shutil.rmtree('/root/private_config')
+  except Exception as e:
+    print("Error in private AoT configuration: %s" % str(e))
+    pass
 else:
   if not is_extension_node:
     # copy the default, unconfigured wvdial.conf file

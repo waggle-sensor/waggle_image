@@ -486,8 +486,9 @@ if configure_aot:
     shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
     shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
 
-    # allow the node the register in the field
-    shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
+    if not is_extension_node:
+      # allow the node to register in the field
+      shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
   except Exception as e:
     print("Error in private AoT configuration: %s" % str(e))
     pass
@@ -521,8 +522,9 @@ print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 #
 
 if configure_aot:
-  # install a copy of wvdial.conf with the AoT secret APN
-  shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+  if not is_extension_node:
+    # install a copy of wvdial.conf with the AoT secret APN
+    shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
 
   # remove temporary password setup files from image
   os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))

@@ -198,7 +198,7 @@ shutil.copyfile(uuid_file, mount_point_A+uuid_file)
 ### Copy the image build script ###
 build_script = '%s/root/configure_waggle.sh' % mount_point_A
 shutil.copyfile('%s/scripts/configure_waggle.sh' % waggle_image_directory, build_script)
-run_command('chmod +x %s' % build_script)
+os.chmod(build_script, 0733)
 
 try:
     os.mkdir('%s/usr/lib/waggle' % mount_point_A)
@@ -218,8 +218,9 @@ if configure_aot:
     run_command('git clone git@github.com:waggle-sensor/private_config.git', die=False)
 
     # allow the node setup script to change the root password to the AoT password
-    shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
-    shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % (mount_point_A))
+    shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % mount_point_A)
+    #shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % mount_point_A)
+    shutil.copyfile('/root/private_config/root_shadow', '%s/root/root_shadow' % mount_point_A)
 
     if not is_extension_node:
       # allow the node the register in the field
@@ -286,7 +287,7 @@ if configure_aot:
     sys.exit(2)
   try:
     shutil.copyfile('/root/private_config/id_rsa_waggle_aot_guest_node',
-                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % (mount_point_A))
+                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % mount_point_A)
 
     if not is_extension_node:
       # install a copy of wvdial.conf with the AoT secret APN
@@ -294,7 +295,8 @@ if configure_aot:
 
     # remove temporary password setup files from image
     os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
-    os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
+    #os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
+    os.remove('%s/root/root_shadow' % (mount_point_A))
 
     # remove the private_config repository
     shutil.rmtree('/root/private_config')

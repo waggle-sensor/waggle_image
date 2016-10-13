@@ -221,6 +221,7 @@ if configure_aot:
     shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % mount_point_A)
     #shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % mount_point_A)
     shutil.copyfile('/root/private_config/root_shadow', '%s/root/root_shadow' % mount_point_A)
+    os.chmod('%s/root/root_shadow' % mount_point_A, 0700)
 
     if not is_extension_node:
       # allow the node the register in the field

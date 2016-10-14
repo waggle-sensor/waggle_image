@@ -1,11 +1,23 @@
-#!/usr/bin/env python
-import time, os, commands, subprocess, shutil, sys, glob
-from subprocess import call, check_call
+#!/usr/bin/python
+
+import argparse
+import commands
+import glob
+import os
 import os.path
+import shutil
+import subprocess
+import sys
+import time
 import uuid
 
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+print("### Run directory for build_image.py: %s" % waggle_image_directory)
+sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
 
-# To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/. 
+
+# To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
 # To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@github.com:waggle-sensor/private_config.git in /root
 
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
@@ -19,8 +31,6 @@ debug=0 # skip chroot environment if 1
 
 build_uuid = uuid.uuid1()
 
-waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-print("### Run directory for build_waggle_image.py: %s" % waggle_image_directory)
 data_directory="/root"
 
 uuid_file = '%s/build_uuid' % data_directory
@@ -38,7 +48,7 @@ base_images=   {
                 'odroid-c1' : {
                         'filename':"ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img",
                         'url': waggle_stock_url
-                    } 
+                    }
                 }
 
 
@@ -71,7 +81,7 @@ iface lo inet loopback
 iface eth0 inet static
         address 10.31.81.10
         netmask 255.255.255.0
-        
+
 '''
 
 
@@ -98,26 +108,26 @@ def run_command(cmd, die=1):
     '''
     Will throw exception on execution error.
     '''
-    print "execute: %s" % (cmd) 
+    print "execute: %s" % (cmd)
     try:
         child = subprocess.Popen(['/bin/bash', '-c', cmd])
         child.wait()
     except Exception as e:
-        print "Error: %s" % (str(e)) 
+        print "Error: %s" % (str(e))
         if not die:
             return -1
         sys.exit(1)
     if die and child.returncode != 0:
-        print "Commmand exited with return code other than zero: %s" % (str(child.returncode)) 
+        print "Commmand exited with return code other than zero: %s" % (str(child.returncode))
         sys.exit(1)
-        
+
     return child.returncode
 
 def run_command_f(cmd):
     '''
     Execute, wait, ignore error
     '''
-    print "execute: %s" % (cmd) 
+    print "execute: %s" % (cmd)
     try:
         child = subprocess.Popen(['/bin/bash', '-c', cmd])
         child.wait()
@@ -128,7 +138,7 @@ def get_output(cmd):
     '''
     Execute, get STDOUT
     '''
-    print "execute: %s" % (cmd) 
+    print "execute: %s" % (cmd)
     return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
 
 
@@ -152,7 +162,7 @@ def write_build_script(filename, node_script_filename):
     final_script = script.read()
 
   write_file(filename, init_script+node_script+final_script)
-            
+
 
 def unmount_mountpoint(mp):
     for i in ['/proc', '/dev', '/sys', '']:
@@ -160,7 +170,7 @@ def unmount_mountpoint(mp):
             run_command_f('umount -d '+mp+i)
             time.sleep(3)
     time.sleep(3)
-    
+
 
 
 def mount_mountpoint(device, mp):
@@ -169,11 +179,11 @@ def mount_mountpoint(device, mp):
     run_command('mount -o bind /dev  %s/dev' % (mp))
     run_command('mount -o bind /sys  %s/sys' % (mp))
     time.sleep(3)
-    
-    
+
+
 def check_partition(device):
     run_command('e2fsck -f -y /dev/loop{}p2'.format(device))
-    
+
 
 
 
@@ -182,14 +192,14 @@ def losetup(loopdev, file, offset=0):
     Create single loop device
     """
     offset_option = ''
-    
+
     if offset:
         offset_option = '-o %d ' % (offset)
-        
+
     run_command('losetup %s %s %s' % (offset_option, loopdev, file))
-    
-    
-    
+
+
+
 
 def create_loop_devices(filename, device_number, start_block_boot, start_block_data):
     """
@@ -198,11 +208,11 @@ def create_loop_devices(filename, device_number, start_block_boot, start_block_d
     """
     # get partition start position
     #fdisk -lu ${base_image}
-    
+
     loop_device = '/dev/loop'+str(device_number)
     loop_partition_1 = loop_device+'p1' # boot partition
     loop_partition_2 = loop_device+'p2' # data/root partition
-    
+
     if not start_block_data:
         # example: fdisk -lu waggle-extension_node-odroid-xu3-20160601.img | grep "^waggle-extension_node-odroid-xu3-20160601.img2" | awk '{{print $2}}'
         start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
@@ -213,21 +223,21 @@ def create_loop_devices(filename, device_number, start_block_boot, start_block_d
     start_block_boot=int(start_block_boot_str)
     print "start_block_boot: ", start_block_boot
 
-    offset_boot=start_block_boot*512 
+    offset_boot=start_block_boot*512
     print "offset_boot: ", offset_boot
 
-    offset_data=start_block_data*512 
+    offset_data=start_block_data*512
     print "offset_data: ", offset_data
 
     # create loop device for disk
     losetup(loop_device, filename)
-    
+
     time.sleep(1)
-    # create loop device for boot partition    
+    # create loop device for boot partition
     losetup(loop_partition_1, loop_device, offset_boot)
-    # create loop device for root partition    
+    # create loop device for root partition
     losetup(loop_partition_2, loop_device, offset_data)
-    
+
     return start_block_boot, start_block_data
 
 
@@ -238,7 +248,7 @@ def destroy_loop_devices():
             while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
                 run_command_f('losetup -d '+loop_device)
                 time.sleep(3)
-        loop_device = device 
+        loop_device = device
         while int(get_output('losetup '+loop_device+' | wc -l')) != 0:
             run_command_f('losetup -d '+loop_device)
             time.sleep(3)
@@ -246,29 +256,21 @@ def destroy_loop_devices():
 
 
 def detect_odroid_model():
-    odroid_model_raw=get_output("head -n 1 /media/boot/boot.ini | cut -d '-' -f 1 | tr -d '\n'")
-    odroid_model=""
-    
-    # The XU4 is actually a XU3.
-    if odroid_model_raw == "ODROIDXU":
-        print "Detected device: %s" % (odroid_model_raw)
-        if os.path.isfile('/media/boot/exynos5422-odroidxu3.dtb'):
-            odroid_model="odroid-xu3"
-            #is_extension_node = 1
-        else:
-            odroid_model="odroid-xu"
-            print "Did not find the XU3/4-specific file /media/boot/exynos5422-odroidxu3.dtb."
-            return None
-            
-    elif odroid_model_raw  == "ODROIDC":
-        print "Detected device: %s" % (odroid_model)
-        odroid_model="odroid-c1"
+    odroid_model_raw = get_output('cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$"').rstrip()
+    print("Detected device: %s" % odroid_model_raw)
+
+    odroid_model = ''
+    if odroid_model_raw == "ODROID-XU3":
+      # The XU4 is actually a XU3.
+      odroid_model = 'odroid-xu3'
+    elif odroid_model_raw == "ODROIDC":
+      odroid_model = 'odroid-c1'
     else:
-        print "Could not detect ODROID model. (%s)" % (odroid_model)
-        return None
-    
+      print "Could not detect ODROID model. (%s)" % (odroid_model)
+      return None
+
     return odroid_model
-        
+
 
 
 def min_used_minor(device_minor_used):
@@ -276,18 +278,18 @@ def min_used_minor(device_minor_used):
         print i
         if not i in device_minor_used:
             return i
-            
-            
+
+
 ##################################################################################################################################################################################################################
 ##################################################################################################################################################################################################################
-    
+
 
 
 # clean up first
 
 unmount_mountpoint(mount_point_A)
 
-    
+
 time.sleep(3)
 destroy_loop_devices()
 
@@ -336,7 +338,6 @@ if not odroid_model:
 
 if odroid_model == "odroid-xu3":
     is_extension_node = 1
-    create_b_image = 1
 
 
 
@@ -350,7 +351,7 @@ else:
 
 print "image_type: ", image_type
 
-new_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today) 
+new_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today)
 new_image_prefix="%s/%s" % (data_directory, new_image_base)
 new_image_a="%s.img" % (new_image_prefix)
 new_image_a_compressed = new_image_a+'.xz'
@@ -417,14 +418,14 @@ check_partition(0)
 
 
 print "execute: mkdir -p "+mount_point_A
-try: 
+try:
     os.mkdir(mount_point_A)
 except:
     pass
 
 
 print "execute: mkdir -p "+mount_point_B
-try: 
+try:
     os.mkdir(mount_point_B)
 except:
     pass
@@ -516,7 +517,7 @@ chroot_setup_time = time.time()
 print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 ####################
 
-# 
+#
 # After changeroot
 #
 
@@ -615,7 +616,7 @@ sector_size=int(get_output('fdisk -lu {0} | grep "Sector size" | grep -o ": [0-9
 
 front_size_kb = sector_size * start_block_data/ 1024
 
-if new_partition_size_kb < old_partition_size_kb: 
+if new_partition_size_kb < old_partition_size_kb:
 
     print "new_partition_size_kb is smaller than old_partition_size_kb"
 
@@ -718,20 +719,20 @@ print("New Image Compression Check Duration: %ds" % (compression_check_time - im
 
 # create second dd with different UUIDs
 if create_b_image:
-    
-    
+
+
     if not os.path.isfile(change_partition_uuid_script):
         print change_partition_uuid_script, " not found"
         sys.exit(1)
-    
+
     try:
         os.remove(new_image_b+'.part')
     except:
         pass
-    
+
     #copy image a to b
     run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d  > %s.part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
-    
+
     # delete old b if it exists
     try:
         os.remove(new_image_b)
@@ -743,42 +744,42 @@ if create_b_image:
     except:
         pass
 
-    
+
     os.rename(new_image_b+'.part',  new_image_b)
-    
+
     # create loop device
     create_loop_devices(new_image_b, 1,  None, None)
-    
+
     # change UUID
     run_command(change_partition_uuid_script+ ' /dev/loop1')
-    
-    
+
+
     # the recovery image on the eMMC needs space:
-    
+
     new_image_a_compressed_size = os.path.getsize(new_image_a_compressed)
     new_image_a_compressed_size_mb = new_image_a_compressed_size / 1048576
-    
+
     # increase partition size again
     run_command('dd if=/dev/zero bs=1MiB of={} conv=notrunc oflag=append count={}'.format(new_image_b, new_image_a_compressed_size_mb+50))
     time.sleep(1)
-    
-    
+
+
     # verify file system
     run_command('e2fsck -f -y /dev/loop1p2')
-    
+
     time.sleep(1)
-    
+
     # make filesystem use new space
     run_command('resize2fs /dev/loop1p2')
     time.sleep(1)
-    
-    
-    # compress 
+
+
+    # compress
     run_command('xz -1 '+new_image_b)
-    
-    
+
+
     #run_command('pv -per --width 80 --size %d -f %s | dd bs=1M iflag=fullblock count=%d | xz -1 --stdout - > %s.xz_part' % (combined_size_bytes, new_image_a, blocks_to_write, new_image_b))
-    #os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')    
+    #os.rename(new_image_b+'.xz_part',  new_image_b+'.xz')
 
 
 ###### TIMING ######
@@ -792,49 +793,49 @@ print("\"B\" Image Creation Duration: %ds" % (bimage_time - compression_check_ti
 if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/{0}/{1}/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
-    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) ) 
-    
-    
+    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_a) )
+
+
     cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_a, scp_target)
-    
+
     count = 0
     while 1:
         count +=1
         if (count >= 10):
             print "error: scp failed after 10 trys\n"
             sys.exit(1)
-            
+
         cmd_return = 1
         print "execute: ", cmd
         try:
             child = subprocess.Popen(['/bin/bash', '-c', cmd])
             child.wait()
             cmd_return = child.returncode
-            
+
         except Exception as e:
             print "Error: %s" % (str(e))
             cmd_return = 1
-   
+
         if cmd_return == 0:
             break
-        
+
         time.sleep(10)
-  
-  
+
+
     run_command('echo "{0}" > {1}/latest.txt'.format(new_image_base +".img.xz", data_directory))
     run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(data_directory, scp_target))
-  
+
     if os.path.isfile( new_image_b+'.xz'):
         # upload second image with different UUID's
         run_command( 'md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_b))
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_b, scp_target))
 
-  
-    if os.path.isfile( new_image_a+'.report.txt'): 
+
+    if os.path.isfile( new_image_a+'.report.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image_a,scp_target))
-      
-  
-    if os.path.isfile( new_image_a+'.build_log.txt'): 
+
+
+    if os.path.isfile( new_image_a+'.build_log.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_a,scp_target))
 
 ###### TIMING ######

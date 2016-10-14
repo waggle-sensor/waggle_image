@@ -46,12 +46,12 @@ waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/wagg
 base_images=   {
                 'odroid-xu3' : {
                         #'filename': "waggle-base-extension_node-odroid-xu4-20161005.img",
-                        'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img.xz",
+                        'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {
                         #'filename':"waggle-base-nodecontroller-odroid-c1-20161005.img",
-                        'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img.xz",
+                        'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
                         'url': waggle_stock_url
                     }
                 }

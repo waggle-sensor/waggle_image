@@ -3,6 +3,9 @@
 set -e
 set -x
 
+apt-get update
+apt-key update
+
 cd /usr/lib/waggle
 repos=$(ls --color=never -1 -d */)
 for repo in $repos; do

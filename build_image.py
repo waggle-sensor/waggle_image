@@ -235,6 +235,9 @@ else:
   run_command('git clone --recursive https://github.com/waggle-sensor/nodecontroller.git', die=True)
 os.chdir(data_directory)
 
+# chroot can cause issues with DNS, so use the parent systems' resolv.conf
+shutil.copyfile('/etc/resolv.conf', '%s/etc/resolv.conf' % mount_point)
+
 
 ###### TIMING ######
 pre_chroot_time = time.time()

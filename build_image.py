@@ -45,11 +45,13 @@ report_file="/root/report.txt"
 waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
 base_images=   {
                 'odroid-xu3' : {
-                        'filename': "waggle-base-extension_node-odroid-xu4-20161005.img",
+                        #'filename': "waggle-base-extension_node-odroid-xu4-20161005.img",
+                        'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {
-                        'filename':"waggle-base-nodecontroller-odroid-c1-20161005.img",
+                        #'filename':"waggle-base-nodecontroller-odroid-c1-20161005.img",
+                        'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
                         'url': waggle_stock_url
                     }
                 }
@@ -63,8 +65,7 @@ if create_b_image and not os.path.isfile(change_partition_uuid_script):
     print(change_partition_uuid_script, " not found")
     sys.exit(1)
 
-mount_point_A="/mnt/newimage_A"
-mount_point_B="/mnt/newimage_B"
+mount_point="/mnt/newimage"
 
 odroid_model = detect_odroid_model()
 
@@ -96,10 +97,8 @@ print "image_type: ", image_type
 date_today=get_output('date +"%Y%m%d"').rstrip()
 new_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today)
 new_image_prefix="%s/%s" % (data_directory, new_image_base)
-new_image_A="%s.img" % (new_image_prefix)
-new_image_A_xz = new_image_A+'.xz'
-
-new_image_B="%s_B.img" % (new_image_prefix)
+new_image="%s.img" % (new_image_prefix)
+new_image_xz = new_image+'.xz'
 
 os.chdir(data_directory)
 
@@ -113,7 +112,7 @@ base_image_xz = base_image + '.xz'
 
 
 # clean up first
-unmount_mountpoint(mount_point_A)
+unmount_mountpoint(mount_point)
 time.sleep(3)
 detach_loop_devices()
 create_loop_devices()
@@ -132,28 +131,28 @@ image_fetch_time = time.time()
 print("Base Image Fetch Duration: %ds" % (image_fetch_time - init_setup_time))
 ####################
 
-if skip_dup or (not skip_dup and not os.path.exists(new_image_A_xz)):
+if skip_dup or (not skip_dup and not os.path.exists(new_image_xz)):
   try:
-    os.remove(new_image_A_xz)
+    os.remove(new_image_xz)
   except:
     pass
 
-  print("Copying file %s to %s ..." % (base_image_xz, new_image_A_xz))
-  shutil.copyfile(base_image_xz, new_image_A_xz)
+  print("Copying file %s to %s ..." % (base_image_xz, new_image_xz))
+  shutil.copyfile(base_image_xz, new_image_xz)
 
 ###### TIMING ######
 image_copy_time = time.time()
 print("Base Image Copy Duration: %ds" % (image_copy_time - image_fetch_time))
 ####################
 
-if skip_dup or (not skip_dup and not os.path.exists(new_image_A)):
+if skip_dup or (not skip_dup and not os.path.exists(new_image)):
   try:
-      os.remove(new_image_A)
+      os.remove(new_image)
   except:
       pass
 
-  print("Uncompressing file %s ..." % new_image_A_xz)
-  run_command('unxz --keep ' + new_image_A_xz)
+  print("Uncompressing file %s ..." % new_image_xz)
+  run_command('unxz --keep ' + new_image_xz)
 
 ###### TIMING ######
 image_unpack_time = time.time()
@@ -164,7 +163,7 @@ print("New Image Unpacking Duration: %ds" % (image_unpack_time - image_copy_time
 # LOOP DEVICES HERE
 #
 
-attach_loop_devices(new_image_A, 0, None)
+attach_loop_devices(new_image, 0, None)
 
 time.sleep(3)
 print "first filesystem check on /dev/loop0p2"
@@ -172,38 +171,31 @@ check_partition(0)
 
 
 
-print "execute: mkdir -p "+mount_point_A
+print "execute: mkdir -p "+mount_point
 try:
-    os.mkdir(mount_point_A)
+    os.mkdir(mount_point)
 except:
     pass
 
 
-print "execute: mkdir -p "+mount_point_B
-try:
-    os.mkdir(mount_point_B)
-except:
-    pass
-
-
-mount_mountpoint(0, mount_point_A)
+mount_mountpoint(0, mount_point)
 
 ###### TIMING ######
 loop_mount_time = time.time()
 print("Loop Mount Duration: %ds" % (loop_mount_time - image_copy_time))
 ####################
 
-shutil.copyfile(uuid_file, mount_point_A+uuid_file)
+shutil.copyfile(uuid_file, mount_point+uuid_file)
 
 ### Copy the image build script ###
-build_script = '%s/root/configure_waggle.sh' % mount_point_A
+build_script = '%s/root/configure_waggle.sh' % mount_point
 shutil.copyfile('%s/scripts/configure_waggle.sh' % waggle_image_directory, build_script)
 os.chmod(build_script, 0733)
 
 try:
-    os.mkdir('%s/usr/lib/waggle' % mount_point_A)
+    os.mkdir('%s/usr/lib/waggle' % mount_point)
 except:
-  print("ERROR: could not create /usr/lib/waggle under %s" % mount_point_A)
+  print("ERROR: could not create /usr/lib/waggle under %s" % mount_point)
   sys.exit(2)
 
 configure_aot = False
@@ -218,15 +210,15 @@ if configure_aot:
     run_command('git clone git@github.com:waggle-sensor/private_config.git', die=False)
 
     # allow the node setup script to change the root password to the AoT password
-    shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % mount_point_A)
-    #shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % mount_point_A)
-    shutil.copyfile('/root/private_config/root_shadow', '%s/root/root_shadow' % mount_point_A)
-    os.chmod('%s/root/root_shadow' % mount_point_A, 0700)
+    shutil.copyfile('/root/id_rsa_waggle_aot_config', '%s/root/id_rsa_waggle_aot_config' % mount_point)
+    #shutil.copyfile('/root/private_config/encrypted_waggle_password', '%s/root/encrypted_waggle_password' % mount_point)
+    shutil.copyfile('/root/private_config/root_shadow', '%s/root/root_shadow' % mount_point)
+    os.chmod('%s/root/root_shadow' % mount_point, 0700)
 
     if not is_extension_node:
       # allow the node the register in the field
-      shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point_A))
-      os.chmod('%s/root/id_rsa_waggle_aot_registration' % mount_point_A, 0700)
+      shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point))
+      os.chmod('%s/root/id_rsa_waggle_aot_registration' % mount_point, 0700)
   except Exception as e:
     print("Error in private AoT configuration: %s" % str(e))
     pass
@@ -234,7 +226,7 @@ if configure_aot:
 
 ### Pull the appropriate Waggle repositories
 
-os.chdir('%s/usr/lib/waggle' % mount_point_A)
+os.chdir('%s/usr/lib/waggle' % mount_point)
 run_command('git clone --recursive https://github.com/waggle-sensor/core.git', die=True)
 run_command('git clone --recursive https://github.com/waggle-sensor/plugin_manager.git', die=True)
 if is_extension_node:
@@ -256,7 +248,7 @@ print("Additional Pre-chroot Setup Duration: %ds" % (pre_chroot_time - loop_moun
 print "################### start of chroot ###################"
 
 if debug == 0:
-    run_command('chroot %s/ /bin/bash /root/configure_waggle.sh' % (mount_point_A))
+    run_command('chroot %s/ /bin/bash /root/configure_waggle.sh' % (mount_point))
 
 
 print "################### end of chroot ###################"
@@ -273,22 +265,22 @@ print("Chroot Node Setup Duration: %ds" % (chroot_setup_time - pre_chroot_time))
 
 if configure_aot:
   try:
-      os.makedirs('%s/usr/lib/waggle/SSL/guest' % mount_point_A)
+      os.makedirs('%s/usr/lib/waggle/SSL/guest' % mount_point)
   except:
-    print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point_A)
+    print("ERROR: could not create /usr/lib/waggle/SSL/guest under %s" % mount_point)
     sys.exit(2)
   try:
     shutil.copyfile('/root/private_config/id_rsa_waggle_aot_guest_node',
-                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % mount_point_A)
+                    '%s/usr/lib/waggle/SSL/guest/id_rsa_waggle_aot_guest_node' % mount_point)
 
     if not is_extension_node:
       # install a copy of wvdial.conf with the AoT secret APN
-      shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point_A))
+      shutil.copyfile('/root/private_config/wvdial.conf', '%s/etc/wvdial.conf' % (mount_point))
 
     # remove temporary password setup files from image
-    os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point_A))
-    #os.remove('%s/root/encrypted_waggle_password' % (mount_point_A))
-    os.remove('%s/root/root_shadow' % (mount_point_A))
+    os.remove('%s/root/id_rsa_waggle_aot_config' % (mount_point))
+    #os.remove('%s/root/encrypted_waggle_password' % (mount_point))
+    os.remove('%s/root/root_shadow' % (mount_point))
 
     # remove the private_config repository
     shutil.rmtree('/root/private_config')
@@ -298,23 +290,23 @@ if configure_aot:
 else:
   if not is_extension_node:
     # copy the default, unconfigured wvdial.conf file
-    shutil.copyfile('%s/usr/lib/waggle/nodecontroller/device_rules/wwan_modems/wvdial.conf' % mount_point_A, '%s/etc/wvdial.conf' % mount_point_A)
+    shutil.copyfile('%s/usr/lib/waggle/nodecontroller/device_rules/wwan_modems/wvdial.conf' % mount_point, '%s/etc/wvdial.conf' % mount_point)
 
 
 try:
-    os.remove(new_image_A+'.report.txt')
+    os.remove(new_image+'.report.txt')
 except:
     pass
 
-print "copy: ", mount_point_A+'/'+report_file, new_image_A+'.report.txt'
+print "copy: ", mount_point+'/'+report_file, new_image+'.report.txt'
 
-if os.path.exists(mount_point_A+'/'+report_file):
-    shutil.copyfile(mount_point_A+'/'+report_file, new_image_A+'.report.txt')
+if os.path.exists(mount_point+'/'+report_file):
+    shutil.copyfile(mount_point+'/'+report_file, new_image+'.report.txt')
 else:
-    print "file not found:", mount_point_A+'/'+report_file
+    print "file not found:", mount_point+'/'+report_file
 
 
-unmount_mountpoint(mount_point_A)
+unmount_mountpoint(mount_point)
 print "filesystem check on /dev/loop0p2 after chroot"
 check_partition(0)
 detach_loop_devices()
@@ -327,42 +319,13 @@ post_chroot_time = time.time()
 print("Additional Post-chroot Setup Duration: %ds" % (post_chroot_time - chroot_setup_time))
 ####################
 
-
-# create second dd with different UUIDs
-if create_b_image:
-    #copy image a to b
-    shutil.copyfile(new_image_A, new_image_B)
-
-    try:
-        os.remove(new_image_B+'.xz')
-    except:
-        pass
-
-    # create loop device
-    attach_loop_devices(new_image_B, 1,  None)
-
-    # change UUID
-    run_command(change_partition_uuid_script+ ' /dev/loop1')
-
-    detach_loop_devices()
-
-    # compress
-    run_command('xz -1 '+new_image_B)
-
-
-
-###### TIMING ######
-bimage_time = time.time()
-print("\"B\" Image Creation Duration: %ds" % (bimage_time - post_chroot_time))
-####################
-
 try:
-  os.remove(new_image_A_xz)
+  os.remove(new_image_xz)
 except:
   pass
 
 # compress A image
-run_command('xz -1 '+new_image_A)
+run_command('xz -1 '+new_image)
 
 #
 # Upload files to waggle download directory
@@ -370,10 +333,10 @@ run_command('xz -1 '+new_image_A)
 if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/{0}/{1}/'.format(image_type, odroid_model)
     scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
-    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_A) )
+    run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image) )
 
 
-    cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_A, scp_target)
+    cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image, scp_target)
 
     count = 0
     while 1:
@@ -402,22 +365,17 @@ if not configure_aot and os.path.isfile( data_directory+ '/waggle-id_rsa'):
     run_command('echo "{0}" > {1}/latest.txt'.format(new_image_base +".img.xz", data_directory))
     run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(data_directory, scp_target))
 
-    if os.path.isfile( new_image_B+'.xz'):
-        # upload second image with different UUID's
-        run_command( 'md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(new_image_B))
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(data_directory, new_image_B, scp_target))
+
+    if os.path.isfile( new_image+'.report.txt'):
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image,scp_target))
 
 
-    if os.path.isfile( new_image_A+'.report.txt'):
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(data_directory, new_image_A,scp_target))
-
-
-    if os.path.isfile( new_image_A+'.build_log.txt'):
-        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image_A,scp_target))
+    if os.path.isfile( new_image+'.build_log.txt'):
+        run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(data_directory, new_image,scp_target))
 
 ###### TIMING ######
 upload_time = time.time()
-print("Image Upload Duration: %ds" % (upload_time - bimage_time))
+print("Image Upload Duration: %ds" % (upload_time - post_chroot_time))
 ####################
 
 ###### TIMING ######

@@ -218,7 +218,7 @@ if configure_aot:
     if not is_extension_node:
       # allow the node the register in the field
       shutil.copyfile('/root/private_config/id_rsa_waggle_aot_registration', '%s/root/id_rsa_waggle_aot_registration' % (mount_point))
-      os.chmod('%s/root/id_rsa_waggle_aot_registration' % mount_point, 0700)
+      os.chmod('%s/root/id_rsa_waggle_aot_registration' % mount_point, 0600)
   except Exception as e:
     print("Error in private AoT configuration: %s" % str(e))
     pass

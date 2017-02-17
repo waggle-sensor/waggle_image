@@ -21,7 +21,7 @@ from waggle.build import *
 # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
 
-print "usage: python -u ./build_waggle_image.py 2>&1 | tee build.log"
+print "usage: python -u ./build_base_image.py 2>&1 | tee build.log"
 
 start_time = time.time()
 
@@ -31,14 +31,14 @@ data_directory="/root"
 
 report_file="/root/report.txt"
 
-waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/stock_images/'
+waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
 base_images=   {
                 'odroid-xu3' : {
-                        'filename': "ubuntu-14.04lts-server-odroid-xu3-20150725.img",
+                        'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
                          'url': waggle_stock_url
                         },
                 'odroid-c1' : {
-                        'filename':"ubuntu-14.04.3lts-lubuntu-odroid-c1-20151020.img",
+                        'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
                         'url': waggle_stock_url
                     }
                 }

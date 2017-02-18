@@ -82,10 +82,11 @@ def mount_mountpoint(device, mp):
     time.sleep(3)
 
 
-def check_partition(device):
-    run_command('e2fsck -f -y /dev/loop{}p2'.format(device))
+def check_data_partition(device_index=0):
+    run_command('e2fsck -f -y /dev/loop{}p2'.format(device_index))
 
-
+def check_boot_partition(device_index=0):
+  run_command_f('fsck.vfat -py /dev/loop{}p1'.format(device_index))
 
 def used_device_minors():
   device_minor_used={}
@@ -172,6 +173,8 @@ def attach_loop_devices(filename, device_number, start_block_data):
     losetup(loop_partition_1, loop_device, offset_boot)
     # create loop device for root partition
     losetup(loop_partition_2, loop_device, offset_data)
+
+    time.sleep(3)
 
     return start_block_boot, start_block_data
 

@@ -15,6 +15,7 @@ from waggle.build import *
 
 debug=0 # skip chroot environment if 1
 
+
 def get_base_image_filename(build_directory, odroid_model):
     is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
@@ -37,6 +38,7 @@ def get_base_image_filename(build_directory, odroid_model):
     base_image_prefix="%s/%s" % (build_directory, base_image_base)
     return "%s.img" % (base_image_prefix)
 
+
 def setup_mount_point(mount_point):
     # install parted
     if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
@@ -57,6 +59,7 @@ def setup_mount_point(mount_point):
     detach_loop_devices()
 
     create_loop_devices()
+
 
 def mount_new_image(base_image, mount_point, odroid_model):
     waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
@@ -117,6 +120,7 @@ def mount_new_image(base_image, mount_point, odroid_model):
 
     return (start_block_boot, start_block_data)
 
+
 def stage_image_build_script(waggle_image_directory, mount_point):
     run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
@@ -124,9 +128,13 @@ def stage_image_build_script(waggle_image_directory, mount_point):
     #shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)
     #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
+
 def build_image(mount_point):
     if debug == 0:
         run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_dependencies.sh' % (mount_point))
+
+    shutil.rmtree('{0}/usr/lib/waggle/waggle_image'.format(mount_point))
+
 
 def generate_report(build_directory, mount_point, base_image):
     report_file = "{}/report.txt".format(build_directory)
@@ -143,11 +151,13 @@ def generate_report(build_directory, mount_point, base_image):
     else:
         print("file not found:", mount_point+'/'+report_file)
 
+
 def unmount_image(mount_point):
     unmount_mountpoint(mount_point)
     time.sleep(3)
     detach_loop_devices()
     time.sleep(3)
+
 
 def compress_image(base_image):
     base_image_xz = base_image + '.xz'
@@ -157,6 +167,7 @@ def compress_image(base_image):
         pass
 
     run_command('xz -1 %s' % base_image)
+
 
 def upload_image(build_directory, base_image):
     if not os.path.isfile( build_directory+ '/waggle-id_rsa'):
@@ -202,6 +213,7 @@ def upload_image(build_directory, base_image):
 
     if os.path.isfile( base_image+'.build_log.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, base_image,scp_target))
+
 
 def main():
     # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.

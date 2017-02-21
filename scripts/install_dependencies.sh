@@ -2,6 +2,9 @@
 
 set -e
 
+apt-get update
+apt-key update
+
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
 

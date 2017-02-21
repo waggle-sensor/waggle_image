@@ -128,7 +128,7 @@ def build_image(mount_point):
     if debug == 0:
         run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_dependencies.sh' % (mount_point))
 
-def generate_report(build_directory, mount_point):
+def generate_report(build_directory, mount_point, base_image):
     report_file = "{}/report.txt".format(build_directory)
 
     try:
@@ -238,7 +238,7 @@ def main():
 
     build_image(mount_point)
 
-    generate_report(build_directory, mount_point)
+    generate_report(build_directory, mount_point, base_image)
 
     unmount_image(mount_point)
 

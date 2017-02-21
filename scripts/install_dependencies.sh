@@ -34,7 +34,7 @@ if [ "${odroid_model}" == "ODROIDC" ]; then
   apt_packages+=${nc_apt_packages[@]}
   python2_packages+=${nc_python2_packages[@]}
   python3_packages+=${nc_python3_packages[@]}
-elif [ "${droid_model}" == "ODROID-XU3" ]; then
+elif [ "${odroid_model}" == "ODROID-XU3" ]; then
   apt_packages+=${ep_apt_packages[@]}
   python2_packages+=${ep_python2_packages[@]}
   python3_packages+=${ep_python3_packages[@]}

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import argparse
-import commands
 import os
 import os.path
 import shutil
@@ -9,15 +8,15 @@ import subprocess
 import sys
 import time
 
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+print("### Run directory for build_image.py: %s" % waggle_image_directory)
+sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
+
 debug=0 # skip chroot environment if 1
 
-def get_base_image_filename(build_directory):
+def get_base_image_filename(build_directory, odroid_model):
     is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
-
-    odroid_model = detect_odroid_model()
-
-    if not odroid_model:
-        sys.exit(1)
 
 
     if odroid_model == "odroid-xu3":
@@ -25,12 +24,14 @@ def get_base_image_filename(build_directory):
         create_b_image = 1
 
 
-    date_today=get_output('date +"%Y%m%d"').rstrip()
+    date_today=get_output('date +"%Y%m%d"').rstrip().decode()
 
     if is_extension_node:
         image_type = "extension_node"
     else:
         image_type = "nodecontroller"
+
+    print("image_type: ", image_type)
 
     base_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today)
     base_image_prefix="%s/%s" % (build_directory, base_image_base)
@@ -57,7 +58,7 @@ def setup_mount_point(mount_point):
 
     create_loop_devices()
 
-def mount_new_image(base_image, mount_point):
+def mount_new_image(base_image, mount_point, odroid_model):
     waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
     stock_images=   {
                     'odroid-xu3' : {
@@ -70,17 +71,12 @@ def mount_new_image(base_image, mount_point):
                         }
                     }
 
-    print "image_type: ", image_type
-
     base_image_xz = base_image + '.xz'
-
-    os.chdir(build_directory)
-
 
     try:
         stock_image = stock_images[odroid_model]['filename']
     except:
-        print "image %s not found" % (odroid_model)
+        print("image %s not found" % (odroid_model))
         sys.exit(1)
 
     stock_image_xz = stock_image + '.xz'
@@ -93,11 +89,13 @@ def mount_new_image(base_image, mount_point):
     except:
         pass
 
-    print("Copying file %s to %s ..." % (stock_image_xz, base_image_xz))
-    shutil.copyfile(stock_image_xz, base_image_xz)
+    if not os.path.isfile(base_image_xz):
+        print("Copying file %s to %s ..." % (stock_image_xz, base_image_xz))
+        shutil.copyfile(stock_image_xz, base_image_xz)
 
-    print("Uncompressing file %s ..." % base_image_xz)
-    run_command('unxz ' + base_image_xz)
+    if not os.path.isfile(base_image):
+        print("Uncompressing file %s ..." % base_image_xz)
+        run_command('unxz ' + base_image_xz)
 
     #
     # LOOP DEVICES HERE
@@ -106,10 +104,10 @@ def mount_new_image(base_image, mount_point):
     start_block_boot, start_block_data = attach_loop_devices(base_image, 0, None)
 
     time.sleep(3)
-    print "first filesystem check on /dev/loop0p2"
-    check_partition(0)
+    print("first filesystem check on /dev/loop0p2")
+    check_data_partition()
 
-    print "execute: mkdir -p "+mount_point
+    print("execute: mkdir -p "+mount_point)
     try:
         os.mkdir(mount_point)
     except:
@@ -119,16 +117,16 @@ def mount_new_image(base_image, mount_point):
 
     return (start_block_boot, start_block_data)
 
-def stage_image_build_script(waggle_image_directory):
+def stage_image_build_script(waggle_image_directory, mount_point):
     run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
     ### Copy the image build script ###
-    shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)
-    run_command('chmod +x %s/root/configure_base.sh' % mount_point)
+    #shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)
+    #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 def build_image(mount_point):
     if debug == 0:
-        run_command('chroot %s/ /bin/bash /usr/lib/waggle/scripts/install_dependencies.sh' % (mount_point))
+        run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_dependencies.sh' % (mount_point))
 
 def generate_report(build_directory, mount_point):
     report_file = "{}/report.txt".format(build_directory)
@@ -138,12 +136,12 @@ def generate_report(build_directory, mount_point):
     except:
         pass
 
-    print "copy: ", mount_point+'/'+report_file, base_image+'.report.txt'
+    print("copy: ", mount_point+'/'+report_file, base_image+'.report.txt')
 
     if os.path.exists(mount_point+'/'+report_file):
         shutil.copyfile(mount_point+'/'+report_file, base_image+'.report.txt')
     else:
-        print "file not found:", mount_point+'/'+report_file
+        print("file not found:", mount_point+'/'+report_file)
 
 def unmount_image(mount_point):
     unmount_mountpoint(mount_point)
@@ -174,18 +172,18 @@ def upload_image(build_directory, base_image):
     while 1:
         count +=1
         if (count >= 10):
-            print "error: scp failed after 10 trys\n"
+            print("error: scp failed after 10 trys\n")
             sys.exit(1)
 
         cmd_return = 1
-        print "execute: ", cmd
+        print("execute: ", cmd)
         try:
             child = subprocess.Popen(['/bin/bash', '-c', cmd])
             child.wait()
             cmd_return = child.returncode
 
         except Exception as e:
-            print "Error: %s" % (str(e))
+            print("Error: %s" % (str(e)))
             cmd_return = 1
 
         if cmd_return == 0:
@@ -206,19 +204,13 @@ def upload_image(build_directory, base_image):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, base_image,scp_target))
 
 def main():
-    waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-    print("### Run directory for build_image.py: %s" % waggle_image_directory)
-    sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
-    from waggle.build import *
-
-
     # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
     # To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@gith_Aub.com:waggle-sensor/private_config.git in /root
 
     # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
 
-    print "usage: python -u ./build_stock_image.py 2>&1 | tee build.log"
+    print("usage: python -u ./build_stock_image.py 2>&1 | tee build.log")
 
 
     create_b_image = 0 # will be 1 for XU3/4
@@ -229,11 +221,18 @@ def main():
 
     mount_point = "/mnt/newimage"
 
-    base_image = get_base_image_filename(build_directory)
+    odroid_model = detect_odroid_model()
+
+    if not odroid_model:
+        sys.exit(1)
+
+    base_image = get_base_image_filename(build_directory, odroid_model)
 
     setup_mount_point(mount_point)
 
-    start_block_boot, start_block_data = mount_new_image(base_image, mount_point)
+    os.chdir(build_directory)
+
+    start_block_boot, start_block_data = mount_new_image(base_image, mount_point, odroid_model)
 
     stage_image_build_script(waggle_image_directory, mount_point)
 
@@ -245,10 +244,10 @@ def main():
 
     attach_loop_devices(base_image, 0, start_block_boot)
 
-    print "check boot partition"
+    print("check boot partition")
     check_boot_partition()
 
-    print "filesystem check on /dev/loop0p2 after chroot"
+    print("filesystem check on /dev/loop0p2 after chroot")
     check_data_partition()
 
     detach_loop_devices()

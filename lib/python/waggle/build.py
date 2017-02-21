@@ -65,7 +65,7 @@ def write_build_script(filename, node_script_filename):
 
 
 def unmount_mountpoint(mp):
-    for i in ['/proc', '/dev', '/sys']:
+    for i in ['/dev', '/proc', '/run', '/sys']:
         while int(get_output('mount | grep '+mp+i+' | wc -l')) != 0:
             run_command_f('umount -d '+mp+i)
             time.sleep(3)
@@ -76,8 +76,9 @@ def unmount_mountpoint(mp):
 
 def mount_mountpoint(device, mp):
     run_command('mount /dev/loop%dp2 %s' % (device, mp))
-    run_command('mount -o bind /proc %s/proc' % (mp))
     run_command('mount -o bind /dev  %s/dev' % (mp))
+    run_command('mount -o bind /proc %s/proc' % (mp))
+    run_command('mount -o bind /run %s/run' % (mp))
     run_command('mount -o bind /sys  %s/sys' % (mp))
     time.sleep(3)
 
@@ -94,9 +95,9 @@ def used_device_minors():
   # list devices: ls -latr /dev/loop[0-9]*
   # find minor number: stat -c %T /dev/loop2
   for device in glob.glob('/dev/loop[0-9]*'):
-      print "device: ", device
+      print("device: ", device)
       minor=os.minor(os.stat(device).st_rdev)
-      print "device minor: ", minor
+      print("device minor: ", minor)
       device_minor_used[minor]=1
   return device_minor_used
 
@@ -111,7 +112,7 @@ def min_used_minor(device_minor_used):
 def create_loop_devices():
   # dict of minors that are already used
   device_minor_used = used_device_minors()
-  print device_minor_used
+  print(device_minor_used)
 
   for device in ['/dev/loop0p1', '/dev/loop0p2', '/dev/loop1p1', '/dev/loop1p2']:
       if not os.path.exists(device):
@@ -150,7 +151,7 @@ def attach_loop_devices(filename, device_number, start_block_data):
     loop_partition_2 = loop_device+'p2' # data/root partition
 
     if not start_block_data:
-        # example: fdisk -lu waggle-extension_node-odroid-xu3-20160601.img | grep "^waggle-extension_node-odroid-xu3-20160601.img2" | awk '{{print $2}}'
+        # example: fdisk -lu waggle-extension_node-odroid-xu3-20160601.img | grep "^waggle-extension_node-odroid-xu3-20160601.img2" | awk '{{print($2}}')
         start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
         start_block_data=int(start_block_data_str)
         print("start_block_data: ", start_block_data)
@@ -194,7 +195,7 @@ def detach_loop_devices():
 
 
 def detect_odroid_model():
-    odroid_model_raw = get_output('cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$"').rstrip()
+    odroid_model_raw = get_output('cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$"').rstrip().decode()
     print("Detected device: %s" % odroid_model_raw)
 
     odroid_model = ''

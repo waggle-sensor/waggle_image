@@ -138,7 +138,7 @@ def losetup(loopdev, file, offset=0):
 
 
 
-def attach_loop_devices(filename, device_number, start_block_data):
+def attach_loop_devices(filename, device_number):
     """
     Create loop devices for complete image and for the root partition
     startblock (optional) is the start of the second partition
@@ -150,15 +150,13 @@ def attach_loop_devices(filename, device_number, start_block_data):
     loop_partition_1 = loop_device+'p1' # boot partition
     loop_partition_2 = loop_device+'p2' # data/root partition
 
-    if not start_block_data:
-        # example: fdisk -lu waggle-extension_node-odroid-xu3-20160601.img | grep "^waggle-extension_node-odroid-xu3-20160601.img2" | awk '{{print($2}}')
-        start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
-        start_block_data=int(start_block_data_str)
-        print("start_block_data: ", start_block_data)
-
     start_block_boot_str = get_output("fdisk -lu {0} | grep '{0}1' | awk '{{print $2}}'".format(filename))
     start_block_boot=int(start_block_boot_str)
     print("start_block_boot: ", start_block_boot)
+
+    start_block_data_str = get_output("fdisk -lu {0} | grep '{0}2' | awk '{{print $2}}'".format(filename))
+    start_block_data=int(start_block_data_str)
+    print("start_block_data: ", start_block_data)
 
     offset_boot=start_block_boot*512
     print("offset_boot: ", offset_boot)

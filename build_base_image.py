@@ -104,7 +104,7 @@ def mount_new_image(base_image, mount_point, odroid_model):
     # LOOP DEVICES HERE
     #
 
-    start_block_boot, start_block_data = attach_loop_devices(base_image, 0, None)
+    start_block_boot, start_block_data = attach_loop_devices(base_image, 0)
 
     time.sleep(3)
     print("first filesystem check on /dev/loop0p2")
@@ -254,7 +254,7 @@ def main():
 
     unmount_image(mount_point)
 
-    attach_loop_devices(base_image, 0, start_block_boot)
+    attach_loop_devices(base_image, 0)
 
     print("check boot partition")
     check_boot_partition()

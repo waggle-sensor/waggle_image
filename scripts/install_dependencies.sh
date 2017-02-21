@@ -2,6 +2,8 @@
 
 set -e
 
+export LC_ALL=C
+
 apt-get update
 apt-key update
 
@@ -45,17 +47,17 @@ else
 fi
 
 # Install Ubuntu package dependencies.
-echo "Installing the following Ubuntu packages:\n${apt_packages}"
+echo "Installing the following Ubuntu packages: ${apt_packages}"
 apt-get install -y ${apt_packages[@]}
  
 
 # Install Python 2 package dependencies.
-echo "Installing the following Python 2 packages:\n${python2_packages}"
+echo "Installing the following Python 2 packages: ${python2_packages}"
 pip install --upgrade pip
 pip install ${python2_packages[@]}
 
 
 # Install Python 3 package dependencies.
-echo "Installing the following Python 3 packages:\n${python3_packages}"
+echo "Installing the following Python 3 packages: ${python3_packages}"
 pip3 install --upgrade pip
 pip3 install ${python3_packages[@]}

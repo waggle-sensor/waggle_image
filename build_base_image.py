@@ -203,15 +203,15 @@ def upload_image(build_directory, base_image):
         time.sleep(10)
 
 
-    run_command('echo "{0}" > {1}/latest.txt'.format(base_image_base +".img.xz", build_directory))
+    run_command('echo "{0}" > {1}/latest.txt'.format(base_image + ".xz", build_directory))
     run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(build_directory, scp_target))
 
 
-    if os.path.isfile( base_image+'.report.txt'):
+    if os.path.isfile( base_image +'.report.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(build_directory, base_image,scp_target))
 
 
-    if os.path.isfile( base_image+'.build_log.txt'):
+    if os.path.isfile( base_image +'.build_log.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, base_image,scp_target))
 
 

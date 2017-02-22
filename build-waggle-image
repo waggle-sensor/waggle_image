@@ -255,7 +255,7 @@ def main(argv):
   if not odroid_model:
     sys.exit(1)
 
-  waggle_image = get_waggle_image_filename(build_directory, odroid_model)
+  waggle_image = get_waggle_image_filename(build_directory, odroid_model, branch)
 
   setup_mount_point(mount_point)
 

@@ -82,7 +82,7 @@ if [ ! -e 'private_config' ]; then
   sleep 1
   ssh-add ${KEY_PATH}
 
-  ssh -oBatchMode=yes -T git@github.com | grep 'successfully authenticated'
+  ssh -oBatchMode=yes -T git@github.com 2>&1 | grep 'successfully authenticated'
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     echo
@@ -110,7 +110,7 @@ fi
 # enable sudo
 if [ ${ENABLE_SUDO} -eq 1 ]; then
   echo "Enabling sudo for the 'waggle' user..."
-  sed -i -e "s/^sudo:x:27:..*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
+  sed -i -e "s/^sudo:x:27:.*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
 fi
 
 # set AoT root password

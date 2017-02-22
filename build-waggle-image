@@ -16,7 +16,7 @@ from waggle.build import *
 debug=0 # skip chroot environment if 1
 
 
-def get_waggle_image_filename(build_directory, odroid_model):
+def get_waggle_image_filename(build_directory, odroid_model, branch):
   is_edge_processor = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
 
@@ -35,7 +35,9 @@ def get_waggle_image_filename(build_directory, odroid_model):
   print("image_type: ", image_type)
 
   waggle_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today)
-  waggle_image_prefix="%s" % (waggle_image_base)
+  waggle_image_prefix=waggle_image_base
+  if len(branch) > 0:
+    waggle_image_prefix="%s-%s" % (waggle_image_base, branch)
   return "%s.img" % (waggle_image_prefix)
 
 def setup_mount_point(mount_point):

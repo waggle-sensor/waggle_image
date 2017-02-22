@@ -9,7 +9,7 @@ import sys
 import time
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-print("### Run directory for build_image.py: %s" % waggle_image_directory)
+#print("### Run directory for build_image.py: %s" % waggle_image_directory)
 sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
 from waggle.build import *
 
@@ -214,10 +214,12 @@ def main(argv):
   #                                             downloads page (implies -c)
   #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
   #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
+  usage_message = "Usage: build-waggle-image  [--help] [-c|--compress] [-u|--upload] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>"
   try:
-    opts, args = getopt.getopt(argv, "cub:d:", ["compress", "upload", "branch=", "--build-dir="])
-  except getopt.GetoptError:
-    print("Usage: build_waggle_image.py  [-c|--compress] [-u|--upload] [-b <branch>|--branc=<branc>]")
+    opts, args = getopt.getopt(argv, "cub:d:", ["help", "compress", "upload", "branch=", "build-dir="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
     sys.exit(1)
 
   compress = False
@@ -225,7 +227,10 @@ def main(argv):
   branch = ''
   build_directory = '/root'
   for opt, arg in opts:
-    if opt in ('-c', '--compress'):
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-c', '--compress'):
       compress = True
     elif opt in ('-u', '--upload'):
       upload = True
@@ -233,6 +238,9 @@ def main(argv):
       branch = arg
     elif opt in ('-d', '--build-dir'):
       build_directory = arg
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
 
   create_b_image = 0 # will be 1 for XU3/4
 
@@ -278,4 +286,4 @@ def main(argv):
     upload_image(build_directory, waggle_image)
 
 if __name__ == '__main__':
-  main(argv)
+  main(sys.argv[1:])

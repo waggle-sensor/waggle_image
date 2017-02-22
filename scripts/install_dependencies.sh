@@ -2,17 +2,21 @@
 
 set -e
 
+# Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
+declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+
 export LC_ALL=C
+
+echo 'deb http://www.rabbitmq.com/debian/ testing main' | tee /etc/apt/sources.list.d/rabbitmq.list
+wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add -
 
 apt-get update
 apt-key update
 
-# Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
-declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
-
 # Define Ubuntu package dependencies
-declare -r base_apt_packages=("htop" "iotop" "iftop" "bwm-ng" "screen" "git" "python-dev" "python-pip" "python3-dev" "python3-pip" "dosfstools"
-                              "parted" "bash-completion" "fswebcam" "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng")
+declare -r base_apt_packages=("htop" "iotop" "iftop" "bwm-ng" "screen" "git" "python-dev" "python-pip"
+                              "python3-dev" "python3-pip" "dosfstools" "parted" "bash-completion" "fswebcam"
+                              "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng" "rabbitmq-server")
 declare -r nc_apt_packages=(" wvdial" "autossh" "bossa-cli" "curl" "python3-zmq")
 declare -r ep_apt_packages=(" fswebcam")
 
@@ -45,6 +49,7 @@ else
   echo "Error: unrecognized Odroid model '${odroid_model}'."
   exit 2
 fi
+
 
 # Install Ubuntu package dependencies.
 echo "Installing the following Ubuntu packages: ${apt_packages}"

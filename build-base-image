@@ -214,10 +214,30 @@ def upload_image(build_directory, base_image):
 
 
 def main():
-    # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
-    # To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@gith_Aub.com:waggle-sensor/private_config.git in /root
+  # Commannd Line Arguments:
+  #   --help                                  - print the command usage
+  #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
+  usage_message = "Usage: build-waggle-image  [--help] [-d <build_dir>|--build-dir=<build_dir>"
+  try:
+    opts, args = getopt.getopt(argv, "d:", ["help", "build-dir="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
 
-    # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
+  compress = False
+  upload = False
+  branch = ''
+  build_directory = '/root'
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-d', '--build-dir'):
+      build_directory = arg
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
 
 
     print("usage: python -u ./build_stock_image.py 2>&1 | tee build.log")
@@ -226,8 +246,6 @@ def main():
     create_b_image = 0 # will be 1 for XU3/4
 
     change_partition_uuid_script = waggle_image_directory + 'scripts/change-partition-uuid'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
-
-    build_directory = "/root"
 
     mount_point = "/mnt/newimage"
 

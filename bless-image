@@ -15,62 +15,60 @@ CLEAN_UP=0
 KEY_PATH='/root/id_rsa_waggle_aot_config'
 MOUNT_POINT=''
 while [[ $# -gt 0 ]]; do
-  key="$1"
-  echo "Key: $key"
-  case $key in
+  opt="$1"
+  arg="$2"
+  # echo "Key: $key"
+  case $opt in
     --help)
       PRINT_USAGE=1
-      shift
       ;;
     -w|--disable-wvdial)
       DISABLE_WVDIAL=1
-      shift
       ;;
     -a|--disable-apn)
       DISABLE_APN=1
-      shift
       ;;
     -s|--enable-sudo)
       ENABLE_SUDO=1
-      shift
       ;;
     -r|--disable-root-pass)
       DISABLE_ROOT_PASS=1
-      shift
       ;;
     -c|--clean-up)
       CLEAN_UP=1
-      shift
       ;;
     -k)
-      KEY_PATH="$2"
+      KEY_PATH="$arg"
       shift
       ;;
     --key-path=*)
-      KEY_PATH="${key#*=}"
-      ;;
-    -m)
-      MOUNT_POINT="$2"
-      shift
-      ;;
-    --mount-point=*)
-      MOUNT_POINT="${key#*=}"
+      KEY_PATH="${opt#*=}"
       ;;
       *)
+        MOUNT_POINT="$opt"
       ;;
   esac
   shift
 done
 
+declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
 if [ ${PRINT_USAGE} -eq 1 ]; then
-  echo "Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] [-m <mount-point>|--mount-point=<mount-point>]"
+  echo
+  echo ${USAGE_MESSAGE}
+  echo
   exit 0
 fi
 
 if [ "x${MOUNT_POINT}" == "x" ]; then
-  echo "Error: no mount point specified (use -m <mount-point> or --mount-point=<mount-point>)"
+  echo
+  echo "Error: no mount point specified"
+  echo ${USAGE_MESSAGE}
+  echo
   exit 1
 fi
+
+echo $MOUNT_POINT
+exit 0
 
 if [ ! -e 'private_config' ]; then
   if [ ! -e ${KEY_PATH} ]; then

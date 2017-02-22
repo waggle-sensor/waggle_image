@@ -82,7 +82,7 @@ if [ ! -e 'private_config' ]; then
   sleep 1
   ssh-add ${KEY_PATH}
 
-  ssh -oBatchMode=yes -T git@github.com | grep 'successfully authenticated'
+  ssh -oBatchMode=yes -T git@github.com 2>&1 | grep 'successfully authenticated'
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     echo

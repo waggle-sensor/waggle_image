@@ -68,6 +68,8 @@ if [ "x${MOUNT_POINT}" == "x" ]; then
 fi
 
 if [ ! -e 'private_config' ]; then
+  echo "Attempting to clone the private_config repository..."
+
   if [ ! -e ${KEY_PATH} ]; then
     echo
     echo "Error: no such key path ${KEY_PATH}"
@@ -92,20 +94,24 @@ fi
 
 
 # install registration key
+echo "Installing node registration key..."
 cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
 
 # install wvdial.conf
 if [ ${DISABLE_WVDIAL} -eq 0 ]; then
+  echo "Installing AoT wvdial.conf..."
   cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
 fi
 
 # enable sudo
 if [ ${ENABLE_SUDO} -eq 0 ]; then
+  echo "Enabling sudo for the 'waggle' user..."
   sed -i -e "s/^sudo:x:27:..*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
 fi
 
 # set AoT root password
 if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
+  echo "Setting the AoT root password..."
   aot_root_shadow_entry=$(cat private_config/root_shadow)
   sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
 fi

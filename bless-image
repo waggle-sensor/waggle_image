@@ -6,6 +6,7 @@
 # Disable any of these actions except #1 with approprite options
 
 
+PRINT_USAGE=0
 DISABLE_WVDIAL=0
 DISABLE_APN=0
 ENABLE_SUDO=0
@@ -17,6 +18,10 @@ while [[ $# -gt 0 ]]; do
   key="$1"
   echo "Key: $key"
   case $key in
+    --help)
+      PRINT_USAGE=1
+      shift
+      ;;
     -w|--disable-wvdial)
       DISABLE_WVDIAL=1
       shift
@@ -29,7 +34,7 @@ while [[ $# -gt 0 ]]; do
       ENABLE_SUDO=1
       shift
       ;;
-    -r|--disable-wvdial)
+    -r|--disable-root-pass)
       DISABLE_ROOT_PASS=1
       shift
       ;;
@@ -56,6 +61,11 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+if [ ${PRINT_USAGE} -eq 1 ]; then
+  echo "Usage: [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] [-m <mount-point>|--mount-point=<mount-point>]"
+  exit 0
+fi
 
 if [ "x${MOUNT_POINT}" == "x" ]; then
   echo "Error: no mount point specified (use -m <mount-point> or --mount-point=<mount-point>)"

@@ -209,11 +209,13 @@ def upload_image(build_directory, waggle_image):
 
 def main(argv):
   # Commannd Line Arguments:
-  #   -c|--compress   - compress the Waggle image
-  #   -u|--upload     - upload the compressed image to the appropriate Waggle downloads page (implies -c)
-  #   -b <branch>|--branch=<branch>  - build the image using branch <branch> instead of master
+  #   -c|--compress                           - compress the Waggle image
+  #   -u|--upload                             - upload the compressed image to the appropriate Waggle
+  #                                             downloads page (implies -c)
+  #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
+  #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
   try:
-    opts, args = getopt.getopt(argv, "cub:", ["compress", "upload", "branch="])
+    opts, args = getopt.getopt(argv, "cub:d:", ["compress", "upload", "branch=", "--build-dir="])
   except getopt.GetoptError:
     print("Usage: build_waggle_image.py  [-c|--compress] [-u|--upload] [-b <branch>|--branc=<branc>]")
     sys.exit(1)
@@ -221,6 +223,7 @@ def main(argv):
   compress = False
   upload = False
   branch = ''
+  build_directory = '/root'
   for opt, arg in opts:
     if opt in ('-c', '--compress'):
       compress = True
@@ -228,12 +231,12 @@ def main(argv):
       upload = True
     elif opt in ('-b', '--branch'):
       branch = arg
+    elif opt in ('-d', '--build-dir'):
+      build_directory = arg
 
   create_b_image = 0 # will be 1 for XU3/4
 
   change_partition_uuid_script = waggle_image_directory + 'scripts/change-partition-uuid'   #'/usr/lib/waggle/waggle_image/change_partition_uuid.sh'
-
-  build_directory = "/root"
 
   mount_point = "/mnt/newimage"
 

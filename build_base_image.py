@@ -17,18 +17,18 @@ debug=0 # skip chroot environment if 1
 
 
 def get_base_image_filename(build_directory, odroid_model):
-    is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
+    is_edge_processor = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
 
     if odroid_model == "odroid-xu3":
-        is_extension_node = 1
+        is_edge_processor = 1
         create_b_image = 1
 
 
     date_today=get_output('date +"%Y%m%d"').rstrip().decode()
 
-    if is_extension_node:
-        image_type = "extension_node"
+    if is_edge_processor:
+        image_type = "edge_processor"
     else:
         image_type = "nodecontroller"
 
@@ -104,7 +104,7 @@ def mount_new_image(base_image, mount_point, odroid_model):
     # LOOP DEVICES HERE
     #
 
-    start_block_boot, start_block_data = attach_loop_devices(base_image, 0)
+    attach_loop_devices(base_image, 0)
 
     time.sleep(3)
     print("first filesystem check on /dev/loop0p2")
@@ -117,8 +117,6 @@ def mount_new_image(base_image, mount_point, odroid_model):
         pass
 
     mount_mountpoint(0, mount_point)
-
-    return (start_block_boot, start_block_data)
 
 
 def stage_image_build_script(waggle_image_directory, mount_point):
@@ -244,7 +242,7 @@ def main():
 
     os.chdir(build_directory)
 
-    start_block_boot, start_block_data = mount_new_image(base_image, mount_point, odroid_model)
+    mount_new_image(base_image, mount_point, odroid_model)
 
     stage_image_build_script(waggle_image_directory, mount_point)
 

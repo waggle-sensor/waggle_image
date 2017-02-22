@@ -16,28 +16,27 @@ from waggle.build import *
 debug=0 # skip chroot environment if 1
 
 
-def get_base_image_filename(build_directory, odroid_model):
-  is_extension_node = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
+def get_waggle_image_filename(build_directory, odroid_model):
+  is_edge_processor = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
 
 
   if odroid_model == "odroid-xu3":
-      is_extension_node = 1
+      is_edge_processor = 1
       create_b_image = 1
 
 
   date_today=get_output('date +"%Y%m%d"').rstrip().decode()
 
-  if is_extension_node:
-      image_type = "extension_node"
+  if is_edge_processor:
+      image_type = "edge_processor"
   else:
       image_type = "nodecontroller"
 
   print("image_type: ", image_type)
 
-  base_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today)
-  base_image_prefix="%s/%s" % (build_directory, base_image_base)
-  return "%s.img" % (base_image_prefix)
-
+  waggle_image_base="waggle-%s-%s-%s" % (image_type, odroid_model, date_today)
+  waggle_image_prefix="%s/%s" % (build_directory, waggle_image_base)
+  return "%s.img" % (waggle_image_prefix)
 
 def setup_mount_point(mount_point):
   # install parted
@@ -61,50 +60,50 @@ def setup_mount_point(mount_point):
   create_loop_devices()
 
 
-def mount_new_image(base_image, mount_point, odroid_model):
+def mount_new_image(waggle_image, mount_point, odroid_model):
   waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
-  stock_images=   {
+  base_images=   {
                   'odroid-xu3' : {
-                          'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
+                          'filename': "waggle-base-edge_processor-odroid-xu3-20170221.img",
                            'url': waggle_stock_url
                           },
                   'odroid-c1' : {
-                          'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
+                          'filename':"waggle-base-nodecontroller-odroid-c1-20170221.img",
                           'url': waggle_stock_url
                       }
                   }
 
-  base_image_xz = base_image + '.xz'
+  waggle_image_xz = waggle_image + '.xz'
 
   try:
-      stock_image = stock_images[odroid_model]['filename']
+      base_image = base_images[odroid_model]['filename']
   except:
       print("image %s not found" % (odroid_model))
       sys.exit(1)
 
-  stock_image_xz = stock_image + '.xz'
+  base_image_xz = base_image + '.xz'
 
-  if not os.path.isfile(stock_image_xz):
-      run_command('wget '+ stock_images[odroid_model]['url'] + stock_image_xz)
+  if not os.path.isfile(base_image_xz):
+      run_command('wget '+ base_images[odroid_model]['url'] + base_image_xz)
 
   try:
-      os.remove(base_image_xz)
+      os.remove(waggle_image_xz)
   except:
       pass
 
-  if not os.path.isfile(base_image_xz):
-      print("Copying file %s to %s ..." % (stock_image_xz, base_image_xz))
-      shutil.copyfile(stock_image_xz, base_image_xz)
+  if not os.path.isfile(waggle_image_xz):
+      print("Copying file %s to %s ..." % (base_image_xz, waggle_image_xz))
+      shutil.copyfile(base_image_xz, waggle_image_xz)
 
-  if not os.path.isfile(base_image):
-      print("Uncompressing file %s ..." % base_image_xz)
-      run_command('unxz ' + base_image_xz)
+  if not os.path.isfile(waggle_image):
+      print("Uncompressing file %s ..." % waggle_image_xz)
+      run_command('unxz ' + waggle_image_xz)
 
   #
   # LOOP DEVICES HERE
   #
 
-  start_block_boot, start_block_data = attach_loop_devices(base_image, 0)
+  attach_loop_devices(waggle_image, 0)
 
   time.sleep(3)
   print("first filesystem check on /dev/loop0p2")
@@ -118,8 +117,6 @@ def mount_new_image(base_image, mount_point, odroid_model):
 
   mount_mountpoint(0, mount_point)
 
-  return (start_block_boot, start_block_data)
-
 
 def stage_image_build_script(waggle_image_directory, mount_point):
   run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
@@ -131,18 +128,18 @@ def build_image(mount_point):
 
   shutil.rmtree('{0}/usr/lib/waggle/waggle_image'.format(mount_point))
 
-def generate_report(build_directory, mount_point, base_image):
+def generate_report(build_directory, mount_point, waggle_image):
   report_file = "{}/report.txt".format(build_directory)
 
   try:
-    os.remove(base_image+'.report.txt')
+    os.remove(waggle_image+'.report.txt')
   except:
     pass
 
-  print("copy: ", mount_point+'/'+report_file, base_image+'.report.txt')
+  print("copy: ", mount_point+'/'+report_file, waggle_image+'.report.txt')
 
   if os.path.exists(mount_point+'/'+report_file):
-    shutil.copyfile(mount_point+'/'+report_file, base_image+'.report.txt')
+    shutil.copyfile(mount_point+'/'+report_file, waggle_image+'.report.txt')
   else:
     print("file not found:", mount_point+'/'+report_file)
 
@@ -154,25 +151,25 @@ def unmount_image(mount_point):
   time.sleep(3)
 
 
-def compress_image(base_image):
-  base_image_xz = base_image + '.xz'
+def compress_image(waggle_image):
+  waggle_image_xz = waggle_image + '.xz'
   try:
-    os.remove(base_image_xz)
+    os.remove(waggle_image_xz)
   except:
     pass
 
-  run_command('xz -1 %s' % base_image)
+  run_command('xz -1 %s' % waggle_image)
 
 
-def upload_image(build_directory, base_image):
+def upload_image(build_directory, waggle_image):
   if not os.path.isfile( build_directory+ '/waggle-id_rsa'):
       return
   remote_path = '/mcs/www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
   scp_target = 'waggle@terra.mcs.anl.gov:' + remote_path
-  run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(base_image) )
+  run_command('md5sum $(basename {0}.xz) > {0}.xz.md5sum'.format(waggle_image) )
 
 
-  cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(build_directory, base_image, scp_target)
+  cmd = 'scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.xz {1}.xz.md5sum {2}'.format(build_directory, waggle_image, scp_target)
 
   count = 0
   while 1:
@@ -198,16 +195,16 @@ def upload_image(build_directory, base_image):
     time.sleep(10)
 
 
-  run_command('echo "{0}" > {1}/latest.txt'.format(base_image + ".xz", build_directory))
+  run_command('echo "{0}" > {1}/latest.txt'.format(waggle_image + ".xz", build_directory))
   run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(build_directory, scp_target))
 
 
-  if os.path.isfile( base_image +'.report.txt'):
-    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(build_directory, base_image,scp_target))
+  if os.path.isfile( waggle_image +'.report.txt'):
+    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(build_directory, waggle_image,scp_target))
 
 
-  if os.path.isfile( base_image +'.build_log.txt'):
-    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, base_image,scp_target))
+  if os.path.isfile( waggle_image +'.build_log.txt'):
+    run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, waggle_image,scp_target))
 
 
 def main():
@@ -217,7 +214,7 @@ def main():
   # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
 
 
-  print("usage: python -u ./build_stock_image.py 2>&1 | tee build.log")
+  print("usage: python -u ./build_base_image.py 2>&1 | tee build.log")
 
 
   create_b_image = 0 # will be 1 for XU3/4
@@ -233,23 +230,23 @@ def main():
   if not odroid_model:
     sys.exit(1)
 
-  base_image = get_base_image_filename(build_directory, odroid_model)
+  waggle_image = get_waggle_image_filename(build_directory, odroid_model)
 
   setup_mount_point(mount_point)
 
   os.chdir(build_directory)
 
-  start_block_boot, start_block_data = mount_new_image(base_image, mount_point, odroid_model)
+  mount_new_image(waggle_image, mount_point, odroid_model)
 
   stage_image_build_script(waggle_image_directory, mount_point)
 
   build_image(mount_point)
 
-  generate_report(build_directory, mount_point, base_image)
+  generate_report(build_directory, mount_point, waggle_image)
 
   unmount_image(mount_point)
 
-  attach_loop_devices(base_image, 0)
+  attach_loop_devices(waggle_image, 0)
 
   print("check boot partition")
   check_boot_partition()
@@ -259,9 +256,9 @@ def main():
 
   detach_loop_devices()
 
-  compress_image(base_image)
+  compress_image(waggle_image)
 
-  upload_image(build_directory, base_image)
+  upload_image(build_directory, waggle_image)
 
 if __name__ == '__main__':
   main()

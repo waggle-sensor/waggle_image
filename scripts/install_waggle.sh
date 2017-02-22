@@ -30,6 +30,8 @@ for repository in ${repositories[@]}; do
   ./configure --system
 done
 
+echo root:waggle | chpasswd
+
 ### create report
 report_file="/root/report.txt"
 echo "Image created on $(date)." > ${report_file}

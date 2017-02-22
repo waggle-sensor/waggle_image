@@ -66,11 +66,11 @@ def mount_new_image(waggle_image, mount_point, odroid_model):
   waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
   base_images=   {
                   'odroid-xu3' : {
-                          'filename': "waggle-base-edge_processor-odroid-xu3-20170221.img",
+                          'filename': "waggle-base-edge_processor-odroid-xu3-20170222.img",
                            'url': waggle_stock_url
                           },
                   'odroid-c1' : {
-                          'filename':"waggle-base-nodecontroller-odroid-c1-20170221.img",
+                          'filename':"waggle-base-nodecontroller-odroid-c1-20170222.img",
                           'url': waggle_stock_url
                       }
                   }

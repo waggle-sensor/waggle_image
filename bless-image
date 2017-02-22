@@ -108,7 +108,7 @@ if [ ${DISABLE_WVDIAL} -eq 0 ]; then
 fi
 
 # enable sudo
-if [ ${ENABLE_SUDO} -eq 0 ]; then
+if [ ${ENABLE_SUDO} -eq 1 ]; then
   echo "Enabling sudo for the 'waggle' user..."
   sed -i -e "s/^sudo:x:27:..*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
 fi

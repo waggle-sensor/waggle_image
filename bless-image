@@ -67,9 +67,6 @@ if [ "x${MOUNT_POINT}" == "x" ]; then
   exit 1
 fi
 
-echo $MOUNT_POINT
-exit 0
-
 if [ ! -e 'private_config' ]; then
   if [ ! -e ${KEY_PATH} ]; then
     echo "Error: no such key path ${KEY_PATH}"

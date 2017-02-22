@@ -69,7 +69,9 @@ fi
 
 if [ ! -e 'private_config' ]; then
   if [ ! -e ${KEY_PATH} ]; then
+    echo
     echo "Error: no such key path ${KEY_PATH}"
+    echo
     exit 2
   fi
 
@@ -79,7 +81,9 @@ if [ ! -e 'private_config' ]; then
   ssh -T git@github.com > /dev/null 2>&1
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
+    echo
     echo "Error: unable to authenticate to GitHub"
+    echo
     kill -9 ${agent_pid}
     exit 3
   fi

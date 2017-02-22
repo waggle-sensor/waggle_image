@@ -3,6 +3,8 @@
 set -e
 set -x
 
+declare -r branch=$1
+
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
 
@@ -25,7 +27,11 @@ fi
 
 for repository in ${repositories[@]}; do
   cd /usr/lib/waggle
-  git clone https://github.com/waggle-sensor/${repository}.git
+  if [ "x${branch}" == "x" ]; then
+  	git clone https://github.com/waggle-sensor/${repository}.git
+  else
+  	git clone -b ${branch} https://github.com/waggle-sensor/${repository}.git
+  fi
   cd /usr/lib/waggle/${repository}
   ./configure --system
 done

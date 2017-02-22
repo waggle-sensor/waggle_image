@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import argparse
+import getopt
 import os
 import os.path
 import shutil
@@ -122,9 +122,9 @@ def stage_image_build_script(waggle_image_directory, mount_point):
   run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
 
-def build_image(mount_point):
+def build_image(mount_point, branch):
   if debug == 0:
-      run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_waggle.sh' % (mount_point))
+      run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_waggle.sh %s' % (mount_point, branch))
 
   shutil.rmtree('{0}/usr/lib/waggle/waggle_image'.format(mount_point))
 
@@ -207,15 +207,27 @@ def upload_image(build_directory, waggle_image):
     run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, waggle_image,scp_target))
 
 
-def main():
-  # To copy a new public image to the download webpage, copy the waggle-id_rsa ssh key to /root/.
-  # To generate a functional AoT image with private configuration, put id_rsa_waggle_aot_config and a clone of git@gith_Aub.com:waggle-sensor/private_config.git in /root
+def main(argv):
+  # Commannd Line Arguments:
+  #   -c|--compress   - compress the Waggle image
+  #   -u|--upload     - upload the compressed image to the appropriate Waggle downloads page (implies -c)
+  #   -b <branch>|--branch=<branch>  - build the image using branch <branch> instead of master
+  try:
+    opts, args = getopt.getopt(argv, "cub:", ["compress", "upload", "branch="])
+  except getopt.GetoptError:
+    print("Usage: build_waggle_image.py  [-c|--compress] [-u|--upload] [-b <branch>|--branc=<branc>]")
+    sys.exit(1)
 
-  # One of the most significant modifications that this script does is setting static IPs. Nodecontroller and guest node have different static IPs.
-
-
-  print("usage: python -u ./build_base_image.py 2>&1 | tee build.log")
-
+  compress = False
+  upload = False
+  branch = ''
+  for opt, arg in opts:
+    if opt in ('-c', '--compress'):
+      compress = True
+    elif opt in ('-u', '--upload'):
+      upload = True
+    elif opt in ('-b', '--branch'):
+      branch = arg
 
   create_b_image = 0 # will be 1 for XU3/4
 
@@ -240,7 +252,7 @@ def main():
 
   stage_image_build_script(waggle_image_directory, mount_point)
 
-  build_image(mount_point)
+  build_image(mount_point, branch)
 
   generate_report(build_directory, mount_point, waggle_image)
 
@@ -256,9 +268,11 @@ def main():
 
   detach_loop_devices()
 
-  compress_image(waggle_image)
+  if compress:
+    compress_image(waggle_image)
 
-  upload_image(build_directory, waggle_image)
+  if upload:
+    upload_image(build_directory, waggle_image)
 
 if __name__ == '__main__':
-  main()
+  main(argv)

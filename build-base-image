@@ -35,8 +35,7 @@ def get_base_image_filename(build_directory, odroid_model):
     print("image_type: ", image_type)
 
     base_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today)
-    base_image_prefix="%s/%s" % (build_directory, base_image_base)
-    return "%s.img" % (base_image_prefix)
+    return "%s.img" % (base_image_base)
 
 
 def setup_mount_point(mount_point):

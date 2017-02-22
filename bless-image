@@ -75,19 +75,23 @@ if [ ! -e 'private_config' ]; then
     exit 2
   fi
 
-  agent_pid=$(eval "$(ssh-agent -s)" | awk '{print $3}')
+  #sets SSH_AGENT_PID
+  eval "$(ssh-agent -s)"
+  sleep 1
   ssh-add ${KEY_PATH}
 
-  ssh -T git@github.com > /dev/null 2>&1
+  ssh -T git@github.com | grep 'successfully authenticated'
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
     echo
     echo "Error: unable to authenticate to GitHub"
     echo
-    kill -9 ${agent_pid}
+    kill -9 ${SSH_AGENT_PID}
     exit 3
   fi
   git clone git@github.com:waggle-sensor/private_config.git
+
+  kill -9 ${SSH_AGENT_PID}
 fi
 
 
@@ -109,8 +113,6 @@ if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
   aot_root_shadow_entry=$(cat private_config/root_shadow)
   sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
 fi
-
-kill -9 ${agent_pid}
 
 
 if [ ${CLEAN_UP} -eq 1 ]; then

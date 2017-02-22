@@ -8,7 +8,7 @@
 
 DISABLE_WVDIAL=0
 DISABLE_APN=0
-DISABLE_NO_SUDO=0
+ENABLE_SUDO=0
 DISABLE_ROOT_PASS=0
 CLEAN_UP=0
 KEY_PATH='/root/id_rsa_waggle_aot_config'
@@ -25,8 +25,8 @@ while [[ $# -gt 0 ]]; do
       DISABLE_APN=1
       shift
       ;;
-    -s|--disable-no-sudo)
-      DISABLE_NO_SUDO=1
+    -s|--enable-sudo)
+      ENABLE_SUDO=1
       shift
       ;;
     -r|--disable-wvdial)
@@ -90,15 +90,15 @@ if [ ${DISABLE_WVDIAL} -eq 0 ]; then
   cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
 fi
 
-# disable sudo
-if [ ${DISABLE_NO_SUDO} -eq 0 ]; then
-  deluser waggle sudo
+# enable sudo
+if [ ${ENABLE_SUDO} -eq 0 ]; then
+  sed -i -e "s/^sudo:x:27:..*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
 fi
 
 # set AoT root password
 if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
   aot_root_shadow_entry=$(cat private_config/root_shadow)
-  sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" /etc/shadow
+  sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
 fi
 
 kill -9 ${agent_pid}

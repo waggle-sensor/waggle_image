@@ -51,6 +51,9 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
+declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+
 declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
 if [ ${PRINT_USAGE} -eq 1 ]; then
   echo
@@ -97,14 +100,16 @@ if [ ! -e 'private_config' ]; then
 fi
 
 
-# install registration key
-echo "Installing node registration key..."
-cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
+if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
+  # install registration key
+  echo "Installing node registration key..."
+  cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
 
-# install wvdial.conf
-if [ ${DISABLE_WVDIAL} -eq 0 ]; then
-  echo "Installing AoT wvdial.conf..."
-  cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
+  # install wvdial.conf
+  if [ ${DISABLE_WVDIAL} -eq 0 ]; then
+    echo "Installing AoT wvdial.conf..."
+    cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
+  fi
 fi
 
 # enable sudo

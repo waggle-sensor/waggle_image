@@ -214,7 +214,7 @@ def upload_image(build_directory, waggle_image):
 def burn_image(waggle_image, target_device):
   run_command('dd if={0} of={1} bs=500M status=progress'.format(waggle_image, target_device))
 
-def bless_image(target_device)
+def bless_image(target_device):
   tmp_dir = tempfile.mkdtemp()
   run_command('mount {0} {1}'.format(target_device, tmp_dir))
   run_command('{0}/bless-image /media/rootfs'.format(waggle_image_directory))

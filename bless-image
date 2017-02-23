@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
-declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+declare -r ODROID_MODEL=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
 
 declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
 if [ ${PRINT_USAGE} -eq 1 ]; then

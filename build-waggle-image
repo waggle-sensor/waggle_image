@@ -6,6 +6,7 @@ import os.path
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
@@ -210,6 +211,15 @@ def upload_image(build_directory, waggle_image):
   if os.path.isfile( waggle_image +'.build_log.txt'):
     run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, waggle_image,scp_target))
 
+def burn_image(waggle_image, target_device):
+  run_command('dd if={0} of={1} bs=500M status=progress'.format(waggle_image, target_device))
+
+def bless_image(target_device)
+  tmp_dir = tempfile.mkdtemp()
+  run_command('mount {0} {1}'.format(target_device, tmp_dir))
+  run_command('{0}/bless-image /media/rootfs'.format(waggle_image_directory))
+  run_command('umount {0}'.format(tmp_dir))
+  shutil.rmtree(tmp_dir)
 
 def main(argv):
   # Commannd Line Arguments:
@@ -218,9 +228,9 @@ def main(argv):
   #                                             downloads page (implies -c)
   #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
   #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
-  usage_message = "Usage: build-waggle-image  [--help] [-c|--compress] [-u|--upload] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>"
+  usage_message = "Usage: build-waggle-image  [--help] [-c|--compress] [-u|--upload] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>] [-t <target_dev>|--target=<target_dev>] [-s|--bless]"
   try:
-    opts, args = getopt.getopt(argv, "cub:d:", ["help", "compress", "upload", "branch=", "build-dir="])
+    opts, args = getopt.getopt(argv, "cub:d:t:s", ["help", "compress", "upload", "branch=", "build-dir=", "target=", "bless"])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
@@ -230,6 +240,8 @@ def main(argv):
   upload = False
   branch = ''
   build_directory = '/root'
+  target_device=None
+  bless = False
   for opt, arg in opts:
     if opt == '--help':
       print("\n" + usage_message + "\n")
@@ -242,9 +254,17 @@ def main(argv):
       branch = arg
     elif opt in ('-d', '--build-dir'):
       build_directory = arg
+    elif opt in ('-t', '--target'):
+      target_device = arg
+    elif opt in ('-s', '--bless'):
+      if target_device == None:
+        print("Error: blessing requested but target device was not specified (use --target=<target_dev>)")
+        sys.exit(3)
+      bless = True
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
+
 
   create_b_image = 0 # will be 1 for XU3/4
 
@@ -283,11 +303,17 @@ def main(argv):
 
   detach_loop_devices()
 
+  if target_device != None:
+    burn_image(waggle_image, target_device)
+
   if compress:
     compress_image(waggle_image)
 
   if upload:
     upload_image(build_directory, waggle_image)
+
+  if bless == True:
+    bless_image(target_device)
 
 if __name__ == '__main__':
   main(sys.argv[1:])

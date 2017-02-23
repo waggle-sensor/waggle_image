@@ -216,7 +216,7 @@ def burn_image(waggle_image, target_device):
 
 def bless_image(target_device):
   tmp_dir = tempfile.mkdtemp()
-  run_command('mount {0} {1}'.format(target_device, tmp_dir))
+  run_command('mount {0}2 {1}'.format(target_device, tmp_dir))
   run_command('{0}/bless-image /media/rootfs'.format(waggle_image_directory))
   run_command('umount {0}'.format(tmp_dir))
   shutil.rmtree(tmp_dir)

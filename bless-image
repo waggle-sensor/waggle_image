@@ -104,11 +104,13 @@ if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
   # install registration key
   echo "Installing node registration key..."
   cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
+  chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
 
   # install wvdial.conf
   if [ ${DISABLE_WVDIAL} -eq 0 ]; then
     echo "Installing AoT wvdial.conf..."
     cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
+    chmod 400 ${MOUNT_POINT}/etc/wvdial.conf
   fi
 fi
 

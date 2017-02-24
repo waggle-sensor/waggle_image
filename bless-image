@@ -108,6 +108,7 @@ if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
 
   # install Edge Processor key
   echo "Installing Edge Processor key..."
+  mkdir -p ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor
   cp private_config/id_rsa_waggle_aot_edge_processor ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
   chmod 400 ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
 

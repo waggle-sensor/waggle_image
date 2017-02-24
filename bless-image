@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# By default 1) install the registration key, 2) install the wvdial.conf with the AoT APN,
-# 3) disable sudo, and 4) set the AoT root password.
+# By default 1) install the registration key, 2) install Edge Processor key, 3) install the wvdial.conf with the AoT APN,
+# 4) disable sudo, and 5) set the AoT root password.
 #
-# Disable any of these actions except #1 with approprite options
+# Disable any of these actions except 1 and 2 with approprite options
 
 
 PRINT_USAGE=0
@@ -105,6 +105,11 @@ if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
   echo "Installing node registration key..."
   cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
   chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
+
+  # install Edge Processor key
+  echo "Installing Edge Processor key..."
+  cp private_config/id_rsa_waggle_aot_edge_processor ${MOUNT_POINT}/root/id_rsa_waggle_aot_edge_processor
+  chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_aot_edge_processor
 
   # install wvdial.conf
   if [ ${DISABLE_WVDIAL} -eq 0 ]; then

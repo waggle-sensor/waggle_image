@@ -8,7 +8,6 @@
 
 PRINT_USAGE=0
 DISABLE_WVDIAL=0
-DISABLE_APN=0
 ENABLE_SUDO=0
 DISABLE_ROOT_PASS=0
 CLEAN_UP=0
@@ -24,9 +23,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     -w|--disable-wvdial)
       DISABLE_WVDIAL=1
-      ;;
-    -a|--disable-apn)
-      DISABLE_APN=1
       ;;
     -s|--enable-sudo)
       ENABLE_SUDO=1

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+PRINT_USAGE=0
+MOUNT_POINT=''
+while [[ $# -gt 0 ]]; do
+  opt="$1"
+  arg="$2"
+  # echo "Key: $key"
+  case $opt in
+    --help)
+      PRINT_USAGE=1
+      ;;
+      *)
+        MOUNT_POINT="$opt"
+      ;;
+  esac
+  shift
+done
+
+declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
+if [ ${PRINT_USAGE} -eq 1 ]; then
+  echo
+  echo ${USAGE_MESSAGE}
+  echo
+  exit 0
+fi
+
+if [ "x${MOUNT_POINT}" == "x" ]; then
+  echo
+  echo "Error: no mount point specified"
+  echo ${USAGE_MESSAGE}
+  echo
+  exit 1
+fi
+
+rm /etc/systemd/system/waggle*
+rm /etc/systemd/system/rabbitmq-server.service
+rm /etc/bash_completion.d/waggle*
+rm /usr/bin/waggle*
+rm /usr/bin/rabbitmqadmin
+rm -rf /etc/waggle
+rm -rf /home/waggle/.ssh
+rm -rf /root/.ssh
+rm -rf /var/log/waggle
+rm /usr/lib/waggle
+rm /var/dc
+rm /var/log/comms
+rm /etc/udev/rules.d/*
+rm /home/waggle/*test*
+# TODO:
+# - replace /etc/shadow
+# - replace /etc/group
+# - replace /root/.bashrc
+# - replace /home/waggle/.bashrc
+# - replace /etc/hosts
+# - replace /etc/network/interfaces
+

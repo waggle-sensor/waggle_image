@@ -7,21 +7,21 @@ for service in ${service_list[@]}; do
 done
 systemctl stop rabbitmq-server
 systemctl disable rabbitmq-server
-rm /etc/init.d/rabbitmq-server
-rm /etc/systemd/system/waggle*
-rm /etc/systemd/system/rabbitmq-server.service
-rm /etc/bash_completion.d/waggle*
-rm /usr/bin/waggle*
-rm /usr/bin/rabbitmqadmin
+rm -f /etc/init.d/rabbitmq-server
+rm -f /etc/systemd/system/waggle*
+rm -f /etc/systemd/system/rabbitmq-server.service
+rm -f /etc/bash_completion.d/waggle*
+rm -f /usr/bin/waggle*
+rm -f /usr/bin/rabbitmqadmin
 rm -rf /etc/waggle
 rm -rf /home/waggle/.ssh
 rm -rf /root/.ssh
 rm -rf /var/log/waggle
-rm /usr/lib/waggle
-rm /var/dc
-rm /var/log/comms
-rm /etc/udev/rules.d/*
-rm /home/waggle/*test*
+rm -rf /usr/lib/waggle
+rm -rf /var/dc
+rm -rf /var/log/comms
+rm -f /etc/udev/rules.d/*
+rm -f /home/waggle/*test*
 # TODO:
 # - replace /etc/shadow
 # - replace /etc/group

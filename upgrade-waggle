@@ -3,6 +3,7 @@
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 PRINT_USAGE=0
+BRANCH=''
 MOUNT_POINT=''
 while [[ $# -gt 0 ]]; do
   opt="$1"
@@ -11,6 +12,13 @@ while [[ $# -gt 0 ]]; do
   case $opt in
     --help)
       PRINT_USAGE=1
+      ;;
+    -b)
+      BRANCH=$arg
+      shift
+      ;;
+    --branch=*)
+      BRANCH="${opt#*=}"
       ;;
       *)
         MOUNT_POINT="$opt"
@@ -38,4 +46,4 @@ fi
 ${script_dir}/sanitize-image ${MOUNT_POINT}
 
 cp ${script_dir}/scripts/install_waggle.sh ${MOUNT_POINT}/root
-chroot ${MOUNT_POINT} /root/install_waggle.sh
+chroot ${MOUNT_POINT} /root/install_waggle.sh ${BRANCH}

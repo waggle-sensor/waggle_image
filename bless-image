@@ -5,8 +5,117 @@
 #
 # Disable any of these actions except 1 and 2 with approprite options
 
+configure_from_repository() {
+  # Use the private_config repository to obtain the blessing.
+
+  if [ ! -e 'private_config' ]; then
+    echo "Attempting to clone the private_config repository..."
+
+    if [ ! -e ${KEY_PATH} ]; then
+      echo
+      echo "Error: no such key path ${KEY_PATH}"
+      echo
+      exit 2
+    fi
+
+    #sets SSH_AGENT_PID
+    eval "$(ssh-agent -s)"
+    sleep 1
+    ssh-add ${KEY_PATH}
+
+    ssh -oBatchMode=yes -T git@github.com 2>&1 | grep 'successfully authenticated'
+    exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+      echo
+      echo "Error: unable to authenticate to GitHub"
+      echo
+      kill -9 ${SSH_AGENT_PID}
+      exit 3
+    fi
+    git clone git@github.com:waggle-sensor/private_config.git
+
+    kill -9 ${SSH_AGENT_PID}
+  fi
+
+
+  if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
+    # install registration key
+    echo "Installing node registration key..."
+    cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
+    chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
+
+    # install Edge Processor key
+    echo "Installing Edge Processor key..."
+    mkdir -p ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor
+    cp private_config/id_rsa_waggle_aot_edge_processor ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
+    chmod 400 ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
+
+    # install wvdial.conf
+    if [ ${DISABLE_WVDIAL} -eq 0 ]; then
+      echo "Installing AoT wvdial.conf..."
+      cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
+      chmod 400 ${MOUNT_POINT}/etc/wvdial.conf
+    fi
+  fi
+
+  # enable sudo
+  if [ ${ENABLE_SUDO} -eq 1 ]; then
+    echo "Enabling sudo for the 'waggle' user..."
+    sed -i -e "s/^sudo:x:27:.*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
+  fi
+
+  # set AoT root password
+  if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
+    echo "Setting the AoT root password..."
+    aot_root_shadow_entry=$(cat private_config/root_shadow)
+    sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
+  fi
+
+
+  if [ ${CLEAN_UP} -eq 1 ]; then
+    rm -rf private_config
+  fi
+}
+
+
+clone_configuration() {
+  # Obtain the blessing from the currently running system (assumed to be a node).
+
+  local user=$(whoami)
+  if [ "${user}" != "root" ]; then
+    echo "Error: please re-run this script as the root user."
+    exit 3
+  fi
+
+  if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
+    # copy credentials
+    echo "Copying local node credentials and Edge Processor key to ${MOUNT_POINT}..."
+    mkdir -p {MOUNT_POINT}/usr/lib/waggle/SSL/
+    cp -Rf /usr/lib/waggle/SSL/* ${MOUNT_POINT}/usr/lib/waggle/SSL/
+
+    # install wvdial.conf
+    if [ ${DISABLE_WVDIAL} -eq 0 ]; then
+      echo "Copying AoT wvdial.conf to ${MOUNT_POINT}..."
+      cp /etc/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
+    fi
+  fi
+
+  # enable sudo
+  if [ ${ENABLE_SUDO} -eq 1 ]; then
+    echo "Copying /etc/group to ${MOUNT_POINT}..."
+    /etc/group ${MOUNT_POINT}/etc/group
+  fi
+
+  # set AoT root password
+  if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
+    # copy system passwords
+    echo "Copying /etc/shadow to ${MOUNT_POINT}..."
+    /etc/shadow ${MOUNT_POINT}/etc/shadow
+  fi
+}
 
 PRINT_USAGE=0
+CLONE=0
 DISABLE_WVDIAL=0
 ENABLE_SUDO=0
 DISABLE_ROOT_PASS=0
@@ -20,6 +129,9 @@ while [[ $# -gt 0 ]]; do
   case $opt in
     --help)
       PRINT_USAGE=1
+      ;;
+    -n|--clone)
+      CLONE=1
       ;;
     -w|--disable-wvdial)
       DISABLE_WVDIAL=1
@@ -66,70 +178,8 @@ if [ "x${MOUNT_POINT}" == "x" ]; then
   exit 1
 fi
 
-if [ ! -e 'private_config' ]; then
-  echo "Attempting to clone the private_config repository..."
-
-  if [ ! -e ${KEY_PATH} ]; then
-    echo
-    echo "Error: no such key path ${KEY_PATH}"
-    echo
-    exit 2
-  fi
-
-  #sets SSH_AGENT_PID
-  eval "$(ssh-agent -s)"
-  sleep 1
-  ssh-add ${KEY_PATH}
-
-  ssh -oBatchMode=yes -T git@github.com 2>&1 | grep 'successfully authenticated'
-  exit_code=$?
-  if [ $exit_code -ne 0 ]; then
-    echo
-    echo "Error: unable to authenticate to GitHub"
-    echo
-    kill -9 ${SSH_AGENT_PID}
-    exit 3
-  fi
-  git clone git@github.com:waggle-sensor/private_config.git
-
-  kill -9 ${SSH_AGENT_PID}
-fi
-
-
-if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
-  # install registration key
-  echo "Installing node registration key..."
-  cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
-  chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
-
-  # install Edge Processor key
-  echo "Installing Edge Processor key..."
-  mkdir -p ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor
-  cp private_config/id_rsa_waggle_aot_edge_processor ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
-  chmod 400 ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
-
-  # install wvdial.conf
-  if [ ${DISABLE_WVDIAL} -eq 0 ]; then
-    echo "Installing AoT wvdial.conf..."
-    cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
-    chmod 400 ${MOUNT_POINT}/etc/wvdial.conf
-  fi
-fi
-
-# enable sudo
-if [ ${ENABLE_SUDO} -eq 1 ]; then
-  echo "Enabling sudo for the 'waggle' user..."
-  sed -i -e "s/^sudo:x:27:.*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
-fi
-
-# set AoT root password
-if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
-  echo "Setting the AoT root password..."
-  aot_root_shadow_entry=$(cat private_config/root_shadow)
-  sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
-fi
-
-
-if [ ${CLEAN_UP} -eq 1 ]; then
-  rm -rf private_config
-fi
+if [ ${CLONE} -eq 1 ]; then
+  clone_configuration
+else
+  configure_from_repository
+fi 

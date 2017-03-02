@@ -33,6 +33,14 @@ if [ "x${MOUNT_POINT}" == "x" ]; then
   exit 1
 fi
 
+service_list=systemctl | grep waggle | awk '{print $1}'
+for service in ${service_list[@]}; do
+  systemctl stop $service
+  systemctl disable $service
+done
+systemctl stop rabbitmq-server
+systemctl disable rabbitmq-server
+rm /etc/init.d/rabbitmq-server
 rm /etc/systemd/system/waggle*
 rm /etc/systemd/system/rabbitmq-server.service
 rm /etc/bash_completion.d/waggle*

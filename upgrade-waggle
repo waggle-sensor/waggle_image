@@ -1,0 +1,41 @@
+#!/bin/bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+PRINT_USAGE=0
+MOUNT_POINT=''
+while [[ $# -gt 0 ]]; do
+  opt="$1"
+  arg="$2"
+  # echo "Key: $key"
+  case $opt in
+    --help)
+      PRINT_USAGE=1
+      ;;
+      *)
+        MOUNT_POINT="$opt"
+      ;;
+  esac
+  shift
+done
+
+declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
+if [ ${PRINT_USAGE} -eq 1 ]; then
+  echo
+  echo ${USAGE_MESSAGE}
+  echo
+  exit 0
+fi
+
+if [ "x${MOUNT_POINT}" == "x" ]; then
+  echo
+  echo "Error: no mount point specified"
+  echo ${USAGE_MESSAGE}
+  echo
+  exit 1
+fi
+
+${script_dir}/sanitize-image ${MOUNT_POINT}
+
+cp ${script_dir}/scripts/install_waggle.sh ${MOUNT_POINT}/root
+chroot ${MOUNT_POINT} /root/install_waggle.sh

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 unmount() {
-  local mountpoint=$1
+  local mountpoint=$(echo $1 | sed 's:/$::g')
   local exit_code
   for directory in "/dev" "/proc" "/run" "/sys"; do
     mount | grep ${mountpoint}${directory}

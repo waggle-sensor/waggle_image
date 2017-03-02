@@ -22,6 +22,7 @@ rm -rf /var/dc
 rm -rf /var/log/comms
 rm -f /etc/udev/rules.d/*
 rm -f /home/waggle/*test*
+rm -f /recovery*.tar.gz
 # TODO:
 # - replace /etc/shadow
 # - replace /etc/group

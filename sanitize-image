@@ -34,6 +34,9 @@ if [ "x${MOUNT_POINT}" == "x" ]; then
 fi
 
 service_list=systemctl | grep waggle | awk '{print $1}'
+
+chroot ${MOUNT_POINT}
+
 for service in ${service_list[@]}; do
   systemctl stop $service
   systemctl disable $service
@@ -63,3 +66,4 @@ rm /home/waggle/*test*
 # - replace /etc/hosts
 # - replace /etc/network/interfaces
 
+exit

@@ -90,7 +90,7 @@ clone_configuration() {
   if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
     # copy credentials
     echo "Copying local node credentials and Edge Processor key to ${MOUNT_POINT}..."
-    mkdir -p {MOUNT_POINT}/usr/lib/waggle/SSL/
+    mkdir -p ${MOUNT_POINT}/usr/lib/waggle/SSL/
     cp -Rf /usr/lib/waggle/SSL/* ${MOUNT_POINT}/usr/lib/waggle/SSL/
 
     # install wvdial.conf
@@ -103,14 +103,14 @@ clone_configuration() {
   # enable sudo
   if [ ${ENABLE_SUDO} -eq 1 ]; then
     echo "Copying /etc/group to ${MOUNT_POINT}..."
-    /etc/group ${MOUNT_POINT}/etc/group
+    cp /etc/group ${MOUNT_POINT}/etc/group
   fi
 
   # set AoT root password
   if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
     # copy system passwords
     echo "Copying /etc/shadow to ${MOUNT_POINT}..."
-    /etc/shadow ${MOUNT_POINT}/etc/shadow
+    cp /etc/shadow ${MOUNT_POINT}/etc/shadow
   fi
 }
 

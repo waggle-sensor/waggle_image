@@ -218,11 +218,12 @@ def bless_image(target_device):
   tmp_dir = tempfile.mkdtemp()
   if 'mmc' in target_device:
     # upgrading a node, so clone the system config
-    run_command('mount {0}p2 --clone {1}'.format(target_device, tmp_dir))
+    run_command('mount {0}p2 {1}'.format(target_device, tmp_dir))
+    run_command('{0}/bless-image --clone {1}'.format(waggle_image_directory, tmp_dir))
   else:
     # creating a master image, so configure using the private_config repo
     run_command('mount {0}2 {1}'.format(target_device, tmp_dir))
-  run_command('{0}/bless-image {1}'.format(waggle_image_directory, tmp_dir))
+    run_command('{0}/bless-image {1}'.format(waggle_image_directory, tmp_dir))
   run_command('umount {0}'.format(tmp_dir))
   shutil.rmtree(tmp_dir)
 

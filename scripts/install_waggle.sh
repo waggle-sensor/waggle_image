@@ -25,6 +25,8 @@ else
   exit 2
 fi
 
+mkdir -p /usr/lib/waggle
+
 for repository in ${repositories[@]}; do
   cd /usr/lib/waggle
   if [ "x${branch}" == "x" ]; then

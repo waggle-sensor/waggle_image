@@ -33,37 +33,7 @@ if [ "x${MOUNT_POINT}" == "x" ]; then
   exit 1
 fi
 
-service_list=systemctl | grep waggle | awk '{print $1}'
+systemctl | grep waggle | awk '{print $1}' > ${MOUNT_POINT}/root/service_list.txt
 
-chroot ${MOUNT_POINT}
-
-for service in ${service_list[@]}; do
-  systemctl stop $service
-  systemctl disable $service
-done
-systemctl stop rabbitmq-server
-systemctl disable rabbitmq-server
-rm /etc/init.d/rabbitmq-server
-rm /etc/systemd/system/waggle*
-rm /etc/systemd/system/rabbitmq-server.service
-rm /etc/bash_completion.d/waggle*
-rm /usr/bin/waggle*
-rm /usr/bin/rabbitmqadmin
-rm -rf /etc/waggle
-rm -rf /home/waggle/.ssh
-rm -rf /root/.ssh
-rm -rf /var/log/waggle
-rm /usr/lib/waggle
-rm /var/dc
-rm /var/log/comms
-rm /etc/udev/rules.d/*
-rm /home/waggle/*test*
-# TODO:
-# - replace /etc/shadow
-# - replace /etc/group
-# - replace /root/.bashrc
-# - replace /home/waggle/.bashrc
-# - replace /etc/hosts
-# - replace /etc/network/interfaces
-
-exit
+cp /usr/lib/waggle/waggle_image/scripts/sanitize_image.sh ${MOUNT_POINT}/root/
+chroot ${MOUNT_POINT} /root/sanitize_image.sh

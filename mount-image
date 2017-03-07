@@ -18,6 +18,8 @@ def main(args):
   image_filename = args[0]
   mount_point = args[1]
 
+  create_loop_devices()
+
   attach_loop_devices(image_filename, 0)
 
   time.sleep(3)

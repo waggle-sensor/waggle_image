@@ -15,7 +15,7 @@ sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
 from waggle.build import *
 
 def main(args):
-  mount_point = args[1]
+  mount_point = args[0]
 
   unmount_mountpoint(mount_point)
 

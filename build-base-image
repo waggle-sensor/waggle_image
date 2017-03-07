@@ -213,34 +213,30 @@ def upload_image(build_directory, base_image):
 
 
 def main(argv):
-  # Commannd Line Arguments:
-  #   --help                                  - print the command usage
-  #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
-  usage_message = "Usage: build-waggle-image  [--help] [-d <build_dir>|--build-dir=<build_dir>"
-  try:
-    opts, args = getopt.getopt(argv, "d:", ["help", "build-dir="])
-  except getopt.GetoptError as ge:
-    print("\nError:", str(ge))
-    print(usage_message + "\n")
-    sys.exit(1)
+    # Commannd Line Arguments:
+    #   --help                                  - print the command usage
+    #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
+    usage_message = "Usage: build-waggle-image  [--help] [-d <build_dir>|--build-dir=<build_dir>"
+    try:
+        opts, args = getopt.getopt(argv, "d:", ["help", "build-dir="])
+    except getopt.GetoptError as ge:
+        print("\nError:", str(ge))
+        print(usage_message + "\n")
+        sys.exit(1)
 
-  compress = False
-  upload = False
-  branch = ''
-  build_directory = '/root'
-  for opt, arg in opts:
-    if opt == '--help':
-      print("\n" + usage_message + "\n")
-      sys.exit(0)
-    elif opt in ('-d', '--build-dir'):
-      build_directory = arg
-    else:
-      print("\n" + usage_message + "\n")
-      sys.exit(2)
-
-
-    print("usage: python -u ./build_stock_image.py 2>&1 | tee build.log")
-
+    compress = False
+    upload = False
+    branch = ''
+    build_directory = '/root'
+    for opt, arg in opts:
+        if opt == '--help':
+            print("\n" + usage_message + "\n")
+            sys.exit(0)
+        elif opt in ('-d', '--build-dir'):
+            build_directory = arg
+        else:
+            print("\n" + usage_message + "\n")
+            sys.exit(2)
 
     create_b_image = 0 # will be 1 for XU3/4
 

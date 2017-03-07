@@ -16,9 +16,11 @@ apt-key update
 # Define Ubuntu package dependencies
 declare -r base_apt_packages=("htop" "iotop" "iftop" "bwm-ng" "screen" "git" "python-dev" "python-pip"
                               "python3-dev" "python3-pip" "dosfstools" "parted" "bash-completion" "fswebcam"
-                              "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng" "rabbitmq-server")
+                              "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng" "rabbitmq-server"
+                              "python-psutil" "python3-psutil")
 declare -r nc_apt_packages=(" wvdial" "autossh" "bossa-cli" "curl" "python3-zmq")
 declare -r ep_apt_packages=(" fswebcam")
+
 
 # Define Python 2 package dependencies
 declare -r base_python2_packages=("tabulate" "pika")
@@ -27,7 +29,7 @@ declare -r ep_python2_packages=""
 
 # Define Python 3 package dependencies
 declare -r base_python3_packages=("tabulate" "pika")
-declare -r nc_python3_packages=(" crcmod" "pyserial" "netifaces")
+declare -r nc_python3_packages=(" crcmod" "pyserial" "netifaces" "pyzmq" "pyinotify" "pynmea2")
 declare -r ep_python3_packages=""
 
 # Assemble dependencies for the particular Odroid on which this is running.

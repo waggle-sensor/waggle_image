@@ -162,7 +162,7 @@ done
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 declare -r ODROID_MODEL=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
 
-declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
+declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
 if [ ${PRINT_USAGE} -eq 1 ]; then
   echo
   echo ${USAGE_MESSAGE}
@@ -182,4 +182,4 @@ if [ ${CLONE} -eq 1 ]; then
   clone_configuration
 else
   configure_from_repository
-fi 
+fi

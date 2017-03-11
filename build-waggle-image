@@ -124,14 +124,16 @@ def mount_new_image(waggle_image, mount_point, odroid_model):
 
 
 def stage_image_build_script(waggle_image_directory, mount_point):
-  run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
+  run_command('mkdir -p {0}/usr/lib/waggle'.format(mount_point))
+  shutil.copyfile(waggle_image_directory+'/scripts/install_waggle.sh',
+                  '{0}/usr/lib/waggle/install_waggle.sh'.format(mount_point))
 
 
 def build_image(mount_point, branch):
   if debug == 0:
-      run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_waggle.sh %s' % (mount_point, branch))
+      run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/install_waggle.sh %s' % (mount_point, branch))
 
-  shutil.rmtree('{0}/usr/lib/waggle/waggle_image'.format(mount_point))
+  os.remove('{0}/usr/lib/waggle/install_waggle.sh'.format(mount_point))
 
 def generate_report(build_directory, mount_point, waggle_image):
   report_file = "{}/report.txt".format(build_directory)

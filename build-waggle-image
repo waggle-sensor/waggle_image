@@ -131,7 +131,7 @@ def stage_image_build_script(waggle_image_directory, mount_point):
 
 def build_image(mount_point, branch):
   if debug == 0:
-      run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_waggle.sh %s' % (mount_point, branch))
+      run_command('chroot %s/ /bin/bash /usr/lib/waggle/install_waggle.sh %s' % (mount_point, branch))
 
   os.remove('{0}/usr/lib/waggle/install_waggle.sh'.format(mount_point))
 

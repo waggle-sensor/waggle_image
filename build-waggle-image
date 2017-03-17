@@ -214,7 +214,7 @@ def upload_image(build_directory, waggle_image):
     run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, waggle_image,scp_target))
 
 def burn_image(waggle_image, target_device):
-  run_command('dd if={0} of={1} bs=500M status=progress'.format(waggle_image, target_device))
+  run_command('dd if={0} of={1} bs=100M status=progress'.format(waggle_image, target_device))
 
 def bless_image(target_device):
   tmp_dir = tempfile.mkdtemp()

@@ -19,7 +19,7 @@ declare -r base_apt_packages=("htop" "iotop" "iftop" "bwm-ng" "screen" "git" "py
                               "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng" "rabbitmq-server"
                               "python-psutil" "python3-psutil")
 declare -r nc_apt_packages=(" wvdial" "autossh" "bossa-cli" "curl" "python3-zmq")
-declare -r ep_apt_packages=(" fswebcam")
+declare -r ep_apt_packages=(" fswebcam" "alsa-utils" "portaudio19-dev")
 
 
 # Define Python 2 package dependencies
@@ -30,7 +30,7 @@ declare -r ep_python2_packages=""
 # Define Python 3 package dependencies
 declare -r base_python3_packages=("tabulate" "pika")
 declare -r nc_python3_packages=(" crcmod" "pyserial" "netifaces" "pyzmq" "pyinotify" "pynmea2")
-declare -r ep_python3_packages=""
+declare -r ep_python3_packages=(" pyaudio")
 
 # Assemble dependencies for the particular Odroid on which this is running.
 apt_packages=${base_apt_packages[@]}

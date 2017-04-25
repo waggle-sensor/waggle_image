@@ -118,7 +118,7 @@ def mount_new_image(base_image, mount_point, odroid_model):
     mount_mountpoint(0, mount_point)
 
 
-def stage_image_build_script(waggle_image_directory, mount_point):
+def stage_image_build_script(waggle_image_directory, mount_point, branch):
     run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
     ### Copy the image build script ###
@@ -212,11 +212,14 @@ def upload_image(build_directory, base_image):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, base_image,scp_target))
 
 
+  try:
+    opts, args = getopt.getopt(argv, "cub:d:t:s", ["help", "compress", "upload", "branch=", "build-dir=", "target=", "bless"])
 def main(argv):
     # Commannd Line Arguments:
     #   --help                                  - print the command usage
     #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
-    usage_message = "Usage: build-waggle-image  [--help] [-d <build_dir>|--build-dir=<build_dir>"
+    #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
+    usage_message = "Usage: build-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>]"
     try:
         opts, args = getopt.getopt(argv, "d:", ["help", "build-dir="])
     except getopt.GetoptError as ge:
@@ -232,6 +235,8 @@ def main(argv):
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
+        elif opt in ('-b', '--branch'):
+            branch = arg
         elif opt in ('-d', '--build-dir'):
             build_directory = arg
         else:
@@ -257,7 +262,7 @@ def main(argv):
 
     mount_new_image(base_image, mount_point, odroid_model)
 
-    stage_image_build_script(waggle_image_directory, mount_point)
+    stage_image_build_script(waggle_image_directory, mount_point, branch)
 
     build_image(mount_point)
 

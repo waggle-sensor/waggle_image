@@ -212,8 +212,6 @@ def upload_image(build_directory, base_image):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.build_log.txt {2}'.format(build_directory, base_image,scp_target))
 
 
-  try:
-    opts, args = getopt.getopt(argv, "cub:d:t:s", ["help", "compress", "upload", "branch=", "build-dir=", "target=", "bless"])
 def main(argv):
     # Commannd Line Arguments:
     #   --help                                  - print the command usage

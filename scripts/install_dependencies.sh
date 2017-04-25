@@ -15,7 +15,7 @@ apt-key update
 
 # Define Ubuntu package dependencies
 declare -r base_apt_packages=("htop" "iotop" "iftop" "bwm-ng" "screen" "git" "python-dev" "python-pip"
-                              "python3-dev" "python3-pip" "dosfstools" "parted" "bash-completion" "fswebcam"
+                              "python3-dev" "python3-pip" "dosfstools" "parted" "bash-completion"
                               "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng" "rabbitmq-server"
                               "python-psutil" "python3-psutil")
 declare -r nc_apt_packages=(" wvdial" "autossh" "bossa-cli" "curl" "python3-zmq")

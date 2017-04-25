@@ -219,7 +219,7 @@ def main(argv):
     #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
     usage_message = "Usage: build-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>]"
     try:
-        opts, args = getopt.getopt(argv, "d:", ["help", "build-dir="])
+        opts, args = getopt.getopt(argv, "b:d:", ["help", "branch=", "build-dir="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
         print(usage_message + "\n")

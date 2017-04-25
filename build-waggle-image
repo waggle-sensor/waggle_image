@@ -63,7 +63,7 @@ def setup_mount_point(mount_point):
   create_loop_devices()
 
 
-def mount_new_image(waggle_image, mount_point, odroid_model):
+def mount_new_image(waggle_image, mount_point, odroid_model, build_directory):
   base_date=get_output("%s/scripts/get_latest_date.sh" % waggle_image_directory).rstrip().decode()
 
   waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
@@ -89,7 +89,9 @@ def mount_new_image(waggle_image, mount_point, odroid_model):
   base_image_xz = base_image + '.xz'
 
   if not os.path.isfile(base_image_xz):
-      run_command('wget '+ base_images[odroid_model]['url'] + base_image_xz)
+      run_command('wget -P {3} {0}{1}'.format(base_images[odroid_model]['url'],
+                                              base_image_xz,
+                                              build_directory)
 
   try:
       os.remove(waggle_image_xz)
@@ -291,7 +293,7 @@ def main(argv):
 
   os.chdir(build_directory)
 
-  mount_new_image(waggle_image, mount_point, odroid_model)
+  mount_new_image(waggle_image, mount_point, odroid_model, build_directory)
 
   stage_image_build_script(waggle_image_directory, mount_point)
 

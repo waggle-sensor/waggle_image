@@ -1,5 +1,9 @@
 #!/bin/bash
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+cd $script_dir
+
 declare -r latest_url="http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/latest.txt"
 declare -r branch=$(git branch | awk '/^\*/ { sub(/^\* /, ""); print}')
 declare -A dates

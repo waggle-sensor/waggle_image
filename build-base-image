@@ -119,7 +119,10 @@ def mount_new_image(base_image, mount_point, odroid_model):
 
 
 def stage_image_build_script(waggle_image_directory, mount_point, branch):
-    run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
+    if len(branch) > 0:
+        run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone -b {1} https://github.com/waggle-sensor/waggle_image.git'.format(mount_point, branch))
+    else:
+        run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
     ### Copy the image build script ###
     #shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)

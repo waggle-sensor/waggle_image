@@ -37,7 +37,7 @@ for repository in ${repositories[@]}; do
   	git clone -b ${branch} https://github.com/waggle-sensor/${repository}.git
   fi
   cd /usr/lib/waggle/${repository}
-  ./configure --system --server=${server_host}
+  ./configure --system --server-host=${server_host}
 done
 
 echo root:waggle | chpasswd

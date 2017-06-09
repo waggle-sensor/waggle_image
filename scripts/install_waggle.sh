@@ -3,7 +3,9 @@
 set -e
 set -x
 
+# command-line options
 declare -r branch=$1
+declare -r server_host=$2
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
@@ -35,7 +37,7 @@ for repository in ${repositories[@]}; do
   	git clone -b ${branch} https://github.com/waggle-sensor/${repository}.git
   fi
   cd /usr/lib/waggle/${repository}
-  ./configure --system
+  ./configure --system --server=${server_host}
 done
 
 echo root:waggle | chpasswd

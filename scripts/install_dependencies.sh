@@ -36,20 +36,14 @@ declare -r ep_python3_packages=(" pyaudio")
 apt_packages=${base_apt_packages[@]}
 python2_packages=${base_python2_packages[@]}
 python3_packages=${base_python3_packages[@]}
-if [ "${odroid_model}" == "ODROIDC" ]; then
-  apt_packages+=${nc_apt_packages[@]}
-  python2_packages+=${nc_python2_packages[@]}
-  python3_packages+=${nc_python3_packages[@]}
-elif [ "${odroid_model}" == "ODROID-XU3" ]; then
+if [ "${odroid_model}" == "ODROID-XU3" ]; then
   apt_packages+=${ep_apt_packages[@]}
   python2_packages+=${ep_python2_packages[@]}
   python3_packages+=${ep_python3_packages[@]}
-elif [ "x${odroid_model}" == "x" ]; then
-  echo "Error: no Odroid model detected. This script must be run on an Odroid C1+ or XU4."
-  exit 1
 else
-  echo "Error: unrecognized Odroid model '${odroid_model}'."
-  exit 2
+  apt_packages+=${nc_apt_packages[@]}
+  python2_packages+=${nc_python2_packages[@]}
+  python3_packages+=${nc_python3_packages[@]}
 fi
 
 

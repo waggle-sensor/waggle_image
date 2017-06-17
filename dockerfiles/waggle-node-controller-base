@@ -4,7 +4,7 @@ ADD . /usr/lib/waggle/waggle_image/
 WORKDIR /usr/lib/waggle/waggle_image/
 
 RUN apt-get update
-RUN apt-get install -y git wget locales
+RUN apt-get install -y git wget locales tzdata ssh sudo psmisc
 
 ENV ODROID_MODEL=ODROIDC
 RUN ./scripts/install_dependencies.sh

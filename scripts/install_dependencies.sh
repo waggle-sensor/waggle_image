@@ -3,7 +3,11 @@
 set -e
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
-declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+if [ "x${ODROID_MODEL}" == "x" ]; then
+  declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+else
+  odroid_model=${ODROID_MODEL}
+fi
 
 export LC_ALL=C
 
@@ -36,14 +40,14 @@ declare -r ep_python3_packages=(" pyaudio")
 apt_packages=${base_apt_packages[@]}
 python2_packages=${base_python2_packages[@]}
 python3_packages=${base_python3_packages[@]}
-if [ "${odroid_model}" == "ODROID-XU3" ]; then
-  apt_packages+=${ep_apt_packages[@]}
-  python2_packages+=${ep_python2_packages[@]}
-  python3_packages+=${ep_python3_packages[@]}
-else
+if [ "${odroid_model}" == "ODROIDC" ]; then
   apt_packages+=${nc_apt_packages[@]}
   python2_packages+=${nc_python2_packages[@]}
   python3_packages+=${nc_python3_packages[@]}
+elif [ "${odroid_model}" == "ODROID-XU3" ]; then
+  apt_packages+=${ep_apt_packages[@]}
+  python2_packages+=${ep_python2_packages[@]}
+  python3_packages+=${ep_python3_packages[@]}
 fi
 
 

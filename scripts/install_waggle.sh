@@ -8,7 +8,11 @@ declare -r branch=$1
 declare -r server_host=$2
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
-declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+if [ "x${ODROID_MODEL}" == "x" ]; then
+  declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+else
+  declare -r odroid_model=${ODROID_MODEL}
+fi
 
 declare -r base_repositories=("core")
 declare -r nc_repositories=(" nodecontroller"  "plugin_manager")

@@ -6,7 +6,7 @@ set -e
 if [ "x${ODROID_MODEL}" == "x" ]; then
   declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
 else
-  odroid_model=${ODROID_MODEL}
+  declare -r odroid_model=${ODROID_MODEL}
 fi
 
 export LC_ALL=C
@@ -48,6 +48,12 @@ elif [ "${odroid_model}" == "ODROID-XU3" ]; then
   apt_packages+=${ep_apt_packages[@]}
   python2_packages+=${ep_python2_packages[@]}
   python3_packages+=${ep_python3_packages[@]}
+elif [ "x${odroid_model}" == "x" ]; then
+  echo "Error: no Odroid model detected. This script must be run on an Odroid C1+ or XU4."
+  exit 1
+else
+  echo "Error: unrecognized Odroid model '${odroid_model}'."
+  exit 2
 fi
 
 

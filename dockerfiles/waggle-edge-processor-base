@@ -4,8 +4,9 @@ ADD . /usr/lib/waggle/waggle_image/
 WORKDIR /usr/lib/waggle/waggle_image/
 
 RUN apt-get update
-RUN apt-get install -y git wget
+RUN apt-get install -y git wget locales
 
-ENV ODROID_MODEL=ODROIDC
+ENV ODROID_MODEL=ODROID-XU3
 RUN ./scripts/install_dependencies.sh
+
 RUN cd /usr/lib/waggle && rm -rf waggle_image

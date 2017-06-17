@@ -1,0 +1,14 @@
+FROM waggle-node-controller-base:0.2
+
+ARG branch=master
+ARG server_host=beehive1.mcs.anl.gov
+
+ADD . /usr/lib/waggle/waggle_image/
+WORKDIR /usr/lib/waggle/waggle_image/
+
+RUN apt install locales
+
+ENV ODROID_MODEL=ODROIDC
+RUN ./scripts/install_waggle.sh --branch=$branch --server-host=$server_host
+
+RUN cd /usr/lib/waggle && rm -rf waggle_image

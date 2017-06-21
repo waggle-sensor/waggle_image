@@ -39,3 +39,18 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 
 - Run `make package` (with superuser)
 - Check `Opencv-unknown-${ARCH}-*.deb` packages exist
+
+# Notes
+* The package enables use of OpenCL, but OpenCL libraries need to be installed separately from this packages. For c++ developers, add the path of OpenCL libraries to LD_LIBRARY_PATH variable and for python developers do the following
+
+```bash
+$ python3
+>>> import sys
+>>> sys.path.append('/PATH/TO/OPENCL/')
+>>> import cv2
+>>> cv2.ocl.haveOpenCL()
+True
+>>> cv2.ocl.setUseOpenCL()
+>>> cv2.ocl.useOpenCL()
+True
+```

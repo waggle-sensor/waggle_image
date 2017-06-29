@@ -14,4 +14,3 @@ if [ "x$date" == "x" ]; then
 else
   echo $date
 fi
-

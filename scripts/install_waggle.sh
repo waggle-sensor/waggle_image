@@ -4,8 +4,8 @@ set -e
 set -x
 
 # command-line options
-declare -r branch=$1
-declare -r server_host=$2
+declare -r server_host=$1
+declare -r branch=$2
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 if [ "x${ODROID_MODEL}" == "x" ]; then

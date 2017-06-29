@@ -41,14 +41,14 @@ configure_from_repository() {
   if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
     # install registration key
     echo "Installing node registration key..."
-    cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
-    chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_aot_registration
+    cp private_config/id_rsa_waggle_aot_registration ${MOUNT_POINT}/root/id_rsa_waggle_registration
+    chmod 400 ${MOUNT_POINT}/root/id_rsa_waggle_registration
 
     # install Edge Processor key
     echo "Installing Edge Processor key..."
     mkdir -p ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor
-    cp private_config/id_rsa_waggle_aot_edge_processor ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
-    chmod 400 ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_aot_edge_processor
+    cp private_config/id_rsa_waggle_aot_edge_processor ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor
+    chmod 400 ${MOUNT_POINT}/usr/lib/waggle/SSL/edge_processor/id_rsa_waggle_edge_processor
 
     # install wvdial.conf
     if [ ${DISABLE_WVDIAL} -eq 0 ]; then

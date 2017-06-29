@@ -3,7 +3,11 @@
 set -e
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
-declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+if [ "x${ODROID_MODEL}" == "x" ]; then
+  declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
+else
+  declare -r odroid_model=${ODROID_MODEL}
+fi
 
 export LC_ALL=C
 

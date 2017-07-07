@@ -1,13 +1,32 @@
 # Opencv 3.2.0 library along with a opencv 3.2.0 contrib (extra modules) and python3 interface
 
-The opencv libraries are compiled in 32-bit ARM architecture. The libraries require lots of dependencies.
+The opencv libraries are compiled in 32-bit ARM architecture. The libraries require some dependencies...
+
+```
+libavcodec-ffmpeg56 (>= 7:2.4) | libavcodec-ffmpeg-extra56 (>= 7:2.4)
+libavformat-ffmpeg56 (>= 7:2.4)
+libavutil-ffmpeg54 (>= 7:2.4)
+libc6 (>= 2.4)
+libcairo2 (>= 1.2.4)
+libgcc1 (>= 1:4.0)
+libgdk-pixbuf2.0-0 (>= 2.22.0)
+libglib2.0-0 (>= 2.31.8)
+libgtk-3-0 (>= 3.0.0)
+libpng12-0 (>= 1.2.13-4)
+libstdc++6 (>= 5.2)
+libswscale-ffmpeg3 (>= 7:2.4)
+zlib1g (>= 1:1.1.4)
+
+# to install these in one line
+apt-get install libavcodec-ffmpeg56 libavformat-ffmpeg56 libavutil-ffmpeg54 libc6 libcairo2 libgcc1 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libpng12-0 libstdc++6 libswscale-ffmpeg3 zlib1g
+```
 
 To install the opencv libraries...
 
 ```bash
 dpkg -i Opencv-unknown-${ARCH}-*.deb
 
-# install all dependencies
+# install all dependencies (if the depencencies are not yet installed)
 apt-get update
 apt-get install -f
 apt-get autoremove

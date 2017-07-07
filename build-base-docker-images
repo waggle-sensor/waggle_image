@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker build -t waggle-node-controller-base:0.3 -f dockerfiles/waggle-node-controller-base .
-docker build -t waggle-edge-processor-base:0.3 -f dockerfiles/waggle-edge-processor-base .
+docker build -t waggle-node-controller-base:0.4 -f dockerfiles/waggle-node-controller-base .
+docker build -t waggle-edge-processor-base:0.4 -f dockerfiles/waggle-edge-processor-base .

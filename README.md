@@ -48,3 +48,74 @@ Be sure to unmount the data partition when you're done:
 To avoid a UUID collision between an SD and eMMC attached to the same Odroid, one of the card's partition UUIDs must be changed. To do this use the following command (assuming the card device is /dev/sda):
 
 `change-partition-uuid /dev/sda`
+
+# OpenCV 3.2.0
+
+Currently there are no OpenCV library and contrib packages that can be installed on the XU4 via APT. We must, therefore, manually build OpenCV Debian packages. The latest packages that we have tested with our code are committed to the repository under `var/cache/apt/archives/`. These are installed when building the XU4 base image along with the Ubuntu and Python dependencies.
+
+## Dependencies
+
+The opencv libraries are compiled with a 32-bit ARM architecture. The libraries require the following extra dependencies:
+
+```
+libavcodec-ffmpeg56 (>= 7:2.4) | libavcodec-ffmpeg-extra56 (>= 7:2.4)
+libavformat-ffmpeg56 (>= 7:2.4)
+libavutil-ffmpeg54 (>= 7:2.4)
+libc6 (>= 2.4)
+libcairo2 (>= 1.2.4)
+libgcc1 (>= 1:4.0)
+libgdk-pixbuf2.0-0 (>= 2.22.0)
+libglib2.0-0 (>= 2.31.8)
+libgtk-3-0 (>= 3.0.0)
+libpng12-0 (>= 1.2.13-4)
+libstdc++6 (>= 5.2)
+libswscale-ffmpeg3 (>= 7:2.4)
+zlib1g (>= 1:1.1.4)
+```
+
+To install these in one line,
+`apt-get install libavcodec-ffmpeg56 libavformat-ffmpeg56 libavutil-ffmpeg54 libc6 libcairo2 libgcc1 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libpng12-0 libstdc++6 libswscale-ffmpeg3 zlib1g`
+
+The `numpy` Python module is also required.
+
+## Building the Packages
+
+The following procedure can be used to compile OpenCV 3.2.0 and build Debian packages.
+
+Run the following commands to initialize the build configuration:
+```bash
+cd <OPENCV_SOURCE_DIRECTORY>
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D BUILD_PACKAGE=ON \
+    -D CPACK_BINARY_DEB:BOOL=ON \
+    -D INSTALL_PYTHON_EXAMPLES=ON \
+    -D INSTALL_C_EXAMPLES=OFF \
+    -D OPENCV_EXTRA_MODULES_PATH=/PATH/TO/opencv_contrib-3.2.0/modules \
+    -D PYTHON_EXECUTABLE=/usr/bin/python3 \
+    -D BUILD_EXAMPLES=ON ..
+```
+
+After the `cmake` command is executed, make sure that `CPackConfig.cmake` file contains the correct package version. An incorrect or unknown version may result in failure of installation. In CPackConfig.make find `CPACK_PACKAGE_VERSION` and change the value from "unknown" to "3.2.0".
+
+As root, run `make package`.
+
+Check that the `Opencv-unknown-${ARCH}-*.deb` packages exist.
+
+## OpenCL Support
+
+The package enables use of OpenCL, but OpenCL libraries need to be installed separately from this packages. For c++ developers, add the path of OpenCL libraries to `LD_LIBRARY_PATH` variable and for python developers do the following
+
+```bash
+$ python3
+>>> import sys
+>>> sys.path.append('<OPENCL_PATH>')
+>>> import cv2
+>>> cv2.ocl.haveOpenCL()
+True
+>>> cv2.ocl.setUseOpenCL()
+>>> cv2.ocl.useOpenCL()
+True
+```

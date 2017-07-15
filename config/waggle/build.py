@@ -1,3 +1,4 @@
+import bisect
 import json
 import pathlib
 import tkinter
@@ -91,7 +92,8 @@ class RemoteBuildConsole:
     frame = tkinter.Frame(master)
     tkinter.Label(frame, text=label).pack(side=tkinter.TOP)
     scrollbar = tkinter.Scrollbar(frame, orient=tkinter.VERTICAL)
-    listbox = tkinter.Listbox(frame, yscrollcommand=scrollbar.set, selectmode=MULTIPLE)
+    listbox = tkinter.Listbox(
+      frame, yscrollcommand=scrollbar.set, selectmode=tkinter.EXTENDED)
     listbox.config(height=10)
     scrollbar.config(command=listbox.yview)
     scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
@@ -192,17 +194,16 @@ class RemoteBuildConsole:
     quit()
 
 
-  def _button_handle_Hello(self):
-    print(self._config)
-
-
   def _handle_add(self, entry, listbox):
-    listbox.insert(tkinter.END, entry.get())
+    entry_text = entry.get()
+    packages = list(listbox.get(0, tkinter.END))
+    listbox.insert(bisect.bisect_left(packages, entry_text), entry_text)
     entry.delete(0, tkinter.END)
 
 
   def _handle_remove(self, listbox):
-    pass
+    for index in map(int, listbox.curselection()):
+      listbox.delete(index, index)
 
 
   ### Common tab GUI handlers ###

@@ -11,7 +11,7 @@ class VarRef():
 class RemoteBuildConsole:
   def __init__(self, master):
     self._config_path = pathlib.Path("./node_sw_config.json")
-    self._config = self._load_config()
+    self._config = []
 
     # Common tab GUI variable references
     self._common_apt_listbox = VarRef()
@@ -37,15 +37,36 @@ class RemoteBuildConsole:
     self._ep_python2_entry = VarRef()
     self._ep_python3_entry = VarRef()
 
+    self._target_version_entry = None
     self._build_gui(master)
 
 
+  def _alert(self, message):
+    popup = Toplevel()
+    popup.title("Alert")
+    Message(popup, text=message).pack()
+    Button(popup, text="Dismiss", command=popup.destroy).pack()
+
+
   def _load_config(self):
-    config = {}
+    self._config = []  # array of dicts
     if self._config_path.is_file():
       with open(self._config_path) as config_file:
-        config = json.loads(f.read())
-    return config
+        self._config = json.loads(f.read())
+
+
+  def _save_config(self):
+    target_version = self._target_version_entry.get()
+    existing_versions = [d['version'] for d in self._config]
+    if not target_version in existing_versions:
+      self._alert("Target version {} exists. Unable to create new configuration."\
+        .format(target_version))
+
+
+  def _set_package_list(self, listbox, packages):
+    listbox.delete(0, tkinter.END)
+    for package in packages:
+      listbox.insert(tkinter.END, package)
 
 
   ##############################

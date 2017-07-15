@@ -3,10 +3,39 @@ import pathlib
 import tkinter
 import tkinter.ttk as ttk
 
+class VarRef():
+  def __init__(self):
+    self.var = None
+
 class RemoteBuildConsole:
   def __init__(self, master):
     self._config_path = pathlib.Path("./node_sw_config.json")
     self._config = self._load_config()
+
+    # Common tab GUI variable references
+    self._common_apt_listbox = VarRef()
+    self._common_python2_listbox = VarRef()
+    self._common_python3_listbox = VarRef()
+    self._common_apt_entry = VarRef()
+    self._common_python2_entry = VarRef()
+    self._common_python3_entry = VarRef()
+
+    # Node Controller tab GUI variable references
+    self._nc_apt_listbox = VarRef()
+    self._nc_python2_listbox = VarRef()
+    self._nc_python3_listbox = VarRef()
+    self._nc_apt_entry = VarRef()
+    self._nc_python2_entry = VarRef()
+    self._nc_python3_entry = VarRef()
+
+    # Edge Processor tab GUI variable references
+    self._ep_apt_listbox = VarRef()
+    self._ep_python2_listbox = VarRef()
+    self._ep_python3_listbox = VarRef()
+    self._ep_apt_entry = VarRef()
+    self._ep_python2_entry = VarRef()
+    self._ep_python3_entry = VarRef()
+
     self._build_gui(master)
 
 
@@ -28,13 +57,6 @@ class RemoteBuildConsole:
     self._build_menu(root)
 
     self._build_target_version_frame(main_frame)
-
-    '''
-    self.button = tkinter.Button(
-        main_frame, text="QUIT", fg="red", command=main_frame.quit
-        )
-    self.button.pack(side=tkinter.TOP)
-    '''
 
     notebook = ttk.Notebook(main_frame)
 
@@ -65,8 +87,9 @@ class RemoteBuildConsole:
     frame.pack()
 
 
-  def _build_labeled_listbox(self, master, label):
-    frame = tkinter.Frame(master, borderwidth=5)
+  def _build_labeled_listbox(self, master, label, listbox_ref):
+    # frame = tkinter.Frame(master, borderwidth=5)
+    frame = tkinter.Frame(master)
     tkinter.Label(frame, text=label).pack(side=tkinter.TOP)
     scrollbar = tkinter.Scrollbar(frame, orient=tkinter.VERTICAL)
     listbox = tkinter.Listbox(frame, yscrollcommand=scrollbar.set)
@@ -75,34 +98,48 @@ class RemoteBuildConsole:
     scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
     listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
     frame.pack(side=tkinter.RIGHT)
-    return listbox
+    listbox_ref.var = listbox
 
 
-  def _build_edit_frame(self, master, add_handler, remove_handler):
+  def _build_add_frame(self, master, label, handler, entry_ref):
     frame = tkinter.Frame(master, borderwidth=5)
-    button = tkinter.Button(frame, text="Add", command=add_handler)
-    button.pack(side=tkinter.LEFT)
     entry = tkinter.Entry(frame)
     entry.config(width=10)
     entry.pack(side=tkinter.LEFT)
-    frame.pack(side=tkinter.RIGHT)
-    return entry
+    button = tkinter.Button(frame, text=label, command=handler)
+    button.config()
+    button.pack(side=tkinter.LEFT)
+    frame.pack(side=tkinter.BOTTOM)
+    entry_ref.var = entry
+
+
+  def _build_subconfig_frame(\
+      self, page, listbox_ref, entry_ref, add_handler, remove_handler):
+    frame = tkinter.Frame(page, borderwidth=10)
+    self._build_labeled_listbox(
+      frame, "APT Packages", listbox_ref)
+    tkinter.Button(
+      frame, text="Remove", command=remove_handler)\
+      .pack(side=tkinter.BOTTOM)
+    self._build_add_frame(
+      frame, "Add", add_handler, entry_ref)
+    frame.pack(side=tkinter.LEFT)
 
 
   def _build_common_page(self, notebook):
     page = ttk.Frame(notebook)
 
-    self._common_apt_listbox = self._build_labeled_listbox(page, "APT Packages")
-    self._common_apt_add_button = self._build_edit_frame(
-      page, self._handle_common_apt_add, self._handle_common_apt_remove)
+    self._build_subconfig_frame(
+      page, self._common_apt_listbox, self._common_apt_entry,
+      self._handle_common_apt_add, self._handle_common_apt_remove)
 
-    self._common_python2_listbox = self._build_labeled_listbox(page, "Python 2 Packages")
-    self._common_python2_add_button = self._build_edit_frame(
-      page, self._handle_common_python2_add, self._handle_common_python2_remove)
+    self._build_subconfig_frame(
+      page, self._common_python2_listbox, self._common_python2_entry,
+      self._handle_common_python2_add, self._handle_common_python2_remove)
 
-    self._common_python3_listbox = self._build_labeled_listbox(page, "Python 3 Packages")
-    self._common_python3_add_button = self._build_edit_frame(
-      page, self._handle_common_python3_add, self._handle_common_python3_remove)
+    self._build_subconfig_frame(
+      page, self._common_python3_listbox, self._common_python3_entry,
+      self._handle_common_python3_add, self._handle_common_python3_remove)
 
     notebook.add(page, text='Common')
 
@@ -110,6 +147,17 @@ class RemoteBuildConsole:
   def _build_nc_page(self, notebook):
     page = ttk.Frame(notebook)
 
+    self._build_subconfig_frame(
+      page, self._nc_apt_listbox, self._nc_apt_entry,
+      self._handle_nc_apt_add, self._handle_nc_apt_remove)
+
+    self._build_subconfig_frame(
+      page, self._nc_python2_listbox, self._nc_python2_entry,
+      self._handle_nc_python2_add, self._handle_nc_python2_remove)
+
+    self._build_subconfig_frame(
+      page, self._nc_python3_listbox, self._nc_python3_entry,
+      self._handle_nc_python3_add, self._handle_nc_python3_remove)
 
     notebook.add(page, text='Node Controller')
 
@@ -117,15 +165,24 @@ class RemoteBuildConsole:
   def _build_ep_page(self, notebook):
     page = ttk.Frame(notebook)
 
-    self.hi_there = tkinter.Button(page, text="Hello", command=self._button_handle_Hello)
-    self.hi_there.pack(side=tkinter.LEFT)
+    self._build_subconfig_frame(
+      page, self._ep_apt_listbox, self._ep_apt_entry,
+      self._handle_ep_apt_add, self._handle_ep_apt_remove)
+
+    self._build_subconfig_frame(
+      page, self._ep_python2_listbox, self._ep_python2_entry,
+      self._handle_ep_python2_add, self._handle_ep_python2_remove)
+
+    self._build_subconfig_frame(
+      page, self._ep_python3_listbox, self._ep_python3_entry,
+      self._handle_ep_python3_add, self._handle_ep_python3_remove)
 
     notebook.add(page, text='Edge Processor')
 
 
-  ######################
-  ### Event Handlers ###
-  ######################
+  ##########################
+  ### GUI Event Handlers ###
+  ##########################
 
   def _menu_handle_save(self):
     pass
@@ -140,31 +197,115 @@ class RemoteBuildConsole:
     print(self._config)
 
 
+  def _handle_add(self, entry, listbox):
+    listbox.insert(tkinter.END, entry.get())
+    entry.delete(0, tkinter.END)
+
+
+  def _handle_remove(self, listbox):
+    pass
+
+
+  ### Common tab GUI handlers ###
+
   def _handle_common_apt_add(self):
-    button = self._common_apt_add_button
-    listbox = self._common_apt_listbox
+    entry = self._common_apt_entry.var
+    listbox = self._common_apt_listbox.var
+    self._handle_add(entry, listbox)
 
 
   def _handle_common_apt_remove(self):
-    button = self._common_apt_remove_button
-    listbox = self._common_apt_listbox
+    listbox = self._common_apt_listbox.var
+    self._handle_remove(listbox)
 
 
   def _handle_common_python2_add(self):
-    button = self._common_python2_add_button
-    listbox = self._common_python2_listbox
+    entry = self._common_python2_entry.var
+    listbox = self._common_python2_listbox.var
+    self._handle_add(entry, listbox)
 
 
   def _handle_common_python2_remove(self):
-    button = self._common_python2_remove_button
-    listbox = self._common_python2_listbox
+    listbox = self._common_python2_listbox.var
+    self._handle_remove(listbox)
 
 
   def _handle_common_python3_add(self):
-    button = self._common_python3_add_button
-    listbox = self._common_python3_listbox
+    entry = self._common_python3_entry.var
+    listbox = self._common_python3_listbox.var
+    self._handle_add(entry, listbox)
 
 
   def _handle_common_python3_remove(self):
-    button = self._common_python3_remove_button
-    listbox = self._common_python3_listbox
+    listbox = self._common_python3_listbox.var
+    self._handle_remove(listbox)
+
+
+  ### Node Controller tab GUI handlers ###
+
+  def _handle_nc_apt_add(self):
+    entry = self._nc_apt_entry.var
+    listbox = self._nc_apt_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_nc_apt_remove(self):
+    listbox = self._nc_apt_listbox.var
+    self._handle_remove(listbox)
+
+
+  def _handle_nc_python2_add(self):
+    entry = self._nc_python2_entry.var
+    listbox = self._nc_python2_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_nc_python2_remove(self):
+    listbox = self._nc_python2_listbox.var
+    self._handle_remove(listbox)
+
+
+  def _handle_nc_python3_add(self):
+    entry = self._nc_python3_entry.var
+    listbox = self._nc_python3_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_nc_python3_remove(self):
+    listbox = self._nc_python3_listbox.var
+    self._handle_remove(listbox)
+
+
+  ### Common tab GUI handlers ###
+
+  def _handle_ep_apt_add(self):
+    entry = self._ep_apt_entry.var
+    listbox = self._ep_apt_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_ep_apt_remove(self):
+    listbox = self._ep_apt_listbox.var
+    self._handle_remove(listbox)
+
+
+  def _handle_ep_python2_add(self):
+    entry = self._ep_python2_entry.var
+    listbox = self._ep_python2_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_ep_python2_remove(self):
+    listbox = self._ep_python2_listbox.var
+    self._handle_remove(listbox)
+
+
+  def _handle_ep_python3_add(self):
+    entry = self._ep_python3_entry.var
+    listbox = self._ep_python3_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_ep_python3_remove(self):
+    listbox = self._ep_python3_listbox.var
+    self._handle_remove(listbox)

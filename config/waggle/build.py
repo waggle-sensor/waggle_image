@@ -59,12 +59,11 @@ class RemoteBuildConsole:
     self._build_target_version_frame(main_frame)
 
     notebook = ttk.Notebook(main_frame)
-
     self._build_common_page(notebook)
     self._build_nc_page(notebook)
     self._build_ep_page(notebook)
-
     notebook.pack(expand=1, fill="both")
+
     main_frame.pack()
 
 
@@ -92,7 +91,7 @@ class RemoteBuildConsole:
     frame = tkinter.Frame(master)
     tkinter.Label(frame, text=label).pack(side=tkinter.TOP)
     scrollbar = tkinter.Scrollbar(frame, orient=tkinter.VERTICAL)
-    listbox = tkinter.Listbox(frame, yscrollcommand=scrollbar.set)
+    listbox = tkinter.Listbox(frame, yscrollcommand=scrollbar.set, selectmode=MULTIPLE)
     listbox.config(height=10)
     scrollbar.config(command=listbox.yview)
     scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)

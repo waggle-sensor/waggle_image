@@ -10,7 +10,7 @@ class VarRef():
   def __init__(self):
     self.var = None
 
-class RemoteBuildConsole:
+class BuildConfigurationEditor:
   def __init__(self):
     self._root = tkinter.Tk()
 
@@ -22,25 +22,31 @@ class RemoteBuildConsole:
     self._common_apt_listbox = VarRef()
     self._common_python2_listbox = VarRef()
     self._common_python3_listbox = VarRef()
+    self._common_debian_listbox = VarRef()
     self._common_apt_entry = VarRef()
     self._common_python2_entry = VarRef()
     self._common_python3_entry = VarRef()
+    self._common_debian_entry = VarRef()
 
     # Node Controller tab GUI variable references
     self._nc_apt_listbox = VarRef()
     self._nc_python2_listbox = VarRef()
     self._nc_python3_listbox = VarRef()
+    self._nc_debian_listbox = VarRef()
     self._nc_apt_entry = VarRef()
     self._nc_python2_entry = VarRef()
     self._nc_python3_entry = VarRef()
+    self._nc_debian_entry = VarRef()
 
     # Edge Processor tab GUI variable references
     self._ep_apt_listbox = VarRef()
     self._ep_python2_listbox = VarRef()
     self._ep_python3_listbox = VarRef()
+    self._ep_debian_listbox = VarRef()
     self._ep_apt_entry = VarRef()
     self._ep_python2_entry = VarRef()
     self._ep_python3_entry = VarRef()
+    self._ep_debian_entry = VarRef()
 
     self._version_options = None
     self._version_selection = None
@@ -93,12 +99,15 @@ class RemoteBuildConsole:
       "common_apt_deps": list(self._common_apt_listbox.var.get(0, tkinter.END)),
       "common_python2_deps": list(self._common_python2_listbox.var.get(0, tkinter.END)),
       "common_python3_deps": list(self._common_python3_listbox.var.get(0, tkinter.END)),
+      "common_debian_deps": list(self._common_debian_listbox.var.get(0, tkinter.END)),
       "nc_apt_deps": list(self._nc_apt_listbox.var.get(0, tkinter.END)),
       "nc_python2_deps": list(self._nc_python2_listbox.var.get(0, tkinter.END)),
       "nc_python3_deps": list(self._nc_python3_listbox.var.get(0, tkinter.END)),
+      "nc_debian_deps": list(self._nc_debian_listbox.var.get(0, tkinter.END)),
       "ep_apt_deps": list(self._ep_apt_listbox.var.get(0, tkinter.END)),
       "ep_python2_deps": list(self._ep_python2_listbox.var.get(0, tkinter.END)),
-      "ep_python3_deps": list(self._ep_python3_listbox.var.get(0, tkinter.END)) }
+      "ep_python3_deps": list(self._ep_python3_listbox.var.get(0, tkinter.END)),
+      "ep_debian_deps": list(self._ep_debian_listbox.var.get(0, tkinter.END)) }
     self._config.append(subconfig)
     with open(str(self._config_path), 'w') as config_file:
       config_file.write(json.dumps(self._config))
@@ -106,6 +115,8 @@ class RemoteBuildConsole:
   def _populate_subconfigs(self):
     version = self._version_selection.get()
     target_subconfig = {}
+    if len(self._config) == 0:
+      return
     for subconfig in self._config:
       if version == subconfig['version']:
         target_subconfig = subconfig
@@ -114,26 +125,35 @@ class RemoteBuildConsole:
     listboxes = [self._common_apt_listbox.var,
                 self._common_python2_listbox.var,
                 self._common_python3_listbox.var,
+                self._common_debian_listbox.var,
                 self._nc_apt_listbox.var,
                 self._nc_python2_listbox.var,
                 self._nc_python3_listbox.var,
+                self._nc_debian_listbox.var,
                 self._ep_apt_listbox.var,
                 self._ep_python2_listbox.var,
-                self._ep_python3_listbox.var]
+                self._ep_python3_listbox.var,
+                self._ep_debian_listbox.var]
     fields = ["common_apt_deps",
               "common_python2_deps",
               "common_python3_deps",
+              "common_debian_deps",
               "nc_apt_deps",
               "nc_python2_deps",
               "nc_python3_deps",
+              "nc_debian_deps",
               "ep_apt_deps",
               "ep_python2_deps",
-              "ep_python3_deps"]
+              "ep_python3_deps",
+              "ep_debian_deps"]
     for index,listbox in enumerate(listboxes):
       listbox.delete(0, tkinter.END)
-      deps = subconfig[fields[index]]
-      for dep in deps:
-        listbox.insert(tkinter.END, dep)
+      try:
+        deps = subconfig[fields[index]]
+        for dep in deps:
+          listbox.insert(tkinter.END, dep)
+      except Exception as e:
+        pass
 
   def _set_package_list(self, listbox, packages):
     listbox.delete(0, tkinter.END)
@@ -146,7 +166,7 @@ class RemoteBuildConsole:
   ##############################
   
   def _build_gui(self):
-    self._root.wm_title("Waggle Remote Build Console")
+    self._root.wm_title("Waggle Build Configuration Editor")
     main_frame = tkinter.Frame(self._root)
 
     self._build_menu(self._root)
@@ -180,7 +200,7 @@ class RemoteBuildConsole:
     versions = sorted([d['version'] for d in self._config])
     self._version_selection = tkinter.StringVar(available_frame)
     if len(versions) > 0:
-      self._version_selection.set(versions[0]) # default value
+      self._version_selection.set(versions[-1]) # default value
     else:
       versions = [""]
       #dropdown_box = tkinter.OptionMenu(available_frame, selection, "").pack()
@@ -205,7 +225,7 @@ class RemoteBuildConsole:
     scrollbar = tkinter.Scrollbar(frame, orient=tkinter.VERTICAL)
     listbox = tkinter.Listbox(
       frame, yscrollcommand=scrollbar.set, selectmode=tkinter.EXTENDED)
-    listbox.config(height=10)
+    listbox.config(width=18, height=10)
     scrollbar.config(command=listbox.yview)
     scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
     listbox.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
@@ -227,9 +247,9 @@ class RemoteBuildConsole:
 
   def _build_subconfig_frame(\
       self, page, title, listbox_ref, entry_ref, add_handler, remove_handler):
-    frame = tkinter.Frame(page, borderwidth=10)
+    frame = tkinter.Frame(page, borderwidth=5)
     self._build_labeled_listbox(
-      frame, "{} Packages".format(title), listbox_ref)
+      frame, "{} Dependencies".format(title), listbox_ref)
     tkinter.Button(
       frame, text="Remove", command=remove_handler)\
       .pack(side=tkinter.BOTTOM)
@@ -242,7 +262,7 @@ class RemoteBuildConsole:
     page = ttk.Frame(notebook)
 
     self._build_subconfig_frame(
-      page, "Common", self._common_apt_listbox, self._common_apt_entry,
+      page, "APT", self._common_apt_listbox, self._common_apt_entry,
       self._handle_common_apt_add, self._handle_common_apt_remove)
 
     self._build_subconfig_frame(
@@ -253,6 +273,10 @@ class RemoteBuildConsole:
       page, "Python 3", self._common_python3_listbox, self._common_python3_entry,
       self._handle_common_python3_add, self._handle_common_python3_remove)
 
+    self._build_subconfig_frame(
+      page, "Debian", self._common_debian_listbox, self._common_debian_entry,
+      self._handle_common_debian_add, self._handle_common_debian_remove)
+
     notebook.add(page, text='Common')
 
 
@@ -260,7 +284,7 @@ class RemoteBuildConsole:
     page = ttk.Frame(notebook)
 
     self._build_subconfig_frame(
-      page, "Common", self._nc_apt_listbox, self._nc_apt_entry,
+      page, "APT", self._nc_apt_listbox, self._nc_apt_entry,
       self._handle_nc_apt_add, self._handle_nc_apt_remove)
 
     self._build_subconfig_frame(
@@ -271,6 +295,10 @@ class RemoteBuildConsole:
       page, "Python 3", self._nc_python3_listbox, self._nc_python3_entry,
       self._handle_nc_python3_add, self._handle_nc_python3_remove)
 
+    self._build_subconfig_frame(
+      page, "Debian", self._nc_debian_listbox, self._nc_debian_entry,
+      self._handle_nc_debian_add, self._handle_nc_debian_remove)
+
     notebook.add(page, text='Node Controller')
 
 
@@ -278,7 +306,7 @@ class RemoteBuildConsole:
     page = ttk.Frame(notebook)
 
     self._build_subconfig_frame(
-      page, "Common", self._ep_apt_listbox, self._ep_apt_entry,
+      page, "APT", self._ep_apt_listbox, self._ep_apt_entry,
       self._handle_ep_apt_add, self._handle_ep_apt_remove)
 
     self._build_subconfig_frame(
@@ -288,6 +316,10 @@ class RemoteBuildConsole:
     self._build_subconfig_frame(
       page, "Python 3", self._ep_python3_listbox, self._ep_python3_entry,
       self._handle_ep_python3_add, self._handle_ep_python3_remove)
+
+    self._build_subconfig_frame(
+      page, "Debian", self._ep_debian_listbox, self._ep_debian_entry,
+      self._handle_ep_debian_add, self._handle_ep_debian_remove)
 
     notebook.add(page, text='Edge Processor')
 
@@ -321,11 +353,14 @@ class RemoteBuildConsole:
 
 
   def _handle_remove(self, listbox):
-    for index in map(int, listbox.curselection()):
-      listbox.delete(index, index)
+    indicies = list(map(int, listbox.curselection()))
+    while len(indicies) > 0:
+      listbox.delete(indicies[0], indicies[0])
+      indicies = list(map(int, listbox.curselection()))
 
   def _handle_version_set(self, *args):
     self._populate_subconfigs()
+    self._target_version_entry.delete(0,tkinter.END)
 
   ### Common tab GUI handlers ###
 
@@ -359,6 +394,17 @@ class RemoteBuildConsole:
 
   def _handle_common_python3_remove(self):
     listbox = self._common_python3_listbox.var
+    self._handle_remove(listbox)
+
+
+  def _handle_common_debian_add(self):
+    entry = self._common_debian_entry.var
+    listbox = self._common_debian_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_common_debian_remove(self):
+    listbox = self._common_debian_listbox.var
     self._handle_remove(listbox)
 
 
@@ -397,6 +443,17 @@ class RemoteBuildConsole:
     self._handle_remove(listbox)
 
 
+  def _handle_nc_debian_add(self):
+    entry = self._nc_debian_entry.var
+    listbox = self._nc_debian_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_nc_debian_remove(self):
+    listbox = self._nc_debian_listbox.var
+    self._handle_remove(listbox)
+
+
   ### Common tab GUI handlers ###
 
   def _handle_ep_apt_add(self):
@@ -429,4 +486,15 @@ class RemoteBuildConsole:
 
   def _handle_ep_python3_remove(self):
     listbox = self._ep_python3_listbox.var
+    self._handle_remove(listbox)
+
+
+  def _handle_ep_debian_add(self):
+    entry = self._ep_debian_entry.var
+    listbox = self._ep_debian_listbox.var
+    self._handle_add(entry, listbox)
+
+
+  def _handle_ep_debian_remove(self):
+    listbox = self._ep_debian_listbox.var
     self._handle_remove(listbox)

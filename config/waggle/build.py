@@ -1,6 +1,8 @@
 import bisect
+import inspect
 import json
 import pathlib
+import re
 import tkinter
 import tkinter.ttk as ttk
 
@@ -9,9 +11,12 @@ class VarRef():
     self.var = None
 
 class RemoteBuildConsole:
-  def __init__(self, master):
+  def __init__(self):
+    self._root = tkinter.Tk()
+
     self._config_path = pathlib.Path("./node_sw_config.json")
     self._config = []
+    self._load_config()
 
     # Common tab GUI variable references
     self._common_apt_listbox = VarRef()
@@ -37,31 +42,98 @@ class RemoteBuildConsole:
     self._ep_python2_entry = VarRef()
     self._ep_python3_entry = VarRef()
 
+    self._version_options = None
+    self._version_selection = None
     self._target_version_entry = None
-    self._build_gui(master)
+    self._build_gui()
+
+
+  def run(self):
+    self._root.mainloop()
 
 
   def _alert(self, message):
-    popup = Toplevel()
+    popup = tkinter.Toplevel()
     popup.title("Alert")
-    Message(popup, text=message).pack()
-    Button(popup, text="Dismiss", command=popup.destroy).pack()
+    width = 300
+    height = 100
+    screen_width = self._root.winfo_screenwidth()
+    screen_height = self._root.winfo_screenheight()
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    popup.geometry('%dx%d+%d+%d' % (width, height, x, y))
+    tkinter.Message(
+      popup, text=message, foreground='red', width=width, justify=tkinter.CENTER).pack()
+    tkinter.Button(popup, text="Dismiss", command=popup.destroy).pack()
 
 
   def _load_config(self):
     self._config = []  # array of dicts
     if self._config_path.is_file():
-      with open(self._config_path) as config_file:
-        self._config = json.loads(f.read())
+      with open(str(self._config_path)) as config_file:
+        self._config = json.loads(config_file.read())
 
 
   def _save_config(self):
     target_version = self._target_version_entry.get()
-    existing_versions = [d['version'] for d in self._config]
-    if not target_version in existing_versions:
-      self._alert("Target version {} exists. Unable to create new configuration."\
+    if not re.match('[0-9]+\.[0-9]+\.[0-9]+', target_version):
+      self._alert(
+        "Invalid Min. Target Version '{}'.\nUnable to create new configuration."\
         .format(target_version))
 
+    existing_versions = sorted([d['version'] for d in self._config])
+    if target_version in existing_versions:
+      self._alert(
+        "Min. Target version '{}' already exists.\nUnable to create new configuration."\
+        .format(target_version))
+      return
+
+    subconfig = {
+      "version": target_version,
+      "common_apt_deps": list(self._common_apt_listbox.var.get(0, tkinter.END)),
+      "common_python2_deps": list(self._common_python2_listbox.var.get(0, tkinter.END)),
+      "common_python3_deps": list(self._common_python3_listbox.var.get(0, tkinter.END)),
+      "nc_apt_deps": list(self._nc_apt_listbox.var.get(0, tkinter.END)),
+      "nc_python2_deps": list(self._nc_python2_listbox.var.get(0, tkinter.END)),
+      "nc_python3_deps": list(self._nc_python3_listbox.var.get(0, tkinter.END)),
+      "ep_apt_deps": list(self._ep_apt_listbox.var.get(0, tkinter.END)),
+      "ep_python2_deps": list(self._ep_python2_listbox.var.get(0, tkinter.END)),
+      "ep_python3_deps": list(self._ep_python3_listbox.var.get(0, tkinter.END)) }
+    self._config.append(subconfig)
+    with open(str(self._config_path), 'w') as config_file:
+      config_file.write(json.dumps(self._config))
+
+  def _populate_subconfigs(self):
+    version = self._version_selection.get()
+    target_subconfig = {}
+    for subconfig in self._config:
+      if version == subconfig['version']:
+        target_subconfig = subconfig
+        break
+    # TODO actually populate them...
+    listboxes = [self._common_apt_listbox.var,
+                self._common_python2_listbox.var,
+                self._common_python3_listbox.var,
+                self._nc_apt_listbox.var,
+                self._nc_python2_listbox.var,
+                self._nc_python3_listbox.var,
+                self._ep_apt_listbox.var,
+                self._ep_python2_listbox.var,
+                self._ep_python3_listbox.var]
+    fields = ["common_apt_deps",
+              "common_python2_deps",
+              "common_python3_deps",
+              "nc_apt_deps",
+              "nc_python2_deps",
+              "nc_python3_deps",
+              "ep_apt_deps",
+              "ep_python2_deps",
+              "ep_python3_deps"]
+    for index,listbox in enumerate(listboxes):
+      listbox.delete(0, tkinter.END)
+      deps = subconfig[fields[index]]
+      for dep in deps:
+        listbox.insert(tkinter.END, dep)
 
   def _set_package_list(self, listbox, packages):
     listbox.delete(0, tkinter.END)
@@ -73,12 +145,13 @@ class RemoteBuildConsole:
   ### GUI Building Functions ###
   ##############################
   
-  def _build_gui(self, root):
-    main_frame = tkinter.Frame(root)
+  def _build_gui(self):
+    self._root.wm_title("Waggle Remote Build Console")
+    main_frame = tkinter.Frame(self._root)
 
-    self._build_menu(root)
+    self._build_menu(self._root)
 
-    self._build_target_version_frame(main_frame)
+    self._build_version_frame(main_frame)
 
     notebook = ttk.Notebook(main_frame)
     self._build_common_page(notebook)
@@ -87,6 +160,8 @@ class RemoteBuildConsole:
     notebook.pack(expand=1, fill="both")
 
     main_frame.pack()
+
+    self._populate_subconfigs()
 
 
   def _build_menu(self, master):
@@ -99,13 +174,28 @@ class RemoteBuildConsole:
     master.config(menu=menu_bar)
 
 
-  def _build_target_version_frame(self, master):
-    frame = tkinter.Frame(master, borderwidth=5)
-    tkinter.Label(frame, text="Target Version").pack(side=tkinter.LEFT)
-    self._target_version_entry = tkinter.Entry(frame)
+  def _build_version_frame(self, master):
+    available_frame = tkinter.Frame(master, borderwidth=5)
+    tkinter.Label(available_frame, text="Available Versions").pack(side=tkinter.LEFT)
+    versions = sorted([d['version'] for d in self._config])
+    self._version_selection = tkinter.StringVar(available_frame)
+    if len(versions) > 0:
+      self._version_selection.set(versions[0]) # default value
+    else:
+      versions = [""]
+      #dropdown_box = tkinter.OptionMenu(available_frame, selection, "").pack()
+    self._version_selection.trace("w", self._handle_version_set)
+    self._version_options = tkinter.OptionMenu(
+      available_frame, self._version_selection, *tuple(versions))
+    self._version_options.pack()
+    available_frame.pack()
+
+    target_frame = tkinter.Frame(master, borderwidth=5)
+    tkinter.Label(target_frame, text="Min. Target Version").pack(side=tkinter.LEFT)
+    self._target_version_entry = tkinter.Entry(target_frame)
     self._target_version_entry.config(width=10)
     self._target_version_entry.pack(side=tkinter.LEFT)
-    frame.pack()
+    target_frame.pack()
 
 
   def _build_labeled_listbox(self, master, label, listbox_ref):
@@ -136,10 +226,10 @@ class RemoteBuildConsole:
 
 
   def _build_subconfig_frame(\
-      self, page, listbox_ref, entry_ref, add_handler, remove_handler):
+      self, page, title, listbox_ref, entry_ref, add_handler, remove_handler):
     frame = tkinter.Frame(page, borderwidth=10)
     self._build_labeled_listbox(
-      frame, "APT Packages", listbox_ref)
+      frame, "{} Packages".format(title), listbox_ref)
     tkinter.Button(
       frame, text="Remove", command=remove_handler)\
       .pack(side=tkinter.BOTTOM)
@@ -152,15 +242,15 @@ class RemoteBuildConsole:
     page = ttk.Frame(notebook)
 
     self._build_subconfig_frame(
-      page, self._common_apt_listbox, self._common_apt_entry,
+      page, "Common", self._common_apt_listbox, self._common_apt_entry,
       self._handle_common_apt_add, self._handle_common_apt_remove)
 
     self._build_subconfig_frame(
-      page, self._common_python2_listbox, self._common_python2_entry,
+      page, "Python 2", self._common_python2_listbox, self._common_python2_entry,
       self._handle_common_python2_add, self._handle_common_python2_remove)
 
     self._build_subconfig_frame(
-      page, self._common_python3_listbox, self._common_python3_entry,
+      page, "Python 3", self._common_python3_listbox, self._common_python3_entry,
       self._handle_common_python3_add, self._handle_common_python3_remove)
 
     notebook.add(page, text='Common')
@@ -170,15 +260,15 @@ class RemoteBuildConsole:
     page = ttk.Frame(notebook)
 
     self._build_subconfig_frame(
-      page, self._nc_apt_listbox, self._nc_apt_entry,
+      page, "Common", self._nc_apt_listbox, self._nc_apt_entry,
       self._handle_nc_apt_add, self._handle_nc_apt_remove)
 
     self._build_subconfig_frame(
-      page, self._nc_python2_listbox, self._nc_python2_entry,
+      page, "Python 2", self._nc_python2_listbox, self._nc_python2_entry,
       self._handle_nc_python2_add, self._handle_nc_python2_remove)
 
     self._build_subconfig_frame(
-      page, self._nc_python3_listbox, self._nc_python3_entry,
+      page, "Python 3", self._nc_python3_listbox, self._nc_python3_entry,
       self._handle_nc_python3_add, self._handle_nc_python3_remove)
 
     notebook.add(page, text='Node Controller')
@@ -188,15 +278,15 @@ class RemoteBuildConsole:
     page = ttk.Frame(notebook)
 
     self._build_subconfig_frame(
-      page, self._ep_apt_listbox, self._ep_apt_entry,
+      page, "Common", self._ep_apt_listbox, self._ep_apt_entry,
       self._handle_ep_apt_add, self._handle_ep_apt_remove)
 
     self._build_subconfig_frame(
-      page, self._ep_python2_listbox, self._ep_python2_entry,
+      page, "Python 2", self._ep_python2_listbox, self._ep_python2_entry,
       self._handle_ep_python2_add, self._handle_ep_python2_remove)
 
     self._build_subconfig_frame(
-      page, self._ep_python3_listbox, self._ep_python3_entry,
+      page, "Python 3", self._ep_python3_listbox, self._ep_python3_entry,
       self._handle_ep_python3_add, self._handle_ep_python3_remove)
 
     notebook.add(page, text='Edge Processor')
@@ -207,7 +297,15 @@ class RemoteBuildConsole:
   ##########################
 
   def _menu_handle_save(self):
-    pass
+    self._save_config()
+    versions = sorted([d['version'] for d in self._config])
+    new_version = self._target_version_entry.get()
+    menu = self._version_options['menu']
+    menu.delete(0, tkinter.END)
+    for version in versions:
+      menu.add_command(
+        label=version, command=tkinter._setit(self._version_selection, version))
+    self._version_selection.set(new_version)
 
 
   def _menu_handle_quit(self):
@@ -226,6 +324,8 @@ class RemoteBuildConsole:
     for index in map(int, listbox.curselection()):
       listbox.delete(index, index)
 
+  def _handle_version_set(self, *args):
+    self._populate_subconfigs()
 
   ### Common tab GUI handlers ###
 

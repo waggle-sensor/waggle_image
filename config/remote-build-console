@@ -10,12 +10,8 @@ def main():
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-  root = tkinter.Tk()
-  root.wm_title("Waggle Remote Build Console")
-
-  app = build.RemoteBuildConsole(root)
-
-  root.mainloop()
+  app = build.RemoteBuildConsole()
+  app.run()
   # root.destroy() # optional; see description below
 
 

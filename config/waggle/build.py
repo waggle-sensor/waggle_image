@@ -5,12 +5,35 @@ import pathlib
 import re
 import tkinter
 import tkinter.ttk as ttk
+import tinydb
+
+class Configuration:
+  def __init__(self):
+    self._db = tinydb.TinyDB("./build_config.json")
+    self._build_versions = self._db.table('Build Version')
+    self._base_versions = self._db.table('Base Version')
+    self._dependencies = self._db.table('Dependency')
+    self._dependency_types = self._db.table('Dependency Type')
+    self._deploy_configs = self._db.table('Deployment Configuration')
+
+  def get_db(self):
+    return self._db
+
+  def add_dependency_type(self, name):
+    self._dependency_types.insert({'name': name})
+
+  def get_dependency_types(self):
+    return self._dependency_types.all()
+
+  def get_dependency_type_id(self, name):
+    dep_type_entry = tinydb.Query()
+    return self._dependency_types.get(dep_type_entry.name == name).eid
 
 class VarRef():
   def __init__(self):
     self.var = None
 
-class BuildConfigurationEditor:
+class ConfigurationEditor:
   def __init__(self):
     self._root = tkinter.Tk()
 

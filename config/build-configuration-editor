@@ -10,7 +10,7 @@ def main():
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-  app = build.BuildConfigurationEditor()
+  app = build.ConfigurationEditor()
   app.run()
   # root.destroy() # optional; see description below
 

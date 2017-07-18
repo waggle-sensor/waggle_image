@@ -1,0 +1,38 @@
+#!/usr/bin/python3
+
+import os
+import os.path
+import tinydb
+
+import waggle.build as build
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+
+  '''
+  dependencies.insert({'name': '', 'type': 'apt'})
+  dependencies.insert({'name': '', 'type': 'python2'})
+  dependencies.insert({'name': '', 'type': 'python3'})
+  dependencies.insert({'name': '', 'type': 'deb'})
+  '''
+
+  dep_types = ['apt', 'python2', 'python3', 'deb']
+  build_config = build.Configuration()
+  for dep_type in dep_types:
+  	build_config.add_dependency_type(dep_type)
+
+  dep_types = build_config.get_dependency_types()
+  for dep_type in dep_types:
+  	print('{} {}'.format(build_config.get_dependency_type_id(dep_type['name']), dep_type['name']))
+
+  '''
+  db = build_config.get_db()
+  table = db.table('Dependency Type')
+  dep_type_entry = tinydb.Query()
+  dep_type = table.get(dep_type_entry.name == 'python3')
+  print(dep_type.eid)
+  '''
+
+if __name__ == '__main__':
+  main()

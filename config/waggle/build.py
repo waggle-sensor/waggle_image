@@ -19,15 +19,35 @@ class Configuration:
   def get_db(self):
     return self._db
 
-  def add_dependency_type(self, name):
+  def add_dependency_type(self, name='', type_id=0):
     self._dependency_types.insert({'name': name})
+
+  def get_dependency_type(self, type_id):
+    return self._dependency_types.get(eid=type_id)
 
   def get_dependency_types(self):
     return self._dependency_types.all()
 
   def get_dependency_type_id(self, name):
     dep_type_entry = tinydb.Query()
-    return self._dependency_types.get(dep_type_entry.name == name).eid
+    dep_type = self._dependency_types.get(dep_type_entry.name == name)
+    if dep_type == None:
+      return None
+    return dep_type.eid
+
+  def add_dependency(self, name, type_id):
+    self._dependencies.insert({'name': name, 'type': type_id})
+
+  def get_dependencies(self):
+    return self._dependencies.all()
+
+  def get_dependency_id(self, name, type_id):
+    dep_entry = tinydb.Query()
+    dep = self._dependencies.get((dep_entry.name == name) & (dep_entry.type == type_id))
+    if dep == None:
+      return None
+    return dep.eid
+
 
 class VarRef():
   def __init__(self):

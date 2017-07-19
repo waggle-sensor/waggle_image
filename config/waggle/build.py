@@ -12,12 +12,21 @@ class Configuration:
     self._db = tinydb.TinyDB("./build_config.json")
     self._build_versions = self._db.table('Build Version')
     self._base_versions = self._db.table('Base Version')
+    self._node_elements = self._db.table('Node Element')
+    self._cpu_architectures = self._db.table('CPU Architecture')
     self._dependencies = self._db.table('Dependency')
     self._dependency_types = self._db.table('Dependency Type')
     self._deploy_configs = self._db.table('Deployment Configuration')
 
   def get_db(self):
     return self._db
+
+  def get_id_by_name(self, table, name):
+    entry = tinydb.Query()
+    result = table.get(entry.name == name)
+    if result == None:
+      return None
+    return result.eid
 
   def add_dependency_type(self, name='', type_id=0):
     self._dependency_types.insert({'name': name})
@@ -29,11 +38,7 @@ class Configuration:
     return self._dependency_types.all()
 
   def get_dependency_type_id(self, name):
-    dep_type_entry = tinydb.Query()
-    dep_type = self._dependency_types.get(dep_type_entry.name == name)
-    if dep_type == None:
-      return None
-    return dep_type.eid
+    return self.get_id_by_name(self._dependency_types, name)
 
   def add_dependency(self, name, type_id):
     self._dependencies.insert({'name': name, 'type': type_id})
@@ -48,6 +53,25 @@ class Configuration:
       return None
     return dep.eid
 
+  def add_node_element(self, name):
+    if self._node_elements.get(tinydb.Query().name == name) == None:
+      self._node_elements.insert({'name': name})
+
+  def get_node_element_id(self, name):
+    return self.get_id_by_name(self._node_elements, name)
+
+  def get_node_elements(self):
+    return self._node_elements.all()
+
+  def add_cpu_architecture(self, name):
+    if self._cpu_architectures.get(tinydb.Query().name == name) == None:
+      self._cpu_architectures.insert({'name': name})
+
+  def get_cpu_architecture_id(self, name):
+    return self.get_id_by_name(self._node_elements, name)
+
+  def get_cpu_architectures(self):
+    return self._cpu_architectures.all()
 
 class VarRef():
   def __init__(self):

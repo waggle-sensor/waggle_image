@@ -21,57 +21,77 @@ class Configuration:
   def get_db(self):
     return self._db
 
-  def get_id_by_name(self, table, name):
+  def get_by_name_or_id(self, table, name, eid):
+    if eid > 0:
+      return table.get(eid=eid)
     entry = tinydb.Query()
     result = table.get(entry.name == name)
     if result == None:
       return None
-    return result.eid
+    return result
 
-  def add_dependency_type(self, name='', type_id=0):
-    self._dependency_types.insert({'name': name})
+  # Dependency Type functions
+  def add_dependency_type(self, name):
+    return self._dependency_types.insert({'name': name})
 
-  def get_dependency_type(self, type_id):
-    return self._dependency_types.get(eid=type_id)
+  def get_dependency_type(self, name='', eid=0):
+    return self.get_by_name_or_id(self._dependency_types, name, eid)
 
   def get_dependency_types(self):
     return self._dependency_types.all()
 
-  def get_dependency_type_id(self, name):
-    return self.get_id_by_name(self._dependency_types, name)
 
+  # Dependency functions
   def add_dependency(self, name, type_id):
-    self._dependencies.insert({'name': name, 'type': type_id})
+    return self._dependencies.insert({'name': name, 'type': type_id})
 
-  def get_dependencies(self):
-    return self._dependencies.all()
-
-  def get_dependency_id(self, name, type_id):
+  def get_dependency(self, name='', type_id='', eid=0):
+    if eid > 0:
+      return self._dependencies.get(eid=eid)
     dep_entry = tinydb.Query()
     dep = self._dependencies.get((dep_entry.name == name) & (dep_entry.type == type_id))
     if dep == None:
       return None
-    return dep.eid
+    return dep
 
+  def get_dependencies(self):
+    return self._dependencies.all()
+
+
+  # Node Element functions
   def add_node_element(self, name):
     if self._node_elements.get(tinydb.Query().name == name) == None:
-      self._node_elements.insert({'name': name})
+      return self._node_elements.insert({'name': name})
+    return None
 
-  def get_node_element_id(self, name):
-    return self.get_id_by_name(self._node_elements, name)
+  def get_node_element(self, name='', eid=0):
+    return self.get_by_name_or_id(self._node_elements, name, eid)
 
   def get_node_elements(self):
     return self._node_elements.all()
 
+
+  # CPU Architecture functions
   def add_cpu_architecture(self, name):
     if self._cpu_architectures.get(tinydb.Query().name == name) == None:
-      self._cpu_architectures.insert({'name': name})
+      return self._cpu_architectures.insert({'name': name})
+    return None
 
-  def get_cpu_architecture_id(self, name):
-    return self.get_id_by_name(self._node_elements, name)
+  def get_cpu_architecture(self, name='', eid=0):
+    return self.get_by_name_or_id(self._cpu_architectures, name, eid)
 
   def get_cpu_architectures(self):
     return self._cpu_architectures.all()
+
+
+  # base version functions
+  def add_base_version(self, uuid, date, dependency_ids):
+    if self._cpu_architectures.get(tinydb.Query().uuid == uuid) == None:
+      return self._base_versions.insert({'uuid': uuid, 'date': date, 'dependencies': dependency_ids})
+
+  def get_base_versions(self):
+    return self._base_versions.all()
+
 
 class VarRef():
   def __init__(self):

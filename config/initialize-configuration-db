@@ -3,18 +3,24 @@
 import os
 import os.path
 import tinydb
+import uuid
 
 import waggle.build as build
 
 def add_dependencies(build_config, dep_type_name, dep_names):
-  if build_config.get_dependency_type_id(dep_type_name) == None:
+  if build_config.get_dependency_type(dep_type_name) == None:
     build_config.add_dependency_type(dep_type_name)
 
-  dep_type = build_config.get_dependency_type_id(dep_type_name)
+  dep_type = build_config.get_dependency_type(dep_type_name).eid
 
   for dep_name in dep_names:
-    if build_config.get_dependency_id(dep_name, dep_type) == None:
+    if build_config.get_dependency(dep_name, dep_type) == None:
       build_config.add_dependency(dep_name, dep_type)
+
+def print_entries(entries):
+  for entry in entries:
+    name = entry['name']
+    print('{} {}'.format(entry.eid, name))
 
 
 def main():
@@ -24,34 +30,44 @@ def main():
 
   # add APT dependency type and dependencies
   dep_type_name = 'apt'
-  dep_names = ["htop", "iotop", "iftop", "bwm-ng", "screen", "git", "python-dev", "python-pip",
+  apt_common_deps = ["htop", "iotop", "iftop", "bwm-ng", "screen", "git", "python-dev", "python-pip",
                "python3-dev", "python3-pip", "dosfstools", "parted", "bash-completion", "v4l-utils",
                "network-manager", "usbutils", "nano", "stress-ng", "rabbitmq-server", "python-psutil",
-               "python3-psutil", "wvdial", "autossh", "bossa-cli", "curl", "python3-zmq",
-               "fswebcam", "alsa-utils", "portaudio19-dev", "libavcodec-ffmpeg56",
+               "python3-psutil"]
+  apt_nc_deps = ["wvdial", "autossh", "bossa-cli", "curl", "python3-zmq"]
+  apt_ep_deps = ["fswebcam", "alsa-utils", "portaudio19-dev", "libavcodec-ffmpeg56",
                "libavformat-ffmpeg56", "libavutil-ffmpeg54", "libc6", "libcairo2", "libgdk-pixbuf2.0-0",
                "libglib2.0-0", "libgtk-3-0", "libpng12-0", "libstdc++6", "libswscale-ffmpeg3", "zlib1g"]
+  dep_names = apt_common_deps + apt_nc_deps + apt_ep_deps
   add_dependencies(build_config, dep_type_name, dep_names)
 
   # add python 2 dependency type and dependencies
   dep_type_name = 'python2'
-  dep_names = ["tabulate", "pika", "crcmod", "pyserial", "numpy"]
+  python2_common_deps = ["tabulate", "pika"]
+  python2_nc_deps = ["crcmod", "pyserial"]
+  python2_ep_deps = ["numpy"]
+  dep_names = python2_common_deps + python2_nc_deps + python2_ep_deps
   add_dependencies(build_config, dep_type_name, dep_names)
 
   # add python 3 dependency type and dependencies
   dep_type_name = 'python3'
-  dep_names = ["tabulate", "pika", "crcmod", "netifaces" "pyzmq", "pyinotify", "pynmea2", "pyserial",\
-               "pyaudio", "numpy"]
+  python3_common_deps = ["tabulate", "pika"]
+  python3_nc_deps = ["crcmod", "pyserial", "netifaces" "pyzmq", "pyinotify", "pynmea2"]
+  python3_ep_deps = ["pyaudio", "numpy"]
+  dep_names = python3_common_deps + python3_nc_deps + python3_ep_deps
   add_dependencies(build_config, dep_type_name, dep_names)
 
   # add standalone deb package dependency type and dependencies
   dep_type_name = 'deb'
-  dep_names = ["OpenCV-unknown-armv7l-dev", "OpenCV-unknown-armv7l-libs",\
+  deb_common_deps = []
+  deb_nc_deps = []
+  deb_ep_deps = ["OpenCV-unknown-armv7l-dev", "OpenCV-unknown-armv7l-libs",\
                "OpenCV-unknown-armv7l-main", "OpenCV-unknown-armv7l-python",\
                "OpenCV-unknown-armv7l-samples"]
+  dep_names = deb_common_deps + deb_nc_deps + deb_ep_deps
   add_dependencies(build_config, dep_type_name, dep_names)
 
-  # add base versions
+  # add node elements
   node_element_names = ["Node Controller", "Edge Processor"]
   for name in node_element_names:
     build_config.add_node_element(name)
@@ -61,29 +77,44 @@ def main():
   for name in cpu_architecture_names:
     build_config.add_cpu_architecture(name)
 
-  # print out the dependency types
-  dep_types = build_config.get_dependency_types()
-  for dep_type in dep_types:
-    name = dep_type['name']
-    print('{} {}'.format(build_config.get_dependency_type_id(name), name))
+  # add base versions
+  arch_id = build_config.get_cpu_architecture('armv7l').eid
+  element = build_config.get_node_element('Node Controller').eid
+  # nc_uuid = uuid.uuid4()
+  nc_uuid = 'f6d47837-28dc-4958-877b-34123ce7a533'
+  date = '20170307'
+  dependencies = build_config.get_dependencies()
+  apt_type_id = build_config.get_dependency_type('apt').eid
+  python2_type_id = build_config.get_dependency_type('python2').eid
+  python3_type_id = build_config.get_dependency_type('python3').eid
+  deb_type_id = build_config.get_dependency_type('deb').eid
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_deps]
+  build_config.add_base_version(str(nc_uuid), date, dependency_ids)
+
+  ep_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
+
+  # add deployment configurations
+
+  print_entries(build_config.get_dependency_types())
 
   # print out the dependencies
   deps = build_config.get_dependencies()
   for dep in deps:
     name = dep['name']
     type_id = dep['type']
-    dep_type = build_config.get_dependency_type(type_id)['name']
-    print('{} {} {}'.format(build_config.get_dependency_id(name, type_id), name, dep_type))
+    dep_type = build_config.get_dependency_type(eid=type_id)['name']
+    print('{} {} {}'.format(dep.eid, name, dep_type))
 
-  node_elements = build_config.get_node_elements()
-  for node_element in node_elements:
-    name = node_element['name']
-    print('{} {}'.format(build_config.get_node_element_id(name), name))
+  print_entries(build_config.get_node_elements())
 
-  cpu_architectures = build_config.get_cpu_architectures()
-  for cpu_architecture in cpu_architectures:
-    name = cpu_architecture['name']
-    print('{} {}'.format(build_config.get_cpu_architecture_id(name), name))
+  print_entries(build_config.get_cpu_architectures())
+
+  for entry in build_config.get_base_versions():
+    base_uuid = entry['uuid']
+    print('{} {}'.format(entry.eid, base_uuid))
 
 if __name__ == '__main__':
   main()

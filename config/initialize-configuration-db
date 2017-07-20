@@ -111,9 +111,40 @@ def main():
   architecture_id = build_config.get_cpu_architecture('armv7l').eid
   build_config.add_base(str(ep_uuid), date, dependency_ids, element_id, architecture_id)
 
+  # add shadows
+  shadow_entry_names = ["Default", "AoT"]
+  shadow_entry_files = ['waggle_shadow', 'root_shadow']
+  shadow_entry_ids = []
+  for name, file in zip(shadow_entry_names, shadow_entry_files):
+    shadow_entry_ids.append(build_config.add_shadow_entry(name, file))
+
+  # add registration keys
+  reg_key_names = ["None", "Development", "AoT"]
+  reg_key_files = ['', 'id_rsa_waggle_dev_registration', 'id_rsa_waggle_aot_registration']
+  reg_key_ids = []
+  for name, file in zip(reg_key_names, reg_key_files):
+    reg_key_ids.append(build_config.add_registration_key(name, file))
+
+  # add wireless configs
+  wireless_config_names = ["Default", "AoT"]
+  wireless_config_repos = ['nodecontroller', 'private_config']
+  wireless_config_ids = []
+  for name, repo in zip(wireless_config_names, wireless_config_repos):
+    reg_key_ids.append(build_config.add_wireless_config(name, repo))
+
+  # add beehive hosts
+  beehive_host_names = ["Development", "AoT"]
+  beehive_host_fqdns = ['beehive-dev', 'beehive1.mcs.anl.gov']
+  beehive_host_addresses = ['10.10.10.5', '']
+  beehive_host_ids = []
+  for name, fqdn, address in zip(beehive_host_names, beehive_host_fqdns, beehive_host_addresses):
+    reg_key_ids.append(build_config.add_beehive_host(name, fqdn, address))
+
+  # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host)
+  # build_config.add_deployment('Public', shadow_entry_ids[0], True, reg_key_ids[2], wireless_config_ids[1])
+
   # add build
 
-  # add deployment configurations
 
   print_entries(build_config.get_dependency_types())
 
@@ -132,6 +163,14 @@ def main():
   for entry in build_config.get_bases():
     base_uuid = entry['uuid']
     print('{} {}'.format(entry.eid, base_uuid))
+
+  print_entries(build_config.get_shadow_entries())
+
+  print_entries(build_config.get_registration_keys())
+
+  print_entries(build_config.get_wireless_configs())
+
+  print_entries(build_config.get_beehive_hosts())
 
 if __name__ == '__main__':
   main()

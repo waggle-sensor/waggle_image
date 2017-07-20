@@ -10,13 +10,17 @@ import tinydb
 class Configuration:
   def __init__(self):
     self._db = tinydb.TinyDB("./build_config.json")
-    self._build_versions = self._db.table('Build Version')
+    self._waggle = self._db.table('Waggle')
     self._bases = self._db.table('Base')
     self._node_elements = self._db.table('Node Element')
     self._cpu_architectures = self._db.table('CPU Architecture')
     self._dependencies = self._db.table('Dependency')
     self._dependency_types = self._db.table('Dependency Type')
-    self._deploy_configs = self._db.table('Deployment Configuration')
+    self._registration_keys = self._db.table('Registration Key')
+    self._wireless_configs = self._db.table('Wireless Config')
+    self._shadow_entries = self._db.table('Shadow Entry')
+    self._beehive_hosts = self._db.table('Beehive Host')
+    self._deploy_configs = self._db.table('Deployment')
 
   def get_db(self):
     return self._db
@@ -96,6 +100,58 @@ class Configuration:
 
   def get_bases(self):
     return self._bases.all()
+
+
+  # shadow entry functions
+  def add_shadow_entry(self, name, file):
+    if self._shadow_entries.get(tinydb.Query().name == name) == None:
+      return self._shadow_entries.insert({'name': name, 'file': file})
+    return None
+
+  def get_registration_key(self, name='', eid=0):
+    return self.get_by_name_or_id(self._shadow_entries, name, eid)
+
+  def get_shadow_entries(self):
+    return self._shadow_entries.all()
+
+
+  # wireless config functions
+  def add_wireless_config(self, name, repo):
+    if self._wireless_configs.get(tinydb.Query().name == name) == None:
+      return self._wireless_configs.insert({'name': name, 'repo': repo})
+    return None
+
+  def get_wireless_config(self, name='', eid=0):
+    return self.get_by_name_or_id(self._wireless_configs, name, eid)
+
+  def get_wireless_configs(self):
+    return self._wireless_configs.all()
+
+
+  # registration key functions
+  def add_registration_key(self, name, file):
+    if self._registration_keys.get(tinydb.Query().name == name) == None:
+      return self._registration_keys.insert({'name': name, 'file': file})
+    return None
+
+  def get_registration_key(self, name='', eid=0):
+    return self.get_by_name_or_id(self._registration_keys, name, eid)
+
+  def get_registration_keys(self):
+    return self._registration_keys.all()
+
+
+  # beehive hosts functions
+  def add_beehive_host(self, name, fqdn='', address=''):
+    if self._beehive_hosts.get(tinydb.Query().name == name) == None:
+      return self._beehive_hosts.insert({'name': name, 'fqdn': fqdn, 'address': address})
+    return None
+
+  def get_beehive_host(self, name='', eid=0):
+    return self.get_by_name_or_id(self._beehive_hosts, name, eid)
+
+  def get_beehive_hosts(self):
+    return self._beehive_hosts.all()
 
 
 class VarRef():

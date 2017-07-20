@@ -92,9 +92,26 @@ def main():
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_deps]
-  build_config.add_base_version(str(nc_uuid), date, dependency_ids)
+  element_id = build_config.get_node_element('Node Controller').eid
+  architecture_id = build_config.get_cpu_architecture('armv7l').eid
+  build_config.add_base(str(nc_uuid), date, dependency_ids, element_id, architecture_id)
 
   ep_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
+  date = '20170307'
+  dependencies = build_config.get_dependencies()
+  apt_type_id = build_config.get_dependency_type('apt').eid
+  python2_type_id = build_config.get_dependency_type('python2').eid
+  python3_type_id = build_config.get_dependency_type('python3').eid
+  deb_type_id = build_config.get_dependency_type('deb').eid
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_deps]
+  element_id = build_config.get_node_element('Edge Processor').eid
+  architecture_id = build_config.get_cpu_architecture('armv7l').eid
+  build_config.add_base(str(ep_uuid), date, dependency_ids, element_id, architecture_id)
+
+  # add build
 
   # add deployment configurations
 
@@ -112,7 +129,7 @@ def main():
 
   print_entries(build_config.get_cpu_architectures())
 
-  for entry in build_config.get_base_versions():
+  for entry in build_config.get_bases():
     base_uuid = entry['uuid']
     print('{} {}'.format(entry.eid, base_uuid))
 

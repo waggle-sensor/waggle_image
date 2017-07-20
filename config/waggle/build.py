@@ -11,7 +11,7 @@ class Configuration:
   def __init__(self):
     self._db = tinydb.TinyDB("./build_config.json")
     self._build_versions = self._db.table('Build Version')
-    self._base_versions = self._db.table('Base Version')
+    self._bases = self._db.table('Base')
     self._node_elements = self._db.table('Node Element')
     self._cpu_architectures = self._db.table('CPU Architecture')
     self._dependencies = self._db.table('Dependency')
@@ -85,12 +85,17 @@ class Configuration:
 
 
   # base version functions
-  def add_base_version(self, uuid, date, dependency_ids):
+  def add_base(self, uuid, date, dependency_ids, node_element_id, cpu_architecture_id):
     if self._cpu_architectures.get(tinydb.Query().uuid == uuid) == None:
-      return self._base_versions.insert({'uuid': uuid, 'date': date, 'dependencies': dependency_ids})
+      return self._bases.insert(
+        {'uuid': uuid, 'date': date, 'dependencies': dependency_ids,
+         'node_element': node_element_id, 'cpu_architecture': cpu_architecture_id})
 
-  def get_base_versions(self):
-    return self._base_versions.all()
+  def get_base(self, uuid):
+    return self._bases.get(tinydb.Query().uuid == uuid)
+
+  def get_bases(self):
+    return self._bases.all()
 
 
 class VarRef():

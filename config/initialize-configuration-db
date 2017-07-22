@@ -81,7 +81,7 @@ def main():
   element = build_config.get_node_element('Node Controller').eid
   # nc_uuid = uuid.uuid4()
   nc_uuid = 'f6d47837-28dc-4958-877b-34123ce7a533'
-  date = '20170307'
+  date = '2017-03-07'
   dependencies = build_config.get_dependencies()
   apt_type_id = build_config.get_dependency_type('apt').eid
   python2_type_id = build_config.get_dependency_type('python2').eid
@@ -96,7 +96,6 @@ def main():
   nc_base_id = build_config.add_base(str(nc_uuid), date, dependency_ids, element_id, architecture_id)
 
   ep_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
-  date = '20170307'
   dependencies = build_config.get_dependencies()
   apt_type_id = build_config.get_dependency_type('apt').eid
   python2_type_id = build_config.get_dependency_type('python2').eid
@@ -151,15 +150,15 @@ def main():
 
   # add build (published version, revision, build SW commit ID, date)
   '''
-  cmd = "git log -n 1 --oneline | awk '{print $1}'"
-  commit_id = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode().rstrip()
-  '''
   repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
   commit_ids = []
   for repo in repos:
     cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
     commit_ids.append(subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7])
-  date = '20170722'
+  print(commit_ids)
+  '''
+  commit_ids = ['d6f69c5', '50b1b2a', '1764428', '6cf03fa', '9031d0e']
+  date = '2017-07-22'
   revision = 0
   build_config.add_build('2.6.0', revision, nc_base_id, ep_base_id,
                          commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],

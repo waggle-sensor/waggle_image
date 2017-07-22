@@ -100,8 +100,14 @@ class Configuration:
         {'uuid': uuid, 'date': date, 'dependencies': dependency_ids,
          'node_element': node_element_id, 'cpu_architecture': cpu_architecture_id})
 
-  def get_base(self, uuid):
-    return self._bases.get(tinydb.Query().uuid == uuid)
+  def get_base(self, uuid='', eid=0):
+    if eid > 0:
+      return self._bases.get(eid=eid)
+    entry = tinydb.Query()
+    result = table.get(entry.uuid == uuid)
+    if result == None:
+      return None
+    return result
 
   def get_bases(self):
     return self._bases.all()
@@ -176,7 +182,7 @@ class Configuration:
 
   # build functions
   def add_build(self, published_version, revision, nc_base_id, ep_base_id,\
-                build_commit_id, core_commit_id, nc_commit_id, ep_commit_id, pm_commit_id, date):
+                waggle_image_commit_id, core_commit_id, nc_commit_id, ep_commit_id, pm_commit_id, date):
     entry = tinydb.Query()
     build = self._builds.get((entry.published_version == published_version)\
                               & (entry.revision == revision))
@@ -184,8 +190,9 @@ class Configuration:
       return self._builds.insert(
         {'published_version': published_version, 'revision': revision,
          'nc_base_id': nc_base_id, 'ep_base_id': ep_base_id,
-         'build_commit_id': build_commit_id, 'core_commit_id': core_commit_id,
-         'ep_commit_id': ep_commit_id, 'pm_commit_id': pm_commit_id, 'date': date})
+         'waggle_image_commit_id': waggle_image_commit_id, 'core_commit_id': core_commit_id,
+         'nc_commit_id': nc_commit_id, 'ep_commit_id': ep_commit_id, 'pm_commit_id': pm_commit_id,
+         'date': date})
     return None
 
   def get_build(self, published_version='', revision='', eid=0):

@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import tinydb
+
+import waggle.build as build
+
+def print_entries(entries):
+  for entry in entries:
+    name = entry['name']
+    print('{} {}'.format(entry.eid, name))
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration()
+
+  print_entries(build_config.get_dependency_types())
+
+if __name__ == '__main__':
+  main()

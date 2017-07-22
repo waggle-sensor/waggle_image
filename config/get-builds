@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import tinydb
+
+import waggle.build as build
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration()
+
+  '''
+        {'published_version': published_version, 'revision': revision,
+         'nc_base_id': nc_base_id, 'ep_base_id': ep_base_id,
+         'waggle_image_commit_id': waggle_image_commit_id, 'core_commit_id': core_commit_id,
+         'ep_commit_id': ep_commit_id, 'pm_commit_id': pm_commit_id, 'date': date})
+  '''
+
+  for entry in build_config.get_builds():
+    print('{} {} ({}) {}:'.format(
+      entry.eid, entry['published_version'], entry['revision'], entry['date']))
+    print('  Bases:')
+    base_ids = [entry['nc_base_id'], entry['ep_base_id']]
+    for base_id in base_ids:
+      base = build_config.get_base(eid=base_id)
+      print('    {} {} ({}) {} - {}:'.format(
+        base.eid, build_config.get_node_element(eid=base['node_element'])['name'],
+        build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name'], base['date'],
+        base['uuid']))
+    print('  Commit IDs:')
+    repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
+    keys = ['waggle_image_commit_id', 'core_commit_id', 'nc_commit_id', 'ep_commit_id', 'pm_commit_id']
+    for repo,key in zip(repos, keys):
+      print('    {} {}'.format(repo, entry[key]))
+
+
+if __name__ == '__main__':
+  main()

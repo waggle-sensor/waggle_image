@@ -1,12 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os
 import os.path
+import subprocess
 import tinydb
 import uuid
 
 import waggle.build as build
-
 def add_dependencies(build_config, dep_type_name, dep_names):
   if build_config.get_dependency_type(dep_type_name) == None:
     build_config.add_dependency_type(dep_type_name)
@@ -21,7 +21,6 @@ def print_entries(entries):
   for entry in entries:
     name = entry['name']
     print('{} {}'.format(entry.eid, name))
-
 
 def main():
   script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -94,7 +93,7 @@ def main():
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_deps]
   element_id = build_config.get_node_element('Node Controller').eid
   architecture_id = build_config.get_cpu_architecture('armv7l').eid
-  build_config.add_base(str(nc_uuid), date, dependency_ids, element_id, architecture_id)
+  nc_base_id = build_config.add_base(str(nc_uuid), date, dependency_ids, element_id, architecture_id)
 
   ep_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
   date = '20170307'
@@ -109,7 +108,7 @@ def main():
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_deps]
   element_id = build_config.get_node_element('Edge Processor').eid
   architecture_id = build_config.get_cpu_architecture('armv7l').eid
-  build_config.add_base(str(ep_uuid), date, dependency_ids, element_id, architecture_id)
+  ep_base_id = build_config.add_base(str(ep_uuid), date, dependency_ids, element_id, architecture_id)
 
   # add shadows
   shadow_entry_names = ["Default", "AoT"]
@@ -150,7 +149,21 @@ def main():
   build_config.add_deployment('AoT', shadow_entry_ids[1], True, wireless_config_ids[1],
                                reg_key_ids[2], beehive_host_ids[2])
 
-  # add build
+  # add build (published version, revision, build SW commit ID, date)
+  '''
+  cmd = "git log -n 1 --oneline | awk '{print $1}'"
+  commit_id = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode().rstrip()
+  '''
+  repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  commit_ids = []
+  for repo in repos:
+    cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
+    commit_ids.append(subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7])
+  date = '20170722'
+  revision = 0
+  build_config.add_build('2.6.0', revision, nc_base_id, ep_base_id,
+                         commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
+                         date)
 
 
   print_entries(build_config.get_dependency_types())
@@ -180,6 +193,12 @@ def main():
   print_entries(build_config.get_beehive_hosts())
 
   print_entries(build_config.get_deployments())
+
+  builds = build_config.get_builds()
+  for the_build in builds:
+    published_version = the_build['published_version']
+    revision = the_build['revision']
+    print('{0} {1}-{2}'.format(the_build.eid, published_version, revision))
 
 if __name__ == '__main__':
   main()

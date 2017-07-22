@@ -21,6 +21,7 @@ class Configuration:
     self._shadow_entries = self._db.table('Shadow Entry')
     self._beehive_hosts = self._db.table('Beehive Host')
     self._deployments = self._db.table('Deployment')
+    self._builds = self._db.table('Build')
 
   def get_db(self):
     return self._db
@@ -47,7 +48,11 @@ class Configuration:
 
   # Dependency functions
   def add_dependency(self, name, type_id):
-    return self._dependencies.insert({'name': name, 'type': type_id})
+    dep_entry = tinydb.Query()
+    dep = self._dependencies.get((dep_entry.name == name) & (dep_entry.type == type_id))
+    if dep == None:
+      return self._dependencies.insert({'name': name, 'type': type_id})
+    return None
 
   def get_dependency(self, name='', type_id='', eid=0):
     if eid > 0:
@@ -167,6 +172,34 @@ class Configuration:
 
   def get_deployments(self):
     return self._deployments.all()
+
+
+  # build functions
+  def add_build(self, published_version, revision, nc_base_id, ep_base_id,\
+                build_commit_id, core_commit_id, nc_commit_id, ep_commit_id, pm_commit_id, date):
+    entry = tinydb.Query()
+    build = self._builds.get((entry.published_version == published_version)\
+                              & (entry.revision == revision))
+    if build == None:
+      return self._builds.insert(
+        {'published_version': published_version, 'revision': revision,
+         'nc_base_id': nc_base_id, 'ep_base_id': ep_base_id,
+         'build_commit_id': build_commit_id, 'core_commit_id': core_commit_id,
+         'ep_commit_id': ep_commit_id, 'pm_commit_id': pm_commit_id, 'date': date})
+    return None
+
+  def get_build(self, published_version='', revision='', eid=0):
+    if eid > 0:
+      return self._builds.get(eid=eid)
+    entry = tinydb.Query()
+    build = self._builds.get((entry.published_version == published_version)\
+                              & (entry.revision == revision))
+    if build == None:
+      return None
+    return build
+
+  def get_builds(self):
+    return self._builds.all()
 
 
 class VarRef():

@@ -20,7 +20,7 @@ class Configuration:
     self._wireless_configs = self._db.table('Wireless Config')
     self._shadow_entries = self._db.table('Shadow Entry')
     self._beehive_hosts = self._db.table('Beehive Host')
-    self._deploy_configs = self._db.table('Deployment')
+    self._deployments = self._db.table('Deployment')
 
   def get_db(self):
     return self._db
@@ -142,7 +142,7 @@ class Configuration:
 
 
   # beehive hosts functions
-  def add_beehive_host(self, name, fqdn='', address=''):
+  def add_beehive_host(self, name, fqdn, address):
     if self._beehive_hosts.get(tinydb.Query().name == name) == None:
       return self._beehive_hosts.insert({'name': name, 'fqdn': fqdn, 'address': address})
     return None
@@ -152,6 +152,21 @@ class Configuration:
 
   def get_beehive_hosts(self):
     return self._beehive_hosts.all()
+
+
+  # deployment functions
+  def add_deployment(self, name, shadow_entry, sudo, wireless_config, reg_key, beehive_host):
+    if self._deployments.get(tinydb.Query().name == name) == None:
+      return self._deployments.insert(
+        {'name': name, 'shadow_entry': shadow_entry, 'sudo': sudo, 'wireless_config': wireless_config,
+        'reg_key': reg_key, 'beehive_host': beehive_host})
+    return None
+
+  def get_deployment(self, name='', eid=0):
+    return self.get_by_name_or_id(self._deployments, name, eid)
+
+  def get_deployments(self):
+    return self._deployments.all()
 
 
 class VarRef():

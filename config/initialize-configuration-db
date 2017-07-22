@@ -118,6 +118,13 @@ def main():
   for name, file in zip(shadow_entry_names, shadow_entry_files):
     shadow_entry_ids.append(build_config.add_shadow_entry(name, file))
 
+  # add wireless configs
+  wireless_config_names = ["Default", "AoT"]
+  wireless_config_repos = ['nodecontroller', 'private_config']
+  wireless_config_ids = []
+  for name, repo in zip(wireless_config_names, wireless_config_repos):
+    wireless_config_ids.append(build_config.add_wireless_config(name, repo))
+
   # add registration keys
   reg_key_names = ["None", "Development", "AoT"]
   reg_key_files = ['', 'id_rsa_waggle_dev_registration', 'id_rsa_waggle_aot_registration']
@@ -125,23 +132,23 @@ def main():
   for name, file in zip(reg_key_names, reg_key_files):
     reg_key_ids.append(build_config.add_registration_key(name, file))
 
-  # add wireless configs
-  wireless_config_names = ["Default", "AoT"]
-  wireless_config_repos = ['nodecontroller', 'private_config']
-  wireless_config_ids = []
-  for name, repo in zip(wireless_config_names, wireless_config_repos):
-    reg_key_ids.append(build_config.add_wireless_config(name, repo))
-
   # add beehive hosts
-  beehive_host_names = ["Development", "AoT"]
-  beehive_host_fqdns = ['beehive-dev', 'beehive1.mcs.anl.gov']
-  beehive_host_addresses = ['10.10.10.5', '']
+  beehive_host_names = ["Default", "Development", "AoT"]
+  beehive_host_fqdns = ['localhost', 'beehive-dev', 'beehive1.mcs.anl.gov']
+  beehive_host_addresses = ['127.0.0.1', '10.10.10.5', '']
   beehive_host_ids = []
   for name, fqdn, address in zip(beehive_host_names, beehive_host_fqdns, beehive_host_addresses):
-    reg_key_ids.append(build_config.add_beehive_host(name, fqdn, address))
+    beehive_host_ids.append(build_config.add_beehive_host(name, fqdn, address))
 
   # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host)
-  # build_config.add_deployment('Public', shadow_entry_ids[0], True, reg_key_ids[2], wireless_config_ids[1])
+  build_config.add_deployment('Public', shadow_entry_ids[0], True, wireless_config_ids[0],
+                               reg_key_ids[0], beehive_host_ids[0])
+  build_config.add_deployment('Collaborator', shadow_entry_ids[1], True, wireless_config_ids[0],
+                               reg_key_ids[2], beehive_host_ids[2])
+  build_config.add_deployment('Development', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[1])
+  build_config.add_deployment('AoT', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[2])
 
   # add build
 
@@ -171,6 +178,8 @@ def main():
   print_entries(build_config.get_wireless_configs())
 
   print_entries(build_config.get_beehive_hosts())
+
+  print_entries(build_config.get_deployments())
 
 if __name__ == '__main__':
   main()

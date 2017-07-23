@@ -17,19 +17,25 @@ def main(argv):
                           "print help screen\n", \
                           "  -v |--version=<version>         ", \
                           "set the build version to <version>\n",
-                          "                                  and revision to 0\n", \
+                          "                                  and revision to 0 (unless -r is used)\n", \
+                          "  -r |--revision=<revision>       ", \
+                          "set the build revision to <revision>\n",
+                          "                                  if the revision exists (otherwise 0)\n", \
                           "  -n|--nc-base=<base_id>          ", \
                           "set the Node Controller base ID to <base_id>\n", \
                           "  -e |--ep-base=<base_id>         ", \
                           "set the Edge Processor base ID to <base_id>\n"))
   try:
-    opts, args = getopt.getopt(argv, "v:n:e:", ["help", "version=", "nc-base=", "ep-base="])
+    opts, args = getopt.getopt(
+      argv, "v:r:d:n:e:", ["help", "version=", "revision=", "depolyment=", "nc-base=", "ep-base="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
     sys.exit(1)
 
   version = None
+  revision = None
+  deployment = None
   nc_base_id = None
   ep_base_id = None
   for opt, arg in opts:
@@ -38,6 +44,10 @@ def main(argv):
       sys.exit(0)
     elif opt in ('-v', '--version'):
       version = arg
+    elif opt in ('-v', '--revision'):
+      revision = arg
+    elif opt in ('-v', '--depolyment'):
+      depolyment = arg
     elif opt in ('-n', '--nc-base'):
       nc_base_id = int(arg)
     elif opt in ('-e', '--ep-base'):
@@ -52,21 +62,67 @@ def main(argv):
 
   builds = build_config.get_builds()
   sorted_builds = sorted(builds,
-    key=lambda build: ''.join((build['published_version'], str(build['revision']))))
-  new_build = dict(sorted_builds[-1])
+    key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
 
   # update version, revision, and base IDs
+  new_build = None
   if version != None:
-    conflicts = [bld for bld in builds if bld['published_version'] == version]
-    if len(conflicts) > 0:
-      print('Error: requested build version is already in use')
-      sys.exit(1)
-    new_build['published_version'] = version
-    new_build['revision'] = 0
+    # version specified
+    # assuming a request of a new deployment for an existing version
+    available_revisions = [bld for bld in builds if bld['published_version'] == version]
+    if len(available_revisions) > 0:
+      # version exists
+      if revision != None:
+        # assuming a request of a new deployment for an existing version and revision
+        existing_deployments = [bld for bld in available_revisions if bld['revision'] == revision]
+        if len(existing_deployments) == 0:
+          print('Error: revision '{}' is unavailable'.format(revision))
+          sys.exit(1)
+        else:
+          # revision exists
+          # default or specified deployment must *not* exist to continue...
+          if deployment == None:
+            deployment = 1
+          deployment_conflicts = [bld for bld in existing_deployments if bld['deployment'] == deployment]
+          if len(deployment_conflicts) == 0:
+            # new depoloyment can be allocated
+            new_build = dict(existing_deployments[0])
+            new_build['deployment'] = deployment
+          else:
+            print("Error: deployment '{}' is already in use".format(deployment))
+            sys.exit(2)
+      else:
+        # no revision specified
+        # increment the last known revision for this version
+        sorted_revisions = sorted(available_revisions, key=lambda bld: str(bld['revision']))
+        revision = sorted_revisions[-1]['revision'] + 1
+
+        if deployment == None:
+          deployment = 1
+        new_build = dict(existing_deployments[0])
+        new_build['revision'] = revision
+        new_build['deployment'] = deployment
+        else:
+          print("Error: deployment '{}' is already in use".format(deployment))
+          sys.exit(2)
+    else:
+      print("Error: version '{}' is unavailable".format(version))
+      sys.exit(3)
   else:
+    # no version specified
+    # use the last known version and increment the revision
+    new_build = dict(sorted_builds[-1])
+    if revision != None:
+      print("Error: revision specified without a version")
+      sys.exit(4)
     new_build['revision'] += 1
+  if new_build == None:
+    print("Error: logic error (new_build == None)")
+    sys.exit(99)
+
   if nc_base_id != None:
     new_build['nc_base_id'] = nc_base_id
+
   if ep_base_id != None:
     new_build['ep_base_id'] = ep_base_id
 

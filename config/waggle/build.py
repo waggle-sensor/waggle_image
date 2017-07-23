@@ -119,7 +119,7 @@ class Configuration:
       return self._shadow_entries.insert({'name': name, 'file': file})
     return None
 
-  def get_registration_key(self, name='', eid=0):
+  def get_shadow_entry(self, name='', eid=0):
     return self.get_by_name_or_id(self._shadow_entries, name, eid)
 
   def get_shadow_entries(self):
@@ -181,7 +181,7 @@ class Configuration:
 
 
   # build functions
-  def add_build(self, published_version='', revision=0, nc_base_id=0, ep_base_id=0,\
+  def add_build(self, published_version='', revision=0, deployment_id=0, nc_base_id=0, ep_base_id=0,\
                 waggle_image_commit_id='', core_commit_id='', nc_commit_id='',
                 ep_commit_id='', pm_commit_id='', date='',
                 build=None):
@@ -198,9 +198,9 @@ class Configuration:
       if build == None:
         return self._builds.insert(
           {'published_version': published_version, 'revision': revision,
-           'nc_base_id': nc_base_id, 'ep_base_id': ep_base_id,
-           'waggle_image_commit_id': waggle_image_commit_id, 'core_commit_id': core_commit_id,
-           'nc_commit_id': nc_commit_id, 'ep_commit_id': ep_commit_id, 'pm_commit_id': pm_commit_id,
+           'deployment': deployment_id, 'nc_base': nc_base_id, 'ep_base': ep_base_id,
+           'waggle_image_commit': waggle_image_commit_id, 'core_commit': core_commit_id,
+           'nc_commit': nc_commit_id, 'ep_commit': ep_commit_id, 'pm_commit': pm_commit_id,
            'date': date})
     return None
 

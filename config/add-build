@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+
+import copy
+import getopt
+import os
+import os.path
+import subprocess
+import sys
+import tinydb
+
+import waggle.build as build
+
+def main(argv):
+  usage_message = ''.join(("Usage: add-build [OPTIONS]\n", \
+                          "OPTIONS\n", \
+                          "  --help                          ", \
+                          "print help screen\n", \
+                          "  -v |--version=<version>         ", \
+                          "set the build version to <version>\n",
+                          "                                  and revision to 0\n", \
+                          "  -n|--nc-base=<base_id>          ", \
+                          "set the Node Controller base ID to <base_id>\n", \
+                          "  -e |--ep-base=<base_id>         ", \
+                          "set the Edge Processor base ID to <base_id>\n"))
+  try:
+    opts, args = getopt.getopt(argv, "v:n:e:", ["help", "version=", "nc-base=", "ep-base="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  version = None
+  nc_base_id = None
+  ep_base_id = None
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-v', '--version'):
+      version = arg
+    elif opt in ('-n', '--nc-base'):
+      nc_base_id = int(arg)
+    elif opt in ('-e', '--ep-base'):
+      ep_base_id = int(arg)
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration()
+
+  builds = build_config.get_builds()
+  sorted_builds = sorted(builds,
+    key=lambda build: ''.join((build['published_version'], str(build['revision']))))
+  new_build = dict(sorted_builds[-1])
+
+  # update version, revision, and base IDs
+  if version != None:
+    conflicts = [bld for bld in builds if bld['published_version'] == version]
+    if len(conflicts) > 0:
+      print('Error: requested build version is already in use')
+      sys.exit(1)
+    new_build['published_version'] = version
+    new_build['revision'] = 0
+  else:
+    new_build['revision'] += 1
+  if nc_base_id != None:
+    new_build['nc_base_id'] = nc_base_id
+  if ep_base_id != None:
+    new_build['ep_base_id'] = ep_base_id
+
+  # get the latest repo commit keys
+  repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  key_prefixes = ['waggle_image', 'core', 'nc', 'ep', 'pm']
+  commit_ids = {}
+  for repo,key_prefix in zip(repos, key_prefixes):
+    cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
+    commit_ids[key_prefix+'_commit_id'] \
+      = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7]
+  commit_keys = [key for key in new_build.keys() if 'commit_id' in key]
+  for key in commit_keys:
+    new_build[key] = commit_ids[key]
+
+  # add 
+  eid = build_config.add_build(build=new_build)
+
+  new_build = build_config.get_build(eid=eid)
+  print('{} {} ({}) {}:'.format(
+    new_build.eid, new_build['published_version'], new_build['revision'], new_build['date']))
+  print('  Bases:')
+  base_ids = [new_build['nc_base_id'], new_build['ep_base_id']]
+  print(base_ids)
+  for base_id in base_ids:
+    base = build_config.get_base(eid=base_id)
+    print('    {} {} ({}) {} - {}:'.format(
+      base.eid, build_config.get_node_element(eid=base['node_element'])['name'],
+      build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name'], base['date'],
+      base['uuid']))
+  print('  Commit IDs:')
+  repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  keys = ['waggle_image_commit_id', 'core_commit_id', 'nc_commit_id', 'ep_commit_id', 'pm_commit_id']
+  for repo,key in zip(repos, keys):
+    print('    {} {}'.format(repo, new_build[key]))
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

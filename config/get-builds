@@ -6,17 +6,12 @@ import tinydb
 
 import waggle.build as build
 
+import inspect
+
 def main():
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   build_config = build.Configuration()
-
-  '''
-        {'published_version': published_version, 'revision': revision,
-         'nc_base_id': nc_base_id, 'ep_base_id': ep_base_id,
-         'waggle_image_commit_id': waggle_image_commit_id, 'core_commit_id': core_commit_id,
-         'ep_commit_id': ep_commit_id, 'pm_commit_id': pm_commit_id, 'date': date})
-  '''
 
   for entry in build_config.get_builds():
     print('{} {} ({}) {}:'.format(

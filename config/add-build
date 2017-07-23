@@ -90,7 +90,6 @@ def main(argv):
     new_build.eid, new_build['published_version'], new_build['revision'], new_build['date']))
   print('  Bases:')
   base_ids = [new_build['nc_base_id'], new_build['ep_base_id']]
-  print(base_ids)
   for base_id in base_ids:
     base = build_config.get_base(eid=base_id)
     print('    {} {} ({}) {} - {}:'.format(

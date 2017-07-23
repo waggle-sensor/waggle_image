@@ -160,7 +160,7 @@ def main():
   commit_ids = ['d6f69c5', '50b1b2a', '1764428', '6cf03fa', '9031d0e']
   date = '2017-07-22'
   revision = 0
-  deployment_id = 0
+  deployment_id = 1
   build_config.add_build('2.6.0', revision, deployment_id, nc_base_id, ep_base_id,
                          commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
                          date)

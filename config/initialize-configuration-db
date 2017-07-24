@@ -138,15 +138,25 @@ def main():
   for name, fqdn, address in zip(beehive_host_names, beehive_host_fqdns, beehive_host_addresses):
     beehive_host_ids.append(build_config.add_beehive_host(name, fqdn, address))
 
-  # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host)
+  # add build hosts
+  build_host_names = ["None", "Local", "Development"]
+  build_host_fqdns = ['', 'localhost', 'beehive-dev']
+  build_host_addresses = ['', '127.0.0.1', '10.10.10.5']
+  build_host_ids = []
+  for name, fqdn, address in zip(build_host_names, build_host_fqdns, build_host_addresses):
+    build_host_ids.append(build_config.add_build_host(name, fqdn, address))
+
+  # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host, build_host)
   build_config.add_deployment('Public', shadow_entry_ids[0], False, wireless_config_ids[0],
-                               reg_key_ids[0], beehive_host_ids[0])
+                               reg_key_ids[0], beehive_host_ids[0], build_host_ids[0])
   build_config.add_deployment('Collaborator', shadow_entry_ids[1], True, wireless_config_ids[0],
-                               reg_key_ids[2], beehive_host_ids[2])
+                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[1])
   build_config.add_deployment('Development', shadow_entry_ids[1], True, wireless_config_ids[1],
-                               reg_key_ids[2], beehive_host_ids[1])
+                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[0])
   build_config.add_deployment('AoT', shadow_entry_ids[1], True, wireless_config_ids[1],
-                               reg_key_ids[2], beehive_host_ids[2])
+                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[0])
+  build_config.add_deployment('Build', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[2])
 
   # add build (published version, revision, build SW commit ID, date)
   '''
@@ -191,6 +201,8 @@ def main():
   print_entries(build_config.get_wireless_configs())
 
   print_entries(build_config.get_beehive_hosts())
+
+  print_entries(build_config.get_build_hosts())
 
   print_entries(build_config.get_deployments())
 

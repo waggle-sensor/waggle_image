@@ -11,7 +11,7 @@ def main():
 
   build_config = build.Configuration()
 
-  for entry in build_config.get_beehive_hosts():
+  for entry in build_config.get_build_hosts():
     if len(entry['address']) > 0:
       print('{} {}: {} ({})'.format(entry.eid, entry['name'], entry['fqdn'], entry['address']))
     else:

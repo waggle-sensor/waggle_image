@@ -22,6 +22,8 @@ def main():
     print('    Registration Key: {}'.format(reg_key['name']))
     beehive_host = build_config.get_beehive_host(eid=entry['beehive_host'])
     print('    Beehive Host:     {}'.format(beehive_host['name']))
+    build_host = build_config.get_build_host(eid=entry['build_host'])
+    print('    Build Host:       {}'.format(build_host['name']))
 
 if __name__ == '__main__':
   main()

@@ -14,7 +14,6 @@ def main():
   build_config = build.Configuration()
 
   for entry in build_config.get_builds():
-    print(entry['deployment'])
     deployment = build_config.get_deployment(eid=entry['deployment'])
     print('{} {} ({}) {} {}:'.format(
       entry.eid, entry['published_version'], entry['revision'], deployment['name'], entry['date']))

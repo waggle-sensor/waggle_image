@@ -21,7 +21,7 @@ def main(argv):
                           "  -r |--revision=<revision>       ", \
                           "set the build revision to <revision>\n",
                           "                                  if the revision exists (otherwise 0)\n", \
-                          "  -n|--nc-base=<base_id>          ", \
+                          "  -n |--nc-base=<base_id>         ", \
                           "set the Node Controller base ID to <base_id>\n", \
                           "  -e |--ep-base=<base_id>         ", \
                           "set the Edge Processor base ID to <base_id>\n"))
@@ -76,7 +76,7 @@ def main(argv):
         # assuming a request of a new deployment for an existing version and revision
         existing_deployments = [bld for bld in available_revisions if bld['revision'] == revision]
         if len(existing_deployments) == 0:
-          print('Error: revision '{}' is unavailable'.format(revision))
+          print("Error: revision '{}' is unavailable".format(revision))
           sys.exit(1)
         else:
           # revision exists
@@ -102,9 +102,6 @@ def main(argv):
         new_build = dict(existing_deployments[0])
         new_build['revision'] = revision
         new_build['deployment'] = deployment
-        else:
-          print("Error: deployment '{}' is already in use".format(deployment))
-          sys.exit(2)
     else:
       print("Error: version '{}' is unavailable".format(version))
       sys.exit(3)
@@ -129,14 +126,14 @@ def main(argv):
   # get the latest repo commit keys
   repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
   key_prefixes = ['waggle_image', 'core', 'nc', 'ep', 'pm']
-  commit_ids = {}
+  commits = {}
   for repo,key_prefix in zip(repos, key_prefixes):
     cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
-    commit_ids[key_prefix+'_commit_id'] \
+    commits[key_prefix+'_commit'] \
       = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7]
-  commit_keys = [key for key in new_build.keys() if 'commit_id' in key]
+  commit_keys = [key for key in new_build.keys() if 'commit' in key]
   for key in commit_keys:
-    new_build[key] = commit_ids[key]
+    new_build[key] = commits[key]
 
   # add 
   eid = build_config.add_build(build=new_build)
@@ -145,7 +142,7 @@ def main(argv):
   print('{} {} ({}) {}:'.format(
     new_build.eid, new_build['published_version'], new_build['revision'], new_build['date']))
   print('  Bases:')
-  base_ids = [new_build['nc_base_id'], new_build['ep_base_id']]
+  base_ids = [new_build['nc_base'], new_build['ep_base']]
   for base_id in base_ids:
     base = build_config.get_base(eid=base_id)
     print('    {} {} ({}) {} - {}:'.format(
@@ -154,7 +151,7 @@ def main(argv):
       base['uuid']))
   print('  Commit IDs:')
   repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
-  keys = ['waggle_image_commit_id', 'core_commit_id', 'nc_commit_id', 'ep_commit_id', 'pm_commit_id']
+  keys = ['waggle_image_commit', 'core_commit', 'nc_commit', 'ep_commit', 'pm_commit']
   for repo,key in zip(repos, keys):
     print('    {} {}'.format(repo, new_build[key]))
 

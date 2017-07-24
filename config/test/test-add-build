@@ -1,0 +1,80 @@
+#!/bin/bash
+
+rm -rf temp
+mkdir temp
+cp -Rf ../waggle temp
+cp ../initialize-configuration-db temp
+cp .././add-build temp
+cd temp
+
+./initialize-configuration-db
+
+test_count=0
+pass_count=0
+
+assert_success() {
+  local -r rc=$1
+  ((test_count++))
+  if [ $1 -eq 0 ]; then
+    ((pass_count++))
+    echo "[0;30;32m[PASS][0;30;37m"
+  else
+    echo "[0;30;31m[FAIL][0;30;37m"
+  fi
+}
+
+assert_failure() {
+  local -r rc=$1
+  ((test_count++))
+  if [ $1 -ne 0 ]; then
+    ((pass_count++))
+    echo "[0;30;32m[PASS][0;30;37m"
+  else
+    echo "[0;30;31m[FAIL][0;30;37m"
+  fi
+}
+
+# test adding a new version with the default deployment (1) [expect success]
+echo "TEST new version w/ default deployment"
+./add-build --version=1.2.3
+assert_success $?
+
+# test adding a new revision with the specified deployment [expect success]
+echo "TEST new revision w/ specified deployment"
+./add-build --version=1.2.3 --deployment=1
+assert_success $?
+
+# test adding an existing deployment [expect failure]
+echo "TEST existing deployment (failure test)"
+./add-build --version=1.2.3 --revision=0 --deployment=1
+assert_failure $?
+
+# test adding a new deployment [expect success]
+echo "TEST new deployment"
+./add-build --version=1.2.3 --revision=1 --deployment=2
+assert_success $?
+
+# test adding a new version with a non-default deployment [expect success]
+echo "TEST new version with non-default deployment"
+./add-build --version=1.2.4 --deployment=2 | tee grep '1.2.4 (0) Collaborator'
+assert_success $?
+
+# test adding the non-existent default deployment implicitly [expect failure]
+echo "TEST implicit new non-existent deployment (failure test)"
+./add-build --version=1.2.4
+assert_failure $?
+
+# test adding the non-existent default deployment explicitly [expect success]
+echo "TEST explicit new non-existent deployment"
+./add-build --version=1.2.4 --revision=0
+assert_success $?
+
+# test adding a new version with a specified revision [expect failure]
+echo "TEST new version w/ specified revision (failure test)"
+./add-build --version=1.2.5 --revision=0
+assert_failure $?
+
+echo "${pass_count} out of ${test_count} tests passed"
+
+cd ..
+rm -rf temp

@@ -202,7 +202,8 @@ class Configuration:
     entry = tinydb.Query()
     if build != None:
       _build = self._builds.get((entry.published_version == build['published_version'])\
-                                & (entry.revision == build['revision']))
+                                & (entry.revision == build['revision'])
+                                & (entry.depolyment_id == build['deployment']))
 
       if _build == None:
         return self._builds.insert(build)
@@ -216,7 +217,6 @@ class Configuration:
            'waggle_image_commit': waggle_image_commit_id, 'core_commit': core_commit_id,
            'nc_commit': nc_commit_id, 'ep_commit': ep_commit_id, 'pm_commit': pm_commit_id,
            'date': date})
-    return None
 
   def get_build(self, published_version='', revision=0, eid=0):
     if eid == None:

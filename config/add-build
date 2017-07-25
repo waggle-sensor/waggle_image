@@ -6,6 +6,7 @@ import os
 import os.path
 import subprocess
 import sys
+import time
 import tinydb
 
 import waggle.build as build
@@ -24,10 +25,13 @@ def main(argv):
                           "  -n |--nc-base=<base_id>         ", \
                           "set the Node Controller base ID to <base_id>\n", \
                           "  -e |--ep-base=<base_id>         ", \
-                          "set the Edge Processor base ID to <base_id>\n"))
+                          "set the Edge Processor base ID to <base_id>\n", \
+                          "  -d |--date=<base_id>            ", \
+                          "set the date to <date>\n"))
   try:
     opts, args = getopt.getopt(
-      argv, "v:r:d:n:e:", ["help", "version=", "revision=", "deployment=", "nc-base=", "ep-base="])
+      argv, "v:r:d:n:e:d:",
+      ["help", "version=", "revision=", "deployment=", "nc-base=", "ep-base=", "date="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
@@ -38,6 +42,7 @@ def main(argv):
   deployment = None
   nc_base_id = None
   ep_base_id = None
+  date = None
   for opt, arg in opts:
     if opt == '--help':
       print("\n" + usage_message + "\n")
@@ -52,6 +57,9 @@ def main(argv):
       nc_base_id = int(arg)
     elif opt in ('-e', '--ep-base'):
       ep_base_id = int(arg)
+    elif opt in ('-d', '--date'):
+      # TODO assert the date format YYYY-MM-DD
+      date = arg
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
@@ -63,6 +71,9 @@ def main(argv):
   builds = build_config.get_builds()
   sorted_builds = sorted(builds,
     key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
+
+  if date == None:
+    date = time.strftime('%Y-%m-%d')
 
   # update version, revision, and base IDs
   new_build = None
@@ -157,14 +168,14 @@ def main(argv):
 
   # add 
   eid = build_config.add_build(build=new_build)
-  print('eid: {}'.format(eid))
+  # print('eid: {}'.format(eid))
   new_build = build_config.get_build(eid=eid)
-  print(new_build)
+  # print(new_build)
   deployment = build_config.get_deployment(eid=new_build['deployment'])
   if deployment == None:
     print("Error: deployment '{}' does not exist".format(new_build['deployment']))
     sys.exit(6)
-  print(deployment)
+  # print(deployment)
   print('{} {} ({}) {} {}:'.format(
     new_build.eid, new_build['published_version'], new_build['revision'],
     deployment['name'], new_build['date']))

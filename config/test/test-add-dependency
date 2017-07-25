@@ -1,0 +1,69 @@
+#!/bin/bash
+
+rm -rf temp
+mkdir temp
+cp -Rf ../waggle temp
+declare -r files=("initialize-configuration-db" "add-dependency")
+for file in ${files[@]}; do
+  if [ ! -f "../$file" ]; then
+    echo "Error: file $file does not exist!"
+    exit 1
+  fi
+  cp ../$file temp
+done
+cd temp
+
+./initialize-configuration-db > /dev/null
+
+test_count=0
+pass_count=0
+
+assert_equals() {
+  local -r actual=$1
+  local -r expected=$2
+  ((test_count++))
+  if [ "$actual" == "$expected" ]; then
+    ((pass_count++))
+    echo "[0;32;1m[PASS][0;30;39m"
+  else
+    echo "[0;31;1m[FAIL][0;30;39m"
+  fi
+  echo
+}
+
+declare -r date=$(date +%Y-%m-%d)
+
+# test adding an APT dependency using the type name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add an apt dependency using type name (success test)"
+./add-dependency bogus-package apt
+assert_equals $? 0
+
+# test adding a Python 2 dependency using the type name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add a python2 dependency using type name (success test)"
+./add-dependency bogus-package python2
+assert_equals $? 0
+
+# test adding a Python 3 dependency using the type name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add a python3 dependency using type name (success test)"
+./add-dependency bogus-package python3
+assert_equals $? 0
+
+# test adding a Debian package dependency using the type name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add a deb dependency using type name (success test)"
+./add-dependency bogus-package deb
+assert_equals $? 0
+
+# test adding a Debian package dependency using the type name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add a dependency using a bogus type name (failure test)"
+./add-dependency bogus-package foobar | grep "Error: unknown dependency type name 'foobar'"
+assert_equals $? 0
+
+# test adding an existing dependency using the type name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add an existing dependency using type name (failure test)"
+./add-dependency fswebcam apt | grep "Error: dependency exists with name 'fswebcam' and type 'apt'"
+assert_equals $? 0
+
+echo "${pass_count} out of ${test_count} tests passed"
+
+cd ..
+rm -rf temp

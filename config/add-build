@@ -20,7 +20,7 @@ def main(argv):
                           "set the build version to <version>\n", \
                           "  -r |--revision=<revision>       ", \
                           "set the build revision to <revision>\n", \
-                          "  -d |--deployment=<deployment>   ", \
+                          "  -d |--deployment=<deployment_name>   ", \
                           "set the build deployment to <deployment>\n", \
                           "  -n |--nc-base=<base_id>         ", \
                           "set the Node Controller base ID to <base_id>\n", \
@@ -39,7 +39,7 @@ def main(argv):
 
   version = None
   revision = None
-  deployment = None
+  deployment_name = None
   nc_base_id = None
   ep_base_id = None
   date = None
@@ -52,7 +52,7 @@ def main(argv):
     elif opt in ('-v', '--revision'):
       revision = int(arg)
     elif opt in ('-v', '--deployment'):
-      deployment = int(arg)
+      deployment_name = arg
     elif opt in ('-n', '--nc-base'):
       nc_base_id = int(arg)
     elif opt in ('-e', '--ep-base'):
@@ -67,6 +67,13 @@ def main(argv):
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   build_config = build.Configuration()
+
+  deployment = None
+  if deployment_name != None:
+    deployment = build_config.get_deployment(deployment_name)
+    if deployment == None:
+      print("Error: deployment '{}' does not exist".format(deployment_name))
+      sys.exit(6)
 
   builds = build_config.get_builds()
   sorted_builds = sorted(builds,
@@ -95,15 +102,16 @@ def main(argv):
           # revision exists
           # default or specified deployment must *not* exist to continue...
           if deployment == None:
-            deployment = 1
-          deployment_conflicts = [bld for bld in existing_deployments if bld['deployment'] == deployment]
+            deployment = build_config.get_deployment(eid=1)
+          deployment_conflicts = [bld for bld in existing_deployments if bld['deployment'] == deployment.eid]
           if len(deployment_conflicts) == 0:
             # default or specified deployment does not exist
             # new deployment can be allocated
             new_build = dict(existing_deployments[0])
-            new_build['deployment'] = deployment
+            new_build['deployment'] = deployment.eid
           else:
-            print("Error: deployment '{}' is already in use".format(deployment))
+            print("Error: deployment '{}' is already in use".format(
+              deployment['name']))
             sys.exit(2)
       else:
         # print('CHECKPOINT 40')
@@ -114,10 +122,10 @@ def main(argv):
         revision = new_build['revision'] + 1
 
         if deployment == None:
-          print("Error: version '{}' alread exists".format(version))
+          print("Error: version '{}' already exists".format(version))
           sys.exit(7)
         new_build['revision'] = revision
-        new_build['deployment'] = deployment
+        new_build['deployment'] = deployment.eid
     else:
       # print('CHECKPOINT 50')
       # version does not exist
@@ -127,11 +135,11 @@ def main(argv):
         sys.exit(4)
       revision = 0
       if deployment == None:
-        deployment = 1
+        deployment = build_config.get_deployment(eid=1)
       new_build = dict(sorted_builds[-1])
       new_build['published_version'] = version
       new_build['revision'] = revision
-      new_build['deployment'] = deployment
+      new_build['deployment'] = deployment.eid
   else:
     # print('CHECKPOINT 60')
     # no version specified
@@ -173,11 +181,6 @@ def main(argv):
   # print('eid: {}'.format(eid))
   new_build = build_config.get_build(eid=eid)
   # print(new_build)
-  deployment = build_config.get_deployment(eid=new_build['deployment'])
-  if deployment == None:
-    print("Error: deployment '{}' does not exist".format(new_build['deployment']))
-    sys.exit(6)
-  # print(deployment)
   print('{} {} ({}) {} {}:'.format(
     new_build.eid, new_build['published_version'], new_build['revision'],
     deployment['name'], new_build['date']))

@@ -17,20 +17,20 @@ def main(argv):
                           "  --help                          ", \
                           "print help screen\n", \
                           "  -v |--version=<version>         ", \
-                          "set the build version to <version>\n",
-                          "                                  and revision to 0 (unless -r is used)\n", \
+                          "set the build version to <version>\n", \
                           "  -r |--revision=<revision>       ", \
-                          "set the build revision to <revision>\n",
-                          "                                  if the revision exists (otherwise 0)\n", \
+                          "set the build revision to <revision>\n", \
+                          "  -d |--deployment=<deployment>   ", \
+                          "set the build deployment to <deployment>\n", \
                           "  -n |--nc-base=<base_id>         ", \
                           "set the Node Controller base ID to <base_id>\n", \
                           "  -e |--ep-base=<base_id>         ", \
                           "set the Edge Processor base ID to <base_id>\n", \
-                          "  -d |--date=<base_id>            ", \
+                          "  -t |--date=<base_id>            ", \
                           "set the date to <date>\n"))
   try:
     opts, args = getopt.getopt(
-      argv, "v:r:d:n:e:d:",
+      argv, "v:r:d:n:e:t:",
       ["help", "version=", "revision=", "deployment=", "nc-base=", "ep-base=", "date="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))

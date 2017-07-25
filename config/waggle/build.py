@@ -218,20 +218,24 @@ class Configuration:
            'nc_commit': nc_commit_id, 'ep_commit': ep_commit_id, 'pm_commit': pm_commit_id,
            'date': date})
 
-  def get_build(self, published_version='', revision=0, eid=0):
+  def get_build(self, published_version='', revision=0, deployment=1, eid=0):
     if eid == None:
       return None
     if eid > 0:
       return self._builds.get(eid=eid)
     entry = tinydb.Query()
     build = self._builds.get((entry.published_version == published_version)\
-                              & (entry.revision == revision))
+                              & (entry.revision == revision)
+                              & (entry.deployment == deployment))
     if build == None:
       return None
     return build
 
   def get_builds(self):
     return self._builds.all()
+
+  def remove_build(self, eid):
+    return self._builds.remove(eids=[eid,])
 
 
 class VarRef():

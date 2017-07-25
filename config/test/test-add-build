@@ -3,8 +3,14 @@
 rm -rf temp
 mkdir temp
 cp -Rf ../waggle temp
-cp ../initialize-configuration-db temp
-cp .././add-build temp
+declare -r files=("initialize-configuration-db" "add-build")
+for file in ${files[@]}; do
+  if [ ! -f "../$file" ]; then
+    echo "Error: file $file does not exist!"
+    exit 1
+  fi
+  cp ../$file temp
+done
 cd temp
 
 ./initialize-configuration-db > /dev/null

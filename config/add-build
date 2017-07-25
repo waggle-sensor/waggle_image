@@ -4,10 +4,10 @@ import copy
 import getopt
 import os
 import os.path
+import re
 import subprocess
 import sys
 import time
-import tinydb
 
 import waggle.build as build
 
@@ -58,7 +58,6 @@ def main(argv):
     elif opt in ('-e', '--ep-base'):
       ep_base_id = int(arg)
     elif opt in ('-d', '--date'):
-      # TODO assert the date format YYYY-MM-DD
       date = arg
     else:
       print("\n" + usage_message + "\n")
@@ -74,6 +73,14 @@ def main(argv):
     if deployment == None:
       print("Error: deployment '{}' does not exist".format(deployment_name))
       sys.exit(6)
+
+  if date == None:
+    date = time.strftime('%Y-%m-%d')
+  else:
+    match = re.match('^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$', date)
+    if match == None:
+      print("Error: invalid date (expected YYYY-MM-DD)")
+      sys.exit(2)
 
   builds = build_config.get_builds()
   sorted_builds = sorted(builds,
@@ -172,8 +179,6 @@ def main(argv):
     new_build[key] = commits[key]
 
   # set the date
-  if date == None:
-    date = time.strftime('%Y-%m-%d')
   new_build['date'] = date
 
   # add

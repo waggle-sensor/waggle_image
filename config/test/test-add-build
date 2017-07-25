@@ -25,14 +25,16 @@ assert_equals() {
   echo
 }
 
+declare -r date=$(date +%Y-%m-%d)
+
 # test adding a new version with the default deployment (1) [expect success]
 echo "[0;33;1m[TEST][0;30;39m new version w/ default deployment" 
-./add-build --version=1.2.3 | grep '1.2.3 (0) Public'
+./add-build --version=1.2.3 | grep "1.2.3 (0) Public $date"
 assert_equals $? 0
 
 # test adding a new revision with the specified deployment [expect success]
 echo "[0;33;1m[TEST][0;30;39m new revision w/ specified deployment"
-./add-build --version=1.2.3 --deployment=1 | grep '1.2.3 (1) Public'
+./add-build --version=1.2.3 --deployment=1 | grep "1.2.3 (1) Public $date"
 assert_equals $? 0
 
 # test adding an existing deployment [expect failure]
@@ -42,12 +44,12 @@ assert_equals $? 0
 
 # test adding a new deployment [expect success]
 echo "[0;33;1m[TEST][0;30;39m new deployment"
-./add-build --version=1.2.3 --revision=1 --deployment=2 | grep '1.2.3 (1) Collaborator'
+./add-build --version=1.2.3 --revision=1 --deployment=2 | grep "1.2.3 (1) Collaborator $date"
 assert_equals $? 0
 
 # test adding a new version with a non-default deployment [expect success]
 echo "[0;33;1m[TEST][0;30;39m new version with non-default deployment"
-./add-build --version=1.2.4 --deployment=2 | grep '1.2.4 (0) Collaborator'
+./add-build --version=1.2.4 --deployment=2 | grep "1.2.4 (0) Collaborator $date"
 assert_equals $? 0
 
 # test adding the non-existent default deployment implicitly [expect failure]
@@ -57,12 +59,17 @@ assert_equals $? 0
 
 # test adding the non-existent default deployment explicitly [expect success]
 echo "[0;33;1m[TEST][0;30;39m explicit new non-existent deployment"
-./add-build --version=1.2.4 --revision=0 | grep '1.2.4 (0) Public'
+./add-build --version=1.2.4 --revision=0 | grep "1.2.4 (0) Public $date"
 assert_equals $? 0
 
 # test adding a new version with a specified revision [expect failure]
 echo "[0;33;1m[TEST][0;30;39m new version w/ specified revision (failure test)"
 ./add-build --version=1.2.5 --revision=0 | grep "Error: revision specified for new version"
+assert_equals $? 0
+
+# test adding a new version with a specified date [expect success]
+echo "[0;33;1m[TEST][0;30;39m new version w/ specified date (success test)"
+./add-build --version=1.2.6 --date=1942-12-01  | grep '1.2.6 (0) Public 1942-12-01'
 assert_equals $? 0
 
 echo "${pass_count} out of ${test_count} tests passed"

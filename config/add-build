@@ -72,9 +72,6 @@ def main(argv):
   sorted_builds = sorted(builds,
     key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
 
-  if date == None:
-    date = time.strftime('%Y-%m-%d')
-
   # update version, revision, and base IDs
   new_build = None
   if version != None:
@@ -166,7 +163,12 @@ def main(argv):
   for key in commit_keys:
     new_build[key] = commits[key]
 
-  # add 
+  # set the date
+  if date == None:
+    date = time.strftime('%Y-%m-%d')
+  new_build['date'] = date
+
+  # add
   eid = build_config.add_build(build=new_build)
   # print('eid: {}'.format(eid))
   new_build = build_config.get_build(eid=eid)

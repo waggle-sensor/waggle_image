@@ -30,7 +30,7 @@ def main(argv):
     sys.exit(1)
 
   version = None
-  deployment = None
+  deployment_name = None
   for opt, arg in opts:
     if opt == '--help':
       print("\n" + usage_message + "\n")
@@ -38,7 +38,7 @@ def main(argv):
     elif opt in ('-v', '--version'):
       version = arg
     elif opt in ('-v', '--deployment'):
-      deployment = int(arg)
+      deployment_name = arg
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
@@ -46,27 +46,29 @@ def main(argv):
   if version == None:
     print("Error: version not specified")
 
-  if deployment == None:
-    deployment = 1
-
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   build_config = build.Configuration()
 
+  deployment = None
+  if deployment_name == None:
+    deployment = build_config.get_deployment('Public')
+  else:
+    deployment = build_config.get_deployment(deployment_name)
+    if deployment == None:
+      print("Error: deployment '{}' does not exist".format(deployment_name))
+      sys.exit(6)
+
   builds = build_config.get_builds()
   available_revisions \
-    = [bld for bld in builds if bld['published_version'] == version and bld['deployment'] == deployment]
+    = [bld for bld in builds if bld['published_version'] == version and bld['deployment'] == deployment.eid]
   if len(available_revisions) == 0:
-    print("Error: build not found with version '{}' and deployment '{}'".format(version, deployment))
+    print("Error: build not found with version '{}' and deployment '{}'".format(version, deployment['name']))
     sys.exit(3)
   sorted_revisions = sorted(available_revisions,
     key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
   entry = sorted_revisions[-1]
 
-  deployment = build_config.get_deployment(eid=entry['deployment'])
-  if deployment == None:
-    print("Error: deployment '{}' does not exist".format(entry['deployment']))
-    sys.exit(6)
   print('{} {} ({}) {} {}:'.format(
     entry.eid, entry['published_version'], entry['revision'],
     deployment['name'], entry['date']))

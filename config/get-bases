@@ -1,12 +1,40 @@
 #!/usr/bin/env python3
 
+import getopt
 import os
 import os.path
+import sys
 import tinydb
 
 import waggle.build as build
 
-def main():
+def main(argv):
+  usage_message = ''.join(("Usage: add-build [OPTIONS]\n", \
+                          "OPTIONS\n", \
+                          "  --help                          ", \
+                          "print help screen\n", \
+                          "  -c |--compact                   ", \
+                          "prints dependencies in compact form\n", \
+                          "                                  (dep1:type1,dep2:type2,...)\n"))
+  try:
+    opts, args = getopt.getopt(
+      argv, "c",
+      ["help", "compact"])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  compact = False
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-c', '--compact'):
+      compact = True
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   build_config = build.Configuration()
@@ -16,11 +44,21 @@ def main():
       entry.eid, build_config.get_node_element(eid=entry['node_element'])['name'],
       build_config.get_cpu_architecture(eid=entry['cpu_architecture'])['name'], entry['date'],
       entry['uuid']))
+    first_dep = True
     for dependency_id in entry['dependencies']:
       dependency = build_config.get_dependency(eid=dependency_id)
-      print('  {} {} ({})'.format(
-       dependency_id, dependency['name'],
-         build_config.get_dependency_type(eid=dependency['type'])['name']))
+      dependency_type = build_config.get_dependency_type(eid=dependency['type'])
+      if compact:
+        if first_dep:
+          #sys.stdout.write('  ')
+          first_dep = False
+        else:
+          sys.stdout.write(',')
+        sys.stdout.write('{}:{}'.format(dependency['name'], dependency_type['name']))
+      else:
+        print('  {} {} ({})'.format(dependency_id, dependency['name'], dependency_type['name']))
+    if compact:
+      print()
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])

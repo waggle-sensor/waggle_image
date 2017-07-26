@@ -22,6 +22,8 @@ def main(argv):
                           "set the build revision to <revision>\n", \
                           "  -d |--deployment=<deployment_name>   ", \
                           "set the build deployment to <deployment>\n", \
+                          "  -a |--architecture=<architecture>   ", \
+                          "set the CPU architecture to <architecture>\n", \
                           "  -n |--nc-base=<base_id>         ", \
                           "set the Node Controller base ID to <base_id>\n", \
                           "  -e |--ep-base=<base_id>         ", \
@@ -30,8 +32,8 @@ def main(argv):
                           "set the date to <date>\n"))
   try:
     opts, args = getopt.getopt(
-      argv, "v:r:d:n:e:t:",
-      ["help", "version=", "revision=", "deployment=", "nc-base=", "ep-base=", "date="])
+      argv, "v:r:d:a:n:e:t:",
+      ["help", "version=", "revision=", "deployment=", "architecture=", "nc-base=", "ep-base=", "date="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
@@ -40,6 +42,7 @@ def main(argv):
   version = None
   revision = None
   deployment_name = None
+  architecture_name = None
   nc_base_id = None
   ep_base_id = None
   date = None
@@ -53,6 +56,8 @@ def main(argv):
       revision = int(arg)
     elif opt in ('-v', '--deployment'):
       deployment_name = arg
+    elif opt in ('-a', '--architecture'):
+      architecture_name = arg
     elif opt in ('-n', '--nc-base'):
       nc_base_id = int(arg)
     elif opt in ('-e', '--ep-base'):
@@ -74,6 +79,18 @@ def main(argv):
       print("Error: deployment '{}' does not exist".format(deployment_name))
       sys.exit(6)
 
+  architecture = None
+  if architecture_name != None:
+    architecture = build_config.get_cpu_architecture(architecture_name)
+    if architecture == None:
+      print("Error: CPU architecture '{}' does not exist".format(architecture_name))
+      sys.exit(6)
+  if nc_base_id == None:
+    nc_base_id = 1
+
+  if ep_base_id == None:
+    ep_base_id = 3
+
   if date == None:
     date = time.strftime('%Y-%m-%d')
   else:
@@ -89,16 +106,16 @@ def main(argv):
   # update version, revision, and base IDs
   new_build = None
   if version != None:
-    # print('CHECKPOINT 10')
+    print('CHECKPOINT 10')
     # version specified
     # either create a new version or create a new deployment for an existing version
     available_revisions = [bld for bld in builds if bld['published_version'] == version]
     if len(available_revisions) > 0:
-      # print('CHECKPOINT 20')
+      print('CHECKPOINT 20')
       # version exists
-      # assuming a request of a new deployment for an existing version and revision
+      # assuming a request of a new deployment or architecture for an existing version and revision
       if revision != None:
-        # print('CHECKPOINT 30')
+        print('CHECKPOINT 30')
         # revision specified
         # revision must exist to continue...
         existing_deployments = [bld for bld in available_revisions if bld['revision'] == revision]
@@ -106,35 +123,94 @@ def main(argv):
           print("Error: revision '{}' is unavailable".format(revision))
           sys.exit(1)
         else:
+          print('CHECKPOINT 33')
           # revision exists
-          # default or specified deployment must *not* exist to continue...
+          # default or specified deployment or architecture must *not* exist to continue...
           if deployment == None:
             deployment = build_config.get_deployment(eid=1)
-          deployment_conflicts = [bld for bld in existing_deployments if bld['deployment'] == deployment.eid]
-          if len(deployment_conflicts) == 0:
-            # default or specified deployment does not exist
+          if architecture == None:
+            architecture = build_config.get_cpu_architecture(eid=1)
+          conflicts \
+            = [bld for bld in existing_deployments if bld['deployment'] == deployment.eid and\
+                                                      bld['cpu_architecture'] == architecture.eid]
+          if len(conflicts) == 0:
+            print('CHECKPOINT 36')
+            # default or specified deployment or architecture do not exist
             # new deployment can be allocated
             new_build = dict(existing_deployments[0])
             new_build['deployment'] = deployment.eid
+            new_build['cpu_architecture'] = architecture.eid
+            new_build['nc_base'] = nc_base_id
+            new_build['ep_base'] = ep_base_id
           else:
-            print("Error: deployment '{}' is already in use".format(
-              deployment['name']))
+            print("Error: build with version '{}', revision '{}', deployment '{}', and "\
+                  "architecture '{}' already exists".format(
+                    version, revision, deployment['name'], architecture['name']))
             sys.exit(2)
       else:
-        # print('CHECKPOINT 40')
+        print('CHECKPOINT 40')
         # no revision specified
-        # increment the last known revision for this deployment
+        # assuming a request for a new revision, deployment, or architecture
+
+        # get one of the builds of the most recent revision
         sorted_revisions = sorted(available_revisions, key=lambda bld: str(bld['revision']))
         new_build = dict(sorted_revisions[-1])
-        revision = new_build['revision'] + 1
 
+        # get default deployment and architecture as needed
         if deployment == None:
-          print("Error: version '{}' already exists".format(version))
-          sys.exit(7)
-        new_build['revision'] = revision
-        new_build['deployment'] = deployment.eid
+          deployment = build_config.get_deployment(eid=1)
+        if architecture == None:
+          architecture = build_config.get_cpu_architecture(eid=1)
+        print((nc_base_id, ep_base_id))
+
+        # get the latest repo commit keys
+        repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
+        key_prefixes = ['waggle_image', 'core', 'nc', 'ep', 'pm']
+        commits = {}
+        for repo,key_prefix in zip(repos, key_prefixes):
+          cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
+          commits[key_prefix+'_commit'] \
+            = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7]
+        commit_keys = [key for key in new_build.keys() if 'commit' in key]
+
+        # set new commit IDs if the latest commit IDs differ from those of the current revision
+        increment_revision = False
+        for key in commit_keys:
+          if new_build[key] != commits[key]:
+            increment_revision = True
+            new_build[key] = commits[key]
+
+        if increment_revision:
+          print('CHECKPOINT 43')
+          # commit IDs differ
+          # increment the revision and set new commit IDs
+          new_build['revision'] += 1
+          new_build['deployment'] = deployment.eid
+          new_build['cpu_architecture'] = architecture.eid
+          new_build['nc_base'] = nc_base_id
+          new_build['ep_base'] = ep_base_id
+        else:
+          print('CHECKPOINT 46')
+          # commit IDs are the same
+          # add another build of the same revision if either the default or specified deployment
+          #   or architecture do not conflict
+          revision = new_build['revision']
+
+          # make sure there are no conflicts with both deployment and architecture
+          conflicts \
+            = [bld for bld in available_revisions \
+               if bld['deployment'] == deployment.eid and bld['cpu_architecture'] == architecture.eid]
+          if len(conflicts) > 0:
+            print("Error: build with version '{}', revision '{}', deployment '{}', and "\
+                  "architecture '{}' already exists".format(
+                    version, revision, deployment['name'], architecture['name']))
+            sys.exit(7)
+          new_build['deployment'] = deployment.eid
+          new_build['cpu_architecture'] = architecture.eid
+          new_build['nc_base'] = nc_base_id
+          new_build['ep_base'] = ep_base_id
     else:
-      # print('CHECKPOINT 50')
+      print('CHECKPOINT 50')
       # version does not exist
       # create a new version as specified
       if revision != None:
@@ -143,12 +219,22 @@ def main(argv):
       revision = 0
       if deployment == None:
         deployment = build_config.get_deployment(eid=1)
+      if architecture == None:
+        architecture = build_config.get_cpu_architecture(eid=1)
+      if nc_base_id == None:
+        nc_base_id = 1
+      if ep_base_id == None:
+        ep_base_id = 3
+      # TODO: CHECK SORTED BUILDS!!!
       new_build = dict(sorted_builds[-1])
       new_build['published_version'] = version
       new_build['revision'] = revision
       new_build['deployment'] = deployment.eid
+      new_build['cpu_architecture'] = architecture.eid
+      new_build['nc_base'] = nc_base_id
+      new_build['ep_base'] = ep_base_id
   else:
-    # print('CHECKPOINT 60')
+    print('CHECKPOINT 60')
     # no version specified
     # use the last known version and increment the revision
     new_build = dict(sorted_builds[-1])
@@ -161,29 +247,18 @@ def main(argv):
     sys.exit(99)
 
   if nc_base_id != None:
-    new_build['nc_base_id'] = nc_base_id
+    new_build['nc_base'] = nc_base_id
 
   if ep_base_id != None:
-    new_build['ep_base_id'] = ep_base_id
-
-  # get the latest repo commit keys
-  repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
-  key_prefixes = ['waggle_image', 'core', 'nc', 'ep', 'pm']
-  commits = {}
-  for repo,key_prefix in zip(repos, key_prefixes):
-    cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
-    commits[key_prefix+'_commit'] \
-      = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7]
-  commit_keys = [key for key in new_build.keys() if 'commit' in key]
-  for key in commit_keys:
-    new_build[key] = commits[key]
+    new_build['ep_base'] = ep_base_id
 
   # set the date
   new_build['date'] = date
 
   # add
+  print(new_build)
   eid = build_config.add_build(build=new_build)
-  # print('eid: {}'.format(eid))
+  print('eid: {}'.format(eid))
   new_build = build_config.get_build(eid=eid)
   # print(new_build)
   print('{} {} ({}) {} {}:'.format(

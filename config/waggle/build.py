@@ -7,6 +7,24 @@ import tkinter
 import tkinter.ttk as ttk
 import tinydb
 
+class Error(Exception):
+  pass
+
+class ConfigurationError(Error):
+  def __init__(self, message=''):
+    self.message = message
+
+class ArchitectureMismatchError(ConfigurationError):
+  def __init__(self, element, expected, actual):
+    super(ConfigurationError, self).__init__(
+      "expected '{}' base with CPU architecture '{}', but got '{}'".format(
+        element, expected, actual))
+
+class NodeElementMismatchError(ConfigurationError):
+  def __init__(self, expected, actual):
+    super(ConfigurationError, self).__init__(
+      "expected node element '{}', but got '{}'".format(expected, actual))
+
 class Configuration:
   def __init__(self):
     self._db = tinydb.TinyDB("./build_config.json")
@@ -96,7 +114,9 @@ class Configuration:
 
   # base version functions
   def add_base(self, uuid, date, dependency_ids, node_element_id, cpu_architecture_id):
-    if self._cpu_architectures.get(tinydb.Query().uuid == uuid) == None:
+    print(uuid)
+    print(self._bases.get(tinydb.Query().uuid == uuid))
+    if self._bases.get(tinydb.Query().uuid == uuid) == None:
       return self._bases.insert(
         {'uuid': uuid, 'date': date, 'dependencies': dependency_ids,
          'node_element': node_element_id, 'cpu_architecture': cpu_architecture_id})
@@ -105,7 +125,7 @@ class Configuration:
     if eid > 0:
       return self._bases.get(eid=eid)
     entry = tinydb.Query()
-    result = table.get(entry.uuid == uuid)
+    result = self._bases.get(entry.uuid == uuid)
     if result == None:
       return None
     return result
@@ -195,30 +215,60 @@ class Configuration:
 
 
   # build functions
-  def add_build(self, published_version='', revision=0, deployment_id=0, nc_base_id=0, ep_base_id=0,\
-                waggle_image_commit_id='', core_commit_id='', nc_commit_id='',
-                ep_commit_id='', pm_commit_id='', date='',
-                build=None):
+  def add_build(self, published_version='', revision=0, deployment_id=0, cpu_architecture_id=0,
+                nc_base_id=0, ep_base_id=0, waggle_image_commit_id='', core_commit_id='',
+                nc_commit_id='', ep_commit_id='', pm_commit_id='', date='', build=None):
     entry = tinydb.Query()
     if build != None:
       _build = self._builds.get((entry.published_version == build['published_version'])\
                                 & (entry.revision == build['revision'])
-                                & (entry.depolyment_id == build['deployment']))
+                                & (entry.deployment == build['deployment'])
+                                & (entry.cpu_architecture == build['cpu_architecture']))
 
       if _build == None:
+        # verify that the build and base architectures match
+        for base_id in [build['nc_base'], build['ep_base']]:
+          base = self.get_base(eid=base_id)
+          print(base)
+          if base == None:
+            raise ConfigurationError("base with UUID '{}' was not found".format(base_id))
+          if build['cpu_architecture'] != base['cpu_architecture']:
+            raise ArchitectureMismatchError(
+              self.get_node_element(eid=base['node_element'])['name'],
+              self.get_cpu_architecture(eid=build['cpu_architecture'])['name'],
+              self.get_cpu_architecture(eid=base['cpu_architecture'])['name'])
         return self._builds.insert(build)
     else:
       build = self._builds.get((entry.published_version == published_version)\
-                                & (entry.revision == revision))
+                                & (entry.revision == revision)
+                                & (entry.deployment == deployment_id)
+                                & (entry.cpu_architecture == cpu_architecture_id))
       if build == None:
+        # verify that the build and base architectures match and that the base node elements are sane
+        node_element_ids = [1, 2]
+        base_ids = [nc_base_id, ep_base_id]
+        for base_id,node_element_id in zip(base_ids, node_element_ids):
+          base = self.get_base(eid=base_id)
+          if base == None:
+            raise ConfigurationError("base with UUID '{}' was not found".format(base_id))
+          if cpu_architecture_id != base['cpu_architecture']:
+            raise ArchitectureMismatchError(
+              self.get_node_element(eid=base['node_element'])['name'],
+              self.get_cpu_architecture(eid=cpu_architecture_id)['name'],
+              self.get_cpu_architecture(eid=base['cpu_architecture'])['name'])
+          if node_element_id != base['node_element']:
+            raise NodeElementMismatchError(
+              self.get_node_element(eid=node_element_id)['name'],
+              self.get_node_element(eid=base['node_element']))
         return self._builds.insert(
           {'published_version': published_version, 'revision': revision,
-           'deployment': deployment_id, 'nc_base': nc_base_id, 'ep_base': ep_base_id,
+           'cpu_architecture': cpu_architecture_id, 'deployment': deployment_id,
+           'nc_base': nc_base_id, 'ep_base': ep_base_id,
            'waggle_image_commit': waggle_image_commit_id, 'core_commit': core_commit_id,
            'nc_commit': nc_commit_id, 'ep_commit': ep_commit_id, 'pm_commit': pm_commit_id,
            'date': date})
 
-  def get_build(self, published_version='', revision=0, deployment=1, eid=0):
+  def get_build(self, published_version='', revision=0, deployment=1, architecture=1, eid=0):
     if eid == None:
       return None
     if eid > 0:
@@ -226,7 +276,8 @@ class Configuration:
     entry = tinydb.Query()
     build = self._builds.get((entry.published_version == published_version)\
                               & (entry.revision == revision)
-                              & (entry.deployment == deployment))
+                              & (entry.deployment == deployment)
+                              & (entry.architecture == architecture_id))
     if build == None:
       return None
     return build

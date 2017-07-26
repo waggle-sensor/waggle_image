@@ -59,11 +59,16 @@ def main():
   # add standalone deb package dependency type and dependencies
   dep_type_name = 'deb'
   deb_common_deps = []
-  deb_nc_deps = []
-  deb_ep_deps = ["OpenCV-unknown-armv7l-dev", "OpenCV-unknown-armv7l-libs",\
-               "OpenCV-unknown-armv7l-main", "OpenCV-unknown-armv7l-python",\
-               "OpenCV-unknown-armv7l-samples"]
-  dep_names = deb_common_deps + deb_nc_deps + deb_ep_deps
+  deb_nc_armv7l_deps = []
+  deb_nc_x86_64_deps = []
+  deb_ep_armv7l_deps = ["OpenCV-3.2.0-armv7l-dev", "OpenCV-3.2.0-armv7l-libs",\
+                        "OpenCV-3.2.0-armv7l-main", "OpenCV-3.2.0-armv7l-python",\
+                        "OpenCV-3.2.0-armv7l-samples"]
+  deb_ep_x86_64_deps = ["OpenCV-3.2.0-x86_64-dev", "OpenCV-3.2.0-x86_64-libs",\
+                        "OpenCV-3.2.0-x86_64-main", "OpenCV-3.2.0-x86_64-python",\
+                        "OpenCV-3.2.0-x86_64-samples"]
+  dep_names = deb_common_deps + deb_nc_armv7l_deps + deb_nc_x86_64_deps \
+            + deb_ep_armv7l_deps + deb_ep_x86_64_deps
   add_dependencies(build_config, dep_type_name, dep_names)
 
   # add node elements
@@ -80,7 +85,7 @@ def main():
   arch_id = build_config.get_cpu_architecture('armv7l').eid
   element = build_config.get_node_element('Node Controller').eid
   # nc_uuid = uuid.uuid4()
-  nc_uuid = 'f6d47837-28dc-4958-877b-34123ce7a533'
+  nc_armv7l_uuid = 'f6d47837-28dc-4958-877b-34123ce7a533'
   date = '2017-03-07'
   dependencies = build_config.get_dependencies()
   apt_type_id = build_config.get_dependency_type('apt').eid
@@ -90,12 +95,20 @@ def main():
   dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
-                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_deps]
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_armv7l_deps]
   element_id = build_config.get_node_element('Node Controller').eid
   architecture_id = build_config.get_cpu_architecture('armv7l').eid
-  nc_base_id = build_config.add_base(str(nc_uuid), date, dependency_ids, element_id, architecture_id)
+  build_config.add_base(str(nc_armv7l_uuid), date, dependency_ids, element_id, architecture_id)
 
-  ep_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
+  nc_x86_64_uuid = '95a9569b-fc3d-40b7-aec4-afb905132e87'
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_x86_64_deps]
+  architecture_id = build_config.get_cpu_architecture('x86_64').eid
+  build_config.add_base(str(nc_x86_64_uuid), date, dependency_ids, element_id, architecture_id)
+
+  ep_armv7l_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
   dependencies = build_config.get_dependencies()
   apt_type_id = build_config.get_dependency_type('apt').eid
   python2_type_id = build_config.get_dependency_type('python2').eid
@@ -104,10 +117,18 @@ def main():
   dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
-                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_deps]
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_armv7l_deps]
   element_id = build_config.get_node_element('Edge Processor').eid
   architecture_id = build_config.get_cpu_architecture('armv7l').eid
-  ep_base_id = build_config.add_base(str(ep_uuid), date, dependency_ids, element_id, architecture_id)
+  ep_base_id = build_config.add_base(str(ep_armv7l_uuid), date, dependency_ids, element_id, architecture_id)
+
+  ep_x86_64_uuid = '6a8170f5-7915-439a-9ee4-277db2ee7c39'
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_x86_64_deps]
+  architecture_id = build_config.get_cpu_architecture('x86_64').eid
+  ep_base_id = build_config.add_base(str(ep_x86_64_uuid), date, dependency_ids, element_id, architecture_id)
 
   # add shadows
   shadow_entry_names = ["Default", "AoT"]
@@ -170,8 +191,18 @@ def main():
   commit_ids = ['d6f69c5', '50b1b2a', '1764428', '6cf03fa', '9031d0e']
   date = '2017-07-22'
   revision = 0
-  deployment_id = 1
-  build_config.add_build('2.6.0', revision, deployment_id, nc_base_id, ep_base_id,
+  deployment_id = build_config.get_deployment('Public').eid
+  architecture_id = build_config.get_cpu_architecture('armv7l').eid
+  nc_base_id = build_config.get_base(nc_armv7l_uuid).eid
+  ep_base_id = build_config.get_base(ep_armv7l_uuid).eid
+  build_config.add_build('2.6.0', revision, deployment_id, architecture_id, nc_base_id, ep_base_id,
+                         commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
+                         date)
+
+  architecture_id = build_config.get_cpu_architecture('x86_64').eid
+  nc_base_id = build_config.get_base(nc_x86_64_uuid).eid
+  ep_base_id = build_config.get_base(ep_x86_64_uuid).eid
+  build_config.add_build('2.6.0', revision, deployment_id, architecture_id, nc_base_id, ep_base_id,
                          commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
                          date)
 

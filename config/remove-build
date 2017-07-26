@@ -19,11 +19,13 @@ def main(argv):
                           "  -v |--version=<version>         ", \
                           "set the build version to <version>\n", \
                           "  -d |--deployment=<deployment>   ", \
-                          "set the build deployment to <deployment> (default 1)\n"))
+                          "set the build deployment to <deployment> (default 1)\n",
+                          "  -a |--architecture=<architecture>   ", \
+                          "set the build CPU architecture to <architecture> (default 1)\n"))
   try:
     opts, args = getopt.getopt(
-      argv, "v:r:d:",
-      ["help", "version=", "revision=", "deployment="])
+      argv, "v:r:d:a:",
+      ["help", "version=", "revision=", "deployment=", "architecture="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
@@ -31,6 +33,7 @@ def main(argv):
 
   version = None
   deployment_name = None
+  architecture_name = None
   for opt, arg in opts:
     if opt == '--help':
       print("\n" + usage_message + "\n")
@@ -39,6 +42,8 @@ def main(argv):
       version = arg
     elif opt in ('-v', '--deployment'):
       deployment_name = arg
+    elif opt in ('-v', '--architecture'):
+      architecture_name = arg
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
@@ -59,9 +64,20 @@ def main(argv):
       print("Error: deployment '{}' does not exist".format(deployment_name))
       sys.exit(6)
 
+  architecture = None
+  if architecture_name == None:
+    architecture = build_config.get_cpu_architecture('armv7l')
+  else:
+    architecture = build_config.get_cpu_architecture(architecture_name)
+    if architecture == None:
+      print("Error: architecture '{}' does not exist".format(architecture_name))
+      sys.exit(6)
+
   builds = build_config.get_builds()
   available_revisions \
-    = [bld for bld in builds if bld['published_version'] == version and bld['deployment'] == deployment.eid]
+    = [bld for bld in builds if bld['published_version'] == version and \
+                                bld['deployment'] == deployment.eid and \
+                                bld['cpu_architecture'] == architecture.eid]
   if len(available_revisions) == 0:
     print("Error: build not found with version '{}' and deployment '{}'".format(version, deployment['name']))
     sys.exit(3)

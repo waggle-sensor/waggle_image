@@ -36,11 +36,14 @@ declare -r date=$(date +%Y-%m-%d)
 
 # test removing the latest build revision [expect success]
 echo "[0;33;1m[TEST][0;30;39m remove latest build revision (success test)"
-./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep '1.2.3 (0) Development 1942-12-01'
-./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep '1.2.3 (1) Development 1942-12-01'
-./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep '1.2.3 (2) Development 1942-12-01'
-./add-build --version=1.2.3 --revision=0 --deployment=Public --date=1942-12-01 | grep '1.2.3 (0) Public 1942-12-01'
-./remove-build --version=1.2.3 --deployment=Development | grep '1.2.3 (2) Development 1942-12-01'
+./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep -o '1.2.3 (0) Development 1942-12-01'
+sed -i -E 's/"waggle_image_commit": "[0-9a-f]{7}"/"waggle_image_commit": "0000000"/g' build_config.json
+./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep -o '1.2.3 (1) Development 1942-12-01'
+sed -i -E 's/"core_commit": "[0-9a-f]{7}"/"core_commit": "0000000"/g' build_config.json
+./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep -o '1.2.3 (2) Development 1942-12-01'
+sed -i -E 's/"nc_commit": "[0-9a-f]{7}"/"nc_commit": "0000000"/g' build_config.json
+./add-build --version=1.2.3 --revision=0 --deployment=Public --date=1942-12-01 | grep -o '1.2.3 (0) Public 1942-12-01'
+./remove-build --version=1.2.3 --deployment=Development | grep -o '1.2.3 (2) Development 1942-12-01'
 assert_equals $? 0
 
 declare -r builds=$(./get-builds)

@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+import copy
+import getopt
+import os
+import os.path
+import re
+import subprocess
+import sys
+import time
+
+import waggle.build as build
+
+def main(argv):
+  usage_message = ''.join(("Usage: setup-build [OPTIONS]\n", \
+                          "OPTIONS\n", \
+                          "  --help                          ", \
+                          "print help screen\n", \
+                          "  -v |--version=<version>         ", \
+                          "set the build version to <version>\n", \
+                          "  -r |--revision=<revision>       ", \
+                          "set the build revision to <revision>\n", \
+                          "  -d |--deployment=<deployment_name>   ", \
+                          "set the build deployment to <deployment>\n", \
+                          "  -a |--architecture=<architecture>   "))
+  try:
+    opts, args = getopt.getopt(
+      argv, "v:r:d:a:",
+      ["help", "version=", "revision=", "deployment=", "architecture="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  version = None
+  revision = None
+  deployment_name = None
+  architecture_name = None
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-v', '--version'):
+      version = arg
+    elif opt in ('-r', '--revision'):
+      revision = int(arg)
+    elif opt in ('-d', '--deployment'):
+      deployment_name = arg
+    elif opt in ('-a', '--architecture'):
+      architecture_name = arg
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration()
+
+  if version == None:
+    sorted_builds = sorted(build_config.get_builds(), key=lambda bld: bld['published_version'])
+    version = sorted_builds[-1]['published_version']
+
+  if revision == None:
+    revisions = [bld for bld in build_config.get_builds() if bld['published_version'] == version]
+    sorted_revisions = sorted(revisions, key=lambda bld: bld['revision'])
+    revision = sorted_revisions[-1]['revision']
+
+  deployment = None
+  if deployment_name == None:
+    deployment = build_config.get_deployment('Public')
+  else:
+    deployment = build_config.get_deployment(deployment_name)
+    if deployment == None:
+      print("Error: deployment '{}' does not exist".format(deployment_name))
+      sys.exit(6)
+
+  architecture = None
+  if architecture_name == None:
+    architecture = build_config.get_cpu_architecture('armv7l')
+  else:
+    architecture = build_config.get_cpu_architecture(architecture_name)
+    if architecture == None:
+      print("Error: CPU architecture '{}' does not exist".format(architecture_name))
+      sys.exit(6)
+
+  target_build = build_config.get_build(version, revision, deployment.eid, architecture.eid)
+  print(target_build)
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

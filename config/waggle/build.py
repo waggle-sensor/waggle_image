@@ -277,7 +277,7 @@ class Configuration:
     build = self._builds.get((entry.published_version == published_version)\
                               & (entry.revision == revision)
                               & (entry.deployment == deployment)
-                              & (entry.architecture == architecture_id))
+                              & (entry.cpu_architecture == architecture))
     if build == None:
       return None
     return build

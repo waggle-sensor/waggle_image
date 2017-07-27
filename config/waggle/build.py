@@ -28,7 +28,7 @@ class NodeElementMismatchError(ConfigurationError):
 
 class Configuration:
   def __init__(self):
-    self._db = tinydb.TinyDB("./self.json")
+    self._db = tinydb.TinyDB("./build_config.json")
     self._waggle = self._db.table('Waggle')
     self._bases = self._db.table('Base')
     self._node_elements = self._db.table('Node Element')
@@ -283,6 +283,10 @@ class Configuration:
       return None
     return build
 
+  def get_latest_build_version(self):
+    sorted_builds = sorted(self._builds.all(), key=lambda bld: bld['published_version'])
+    return sorted_builds['published_version']
+
   def get_builds(self):
     return self._builds.all()
 
@@ -300,11 +304,15 @@ class Configuration:
       sorted_revisions = sorted(revisions, key=lambda bld: bld['revision'])
       revision = sorted_revisions[-1]['revision']
 
+    if deployment_name == None:
+      deployment_name = 'Public'
     deployment = self.get_deployment(deployment_name)
     if deployment == None:
       print("Error: deployment '{}' does not exist".format(deployment_name))
       sys.exit(6)
 
+    if architecture_name == None:
+      architecture_name = 'armv7l'
     architecture = self.get_cpu_architecture(architecture_name)
     if architecture == None:
       print("Error: CPU architecture '{}' does not exist".format(architecture_name))

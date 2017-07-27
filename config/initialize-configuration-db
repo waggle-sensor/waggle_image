@@ -51,7 +51,7 @@ def main():
   # add python 3 dependency type and dependencies
   dep_type_name = 'python3'
   python3_common_deps = ["tabulate", "pika"]
-  python3_nc_deps = ["crcmod", "pyserial", "netifaces" "pyzmq", "pyinotify", "pynmea2"]
+  python3_nc_deps = ["crcmod", "pyserial", "netifaces", "pyzmq", "pyinotify", "pynmea2"]
   python3_ep_deps = ["pyaudio", "numpy"]
   dep_names = python3_common_deps + python3_nc_deps + python3_ep_deps
   add_dependencies(build_config, dep_type_name, dep_names)

@@ -16,6 +16,10 @@ def main(argv):
                           "OPTIONS\n", \
                           "  --help                          ", \
                           "print help screen\n", \
+                          "  -n |--node-controller | --nc    ", \
+                          "return Node Controller dependencies\n", \
+                          "  -e |--edge-processor | --ep    ", \
+                          "return Edge Processor dependencies\n", \
                           "  -v |--version=<version>         ", \
                           "set the build version to <version>\n", \
                           "  -r |--revision=<revision>       ", \
@@ -25,13 +29,16 @@ def main(argv):
                           "  -a |--architecture=<architecture>   "))
   try:
     opts, args = getopt.getopt(
-      argv, "v:r:d:a:",
-      ["help", "version=", "revision=", "deployment=", "architecture="])
+      argv, "nev:r:d:a:",
+      ["help", "node-controller", "nc", "edge-processor", "ep",
+       "version=", "revision=", "deployment=", "architecture="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
     sys.exit(1)
 
+  node_controller = False
+  edge_processor = False
   version = None
   revision = None
   deployment_name = None
@@ -40,6 +47,10 @@ def main(argv):
     if opt == '--help':
       print("\n" + usage_message + "\n")
       sys.exit(0)
+    elif opt in ('-n', '--node-controller', '--nc'):
+      node_controller = True
+    elif opt in ('-e', '--edge-processor', '--ep'):
+      edge_processor = True
     elif opt in ('-v', '--version'):
       version = arg
     elif opt in ('-r', '--revision'):
@@ -57,8 +68,11 @@ def main(argv):
   build_config = build.Configuration()
 
   dependencies = build_config.get_build_dependencies(version, revision, deployment_name, architecture_name)
-  # TODO 
-  print('{}\n{}'.format(dependencies[0], dependencies[1]))
+
+  if node_controller:
+    print(dependencies[0])
+  if edge_processor:
+    print(dependencies[1])
 
 if __name__ == '__main__':
   main(sys.argv[1:])

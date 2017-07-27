@@ -33,11 +33,12 @@ def main():
                "python3-dev", "python3-pip", "dosfstools", "parted", "bash-completion", "v4l-utils",
                "network-manager", "usbutils", "nano", "stress-ng", "rabbitmq-server", "python-psutil",
                "python3-psutil"]
+  apt_docker_deps = ["git", "wget", "locales", "tzdata", "ssh", "sudo", "psmisc"]
   apt_nc_deps = ["wvdial", "autossh", "bossa-cli", "curl", "python3-zmq"]
   apt_ep_deps = ["fswebcam", "alsa-utils", "portaudio19-dev", "libavcodec-ffmpeg56",
                "libavformat-ffmpeg56", "libavutil-ffmpeg54", "libc6", "libcairo2", "libgdk-pixbuf2.0-0",
                "libglib2.0-0", "libgtk-3-0", "libpng12-0", "libstdc++6", "libswscale-ffmpeg3", "zlib1g"]
-  dep_names = apt_common_deps + apt_nc_deps + apt_ep_deps
+  dep_names = apt_common_deps + apt_docker_deps + apt_nc_deps + apt_ep_deps
   add_dependencies(build_config, dep_type_name, dep_names)
 
   # add python 2 dependency type and dependencies
@@ -92,8 +93,11 @@ def main():
   python2_type_id = build_config.get_dependency_type('python2').eid
   python3_type_id = build_config.get_dependency_type('python3').eid
   deb_type_id = build_config.get_dependency_type('deb').eid
-  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python3_common_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_armv7l_deps]
   element_id = build_config.get_node_element('Node Controller').eid
@@ -101,8 +105,12 @@ def main():
   build_config.add_base(str(nc_armv7l_uuid), date, dependency_ids, element_id, architecture_id)
 
   nc_x86_64_uuid = '95a9569b-fc3d-40b7-aec4-afb905132e87'
-  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_docker_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python3_common_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_x86_64_deps]
   architecture_id = build_config.get_cpu_architecture('x86_64').eid
@@ -114,8 +122,11 @@ def main():
   python2_type_id = build_config.get_dependency_type('python2').eid
   python3_type_id = build_config.get_dependency_type('python3').eid
   deb_type_id = build_config.get_dependency_type('deb').eid
-  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python3_common_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_armv7l_deps]
   element_id = build_config.get_node_element('Edge Processor').eid
@@ -123,8 +134,12 @@ def main():
   ep_base_id = build_config.add_base(str(ep_armv7l_uuid), date, dependency_ids, element_id, architecture_id)
 
   ep_x86_64_uuid = '6a8170f5-7915-439a-9ee4-277db2ee7c39'
-  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_docker_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
                  + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python3_common_deps]\
                  + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
                  + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_x86_64_deps]
   architecture_id = build_config.get_cpu_architecture('x86_64').eid

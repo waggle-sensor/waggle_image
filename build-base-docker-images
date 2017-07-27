@@ -1,4 +1,57 @@
 #!/bin/bash
 
-docker build -t waggle-node-controller-base:0.4 -f dockerfiles/waggle-node-controller-base .
-docker build -t waggle-edge-processor-base:0.4 -f dockerfiles/waggle-edge-processor-base .
+version=''
+revision=0
+deployment='Public'
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case $key in
+    -v)
+      version="$2"
+      shift
+      ;;
+    --version=*)
+      version="${key#*=}"
+      ;;
+    -r)
+      revision="$2"
+      shift
+      ;;
+    --revision=*)
+      revision="${key#*=}"
+      ;;
+    -d)
+      deployment="$2"
+      shift
+      ;;
+    --deployment=*)
+      deployment="${key#*=}"
+      ;;
+      *)
+      ;;
+  esac
+  shift
+done
+
+declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ "x$version" == "x" ]; then
+  # TODO: query DB for latest version and revision if not specified
+  cd ${script_dir}/config
+  version_revision=$(./get-latest-build)
+  version_revision_tuple=(${version_revision//-/ })
+  version=${version_revision_tuple[0]}
+fi
+
+image_version=$version
+if [ $revision -ne 0 ]; then
+  image_version=${version}-${revision}
+fi
+
+declare -r architecture=x86_64
+declare -r nc_dependencies=$(./get-build-dependencies -n --version=$version --revision=$revision --deployment=$deployment --architecture=$architecture)
+declare -r ep_dependencies=$(./get-build-dependencies -e --version=$version --revision=$revision --deployment=$deployment --architecture=$architecture)
+
+cd $script_dir
+docker build -t waggle-node-controller-base:${image_version} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
+docker build -t waggle-edge-processor-base:${image_version} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .

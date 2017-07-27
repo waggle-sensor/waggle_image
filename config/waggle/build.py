@@ -283,9 +283,16 @@ class Configuration:
       return None
     return build
 
-  def get_latest_build_version(self):
-    sorted_builds = sorted(self._builds.all(), key=lambda bld: bld['published_version'])
-    return sorted_builds['published_version']
+  def get_latest_build(self, deployment_name='Public', architecture_name='armv7l'):
+    deployment_id = self.get_deployment(deployment_name).eid
+    architecture_id = self.get_cpu_architecture(architecture_name).eid
+    filtered_builds = [bld for bld in self._builds.all() if bld['deployment'] == deployment_id and \
+                                                            bld['cpu_architecture'] == architecture_id]
+    if len(filtered_builds) > 0:
+      sorted_builds = sorted(filtered_builds,
+          key=lambda bld: ''.join((bld['published_version'], '-', str(bld['revision']))))
+      return (sorted_builds[-1]['published_version'], sorted_builds[-1]['revision'])
+    return None
 
   def get_builds(self):
     return self._builds.all()

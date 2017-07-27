@@ -1,4 +1,4 @@
-FROM waggle-edge-processor-base:0.4
+FROM waggle-edge-processor-base:0.5
 
 ARG branch=master
 ARG server_host=beehive1.mcs.anl.gov

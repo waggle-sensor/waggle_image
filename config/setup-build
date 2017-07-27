@@ -56,35 +56,9 @@ def main(argv):
 
   build_config = build.Configuration()
 
-  if version == None:
-    sorted_builds = sorted(build_config.get_builds(), key=lambda bld: bld['published_version'])
-    version = sorted_builds[-1]['published_version']
-
-  if revision == None:
-    revisions = [bld for bld in build_config.get_builds() if bld['published_version'] == version]
-    sorted_revisions = sorted(revisions, key=lambda bld: bld['revision'])
-    revision = sorted_revisions[-1]['revision']
-
-  deployment = None
-  if deployment_name == None:
-    deployment = build_config.get_deployment('Public')
-  else:
-    deployment = build_config.get_deployment(deployment_name)
-    if deployment == None:
-      print("Error: deployment '{}' does not exist".format(deployment_name))
-      sys.exit(6)
-
-  architecture = None
-  if architecture_name == None:
-    architecture = build_config.get_cpu_architecture('armv7l')
-  else:
-    architecture = build_config.get_cpu_architecture(architecture_name)
-    if architecture == None:
-      print("Error: CPU architecture '{}' does not exist".format(architecture_name))
-      sys.exit(6)
-
-  target_build = build_config.get_build(version, revision, deployment.eid, architecture.eid)
-  print(target_build)
+  dependencies = build_config.get_build_dependencies(version, revision, deployment_name, architecture_name)
+  # TODO 
+  print('{}\n{}'.format(dependencies[0], dependencies[1]))
 
 if __name__ == '__main__':
   main(sys.argv[1:])

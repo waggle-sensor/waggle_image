@@ -63,7 +63,7 @@ def main(argv):
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
-  build_config = build.Configuration()
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   # check the date format YYYY-MM-DD
   if date == None:

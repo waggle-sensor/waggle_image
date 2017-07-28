@@ -25,7 +25,7 @@ def print_entries(entries):
 def main():
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
-  build_config = build.Configuration()
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   # add APT dependency type and dependencies
   dep_type_name = 'apt'

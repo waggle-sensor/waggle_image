@@ -27,8 +27,8 @@ class NodeElementMismatchError(ConfigurationError):
       "expected node element '{}', but got '{}'".format(expected, actual))
 
 class Configuration:
-  def __init__(self):
-    self._db = tinydb.TinyDB("./build_config.json")
+  def __init__(self, db_path):
+    self._db = tinydb.TinyDB(db_path)
     self._waggle = self._db.table('Waggle')
     self._bases = self._db.table('Base')
     self._node_elements = self._db.table('Node Element')

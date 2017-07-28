@@ -43,7 +43,7 @@ def main(argv):
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
-  build_config = build.Configuration()
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   dependency_type = build_config.get_dependency_type(dependency_type_name) 
   if dependency_type == None:

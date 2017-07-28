@@ -218,33 +218,56 @@ def upload_image(build_directory, base_image):
 
 
 def main(argv):
-    # Commannd Line Arguments:
-    #   --help                                  - print the command usage
-    #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
-    #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
-    usage_message = "Usage: build-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>]"
+    usage_message = "Usage: build-waggle-image  [OPTIONS]\n"\
+                    "OPTIONS\n"\
+                    "  --help                         "\
+                    "show this usage message\n"\
+                    "  -b |--branch=<branch>          "\
+                    "build the branch <branch>\n"\
+                    "  -l |--build-dir=<build_dir>    "\
+                    "work on the disk image in the <build_dir> directory\n"\
+                    "  -v |--version=<version>        "\
+                    "build version <version>\n"\
+                    "  -r |--revision=<revision>      "\
+                    "build revision <revision> of the specified version\n"\
+                    "  -d |--deployment=<deployment>  "\
+                    "build deployment <deployment> of the specified version\n"\
+                    ""
     try:
-        opts, args = getopt.getopt(argv, "b:d:", ["help", "branch=", "build-dir="])
+        opts, args = getopt.getopt(
+            argv,
+            "b:l:v:r:d:",
+            ["help", "branch=", "build-dir=", "version=", "revision=", "deployment="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
-        print(usage_message + "\n")
+        print(usage_message)
         sys.exit(1)
 
     compress = False
     upload = False
     branch = ''
     build_directory = '/root'
+    version = None
+    revision = 0
+    deployment = 'Public'
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
         elif opt in ('-b', '--branch'):
             branch = arg
-        elif opt in ('-d', '--build-dir'):
+        elif opt in ('-l', '--build-dir'):
             build_directory = arg
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)
+
+    if version == None:
+        cwd = os.getcwd()
+        os.chdir('{}/config')
+        build_config = build.Configuration()
+        os.chdir(cwd)
+
 
     create_b_image = 0 # will be 1 for XU3/4
 

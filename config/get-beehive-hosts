@@ -9,7 +9,7 @@ import waggle.build as build
 def main():
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
-  build_config = build.Configuration()
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   for entry in build_config.get_beehive_hosts():
     if len(entry['address']) > 0:

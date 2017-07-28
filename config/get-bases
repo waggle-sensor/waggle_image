@@ -37,7 +37,7 @@ def main(argv):
       sys.exit(2)
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
-  build_config = build.Configuration()
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   for entry in build_config.get_bases():
     print('{} {} ({}) {} - {}:'.format(

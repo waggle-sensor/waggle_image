@@ -63,7 +63,7 @@ pip3 install ${python3_packages[@]}
 
 # Install Debian package dependencies.
 echo "Installing the following Debian packages: ${deb_packages[@]}"
-cp ${script_dir}/var/cache/apt/archives/*.deb /var/cache/apt/archives
+cp ${script_dir}../var/cache/apt/archives/*.deb /var/cache/apt/archives
 dpkg -i ${deb_packages[@]}
 apt update
 apt install -f

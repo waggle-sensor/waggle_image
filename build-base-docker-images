@@ -53,5 +53,8 @@ declare -r nc_dependencies=$(./get-build-dependencies -n --version=$version --re
 declare -r ep_dependencies=$(./get-build-dependencies -e --version=$version --revision=$revision --deployment=$deployment --architecture=$architecture)
 
 cd $script_dir
+echo "Building Waggle Node Controller base image version $image_version"
 docker build -t waggle-node-controller-base:${image_version} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
+
+echo "Building Waggle Edge Processor base image version $image_version"
 docker build -t waggle-edge-processor-base:${image_version} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .

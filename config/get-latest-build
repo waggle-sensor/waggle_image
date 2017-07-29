@@ -50,6 +50,8 @@ def main(argv):
   if architecture_name == None:
     architecture_name = 'armv7l'
 
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
   build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   version_revision = build_config.get_latest_build(deployment_name, architecture_name)

@@ -2,11 +2,15 @@
 
 import os
 import os.path
+import sys
 import subprocess
 import tinydb
 import uuid
 
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
 import waggle.build as build
+
 def add_dependencies(build_config, dep_type_name, dep_names):
   if build_config.get_dependency_type(dep_type_name) == None:
     build_config.add_dependency_type(dep_type_name)

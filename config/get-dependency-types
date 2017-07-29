@@ -2,8 +2,11 @@
 
 import os
 import os.path
+import sys
 import tinydb
 
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
 import waggle.build as build
 
 def print_entries(entries):

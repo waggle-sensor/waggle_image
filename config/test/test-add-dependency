@@ -1,8 +1,8 @@
 #!/bin/bash
 
 rm -rf temp
-mkdir temp
-cp -Rf ../waggle temp
+mkdir -p temp lib/python/waggle
+cp -Rf ../../lib .
 declare -r files=("initialize-configuration-db" "add-dependency")
 for file in ${files[@]}; do
   if [ ! -f "../$file" ]; then
@@ -66,4 +66,4 @@ assert_equals $? 0
 echo "${pass_count} out of ${test_count} tests passed"
 
 cd ..
-rm -rf temp
+rm -rf temp lib

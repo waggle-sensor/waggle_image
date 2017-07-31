@@ -62,9 +62,13 @@ pip3 install --upgrade pip
 pip3 install ${python3_packages[@]}
 
 # Install Debian package dependencies.
-echo "Installing the following Debian packages: ${deb_packages[@]}"
-cd ${script_dir}/../var/cache/apt/archives
-dpkg -i ${deb_packages[@]}
+if [ "x" == "x${deb_packages[*]}" ]; then
+  echo "No Debian packages specified. Skipping dpkg operation."
+else
+  echo "Installing the following Debian packages: ${deb_packages[@]}"
+  cd ${script_dir}/../var/cache/apt/archives
+  dpkg -i ${deb_packages[@]}
+fi
 
 apt update
 apt install -f

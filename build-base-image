@@ -142,7 +142,7 @@ def build_image(mount_point, version, revision, node_element_name):
         if node_element_name == 'Node Controller':
             dependencies = all_dependencies[0]
         elif node_element_name == 'Edge Processor':
-            dependencies = all_dependencies[0]
+            dependencies = all_dependencies[1]
         script_path = '/usr/lib/waggle/waggle_image/scripts/install_dependencies.sh'
         run_command('chroot {0}/ /bin/bash {1} {2}'.format(mount_point, script_path, dependencies))
 
@@ -260,7 +260,7 @@ def main(argv):
     version = None
     revision = None
     node_controller = False
-    edge_processor = True
+    edge_processor = False
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")

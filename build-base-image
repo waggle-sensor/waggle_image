@@ -135,10 +135,9 @@ def stage_image_build_script(waggle_image_directory, mount_point, branch):
     #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 
-def build_image(mount_point, version, revision, deployment_name):
+def build_image(mount_point, version, revision):
     if debug == 0:
-        all_dependencies = build_config.get_build_dependencies(
-            version, revision, deployment_name, 'armv7l')
+        all_dependencies = build_config.get_build_dependencies(version, revision, 'armv7l')
         dependencies = ''
         if node_element_name == 'Node Controller':
             dependencies = all_dependencies[0]
@@ -271,7 +270,7 @@ def main(argv):
             sys.exit(2)
 
     if version == None:
-        version,revision_default = build_config.get_latest_build(deployment_name, 'armv7l')
+        version,revision_default = build_config.get_latest_build('armv7l')
         if revision == None:
             revision = revision_default
 
@@ -304,7 +303,7 @@ def main(argv):
 
     stage_image_build_script(waggle_image_directory, mount_point, branch)
 
-    build_image(mount_point, version, revision, deployment_name)
+    build_image(mount_point, version, revision)
 
     generate_report(build_directory, mount_point, base_image)
 

@@ -70,14 +70,13 @@ declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "x$version" == "x" ]; then
   # query DB for latest version and revision if not specified
   cd ${script_dir}/config
-  version_revision=$(./get-latest-build)
+  version_revision=$($script_dir/config/get-latest-build)
   version_revision_tuple=(${version_revision//-/ })
   version=${version_revision_tuple[0]}
 fi
 
-image_version=$version
 if [ $revision -ne 0 ]; then
-  image_version=${version}-${revision}
+  revision=${version_revision_tuple[0]}
 fi
 
 declare -r architecture=x86_64
@@ -85,13 +84,15 @@ declare -r architecture=x86_64
 cd $script_dir
 
 if [ $node_controller -eq 1 ]; then
+  declare -r nc_base_date=$($script_dir/config/get-builds | grep -A 2 "$version ($revision) $architecture" | tail -1 | awk '{print $5}')
   declare -r nc_dependencies=$($script_dir/config/get-build-dependencies -n --version=$version --revision=$revision --architecture=$architecture)
-  echo "Building Waggle Node Controller base image version $image_version"
-  time docker build -t waggle-node-controller-base:${image_version} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
+  echo "Building Waggle Node Controller base image version $nc_base_date"
+  time docker build -t waggle-node-controller-base:${nc_base_date} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
 fi
 
 if [ $edge_processor -eq 1 ]; then
+  declare -r ep_base_date=$($script_dir/config/get-builds | grep -A 3 "$version ($revision) $architecture" | tail -1 | awk '{print $5}')
   declare -r ep_dependencies=$($script_dir/config/get-build-dependencies -e --version=$version --revision=$revision --architecture=$architecture)
-  echo "Building Waggle Edge Processor base image version $image_version"
-  time docker build -t waggle-edge-processor-base:${image_version} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .
+  echo "Building Waggle Edge Processor base image version $ep_base_date"
+  time docker build -t waggle-edge-processor-base:${ep_base_date} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .
 fi

@@ -1,7 +1,8 @@
 #!/bin/bash
 
+
 print_usage() {
-  echo "Usage: build-base-docker-image [OPTIONS]"
+  echo "Usage: build-waggle-docker-images [OPTIONS]"
   echo "OPTIONS"
   line="--help                         "
   line+="show this usage message"
@@ -87,11 +88,11 @@ cd $script_dir
 if [ $node_controller -eq 1 ]; then
   declare -r nc_dependencies=$($script_dir/config/get-build-dependencies -n --version=$version --revision=$revision --architecture=$architecture)
   echo "Building Waggle Node Controller base image version $image_version"
-  time docker build -t waggle-node-controller-base:${image_version} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
+  time docker build -t waggle-node-controller:2.6.1-pre1 -f dockerfiles/waggle-node-controller --build-arg branch=develop --build-arg server_host=10.10.10.5 .
 fi
 
 if [ $edge_processor -eq 1 ]; then
   declare -r ep_dependencies=$($script_dir/config/get-build-dependencies -e --version=$version --revision=$revision --architecture=$architecture)
   echo "Building Waggle Edge Processor base image version $image_version"
-  time docker build -t waggle-edge-processor-base:${image_version} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .
+  time docker build -t waggle-edge-processor:2.6.1-pre1-f dockerfiles/waggle-edge-processor --build-arg branch=develop --build-arg server_host=10.10.10.5 .
 fi

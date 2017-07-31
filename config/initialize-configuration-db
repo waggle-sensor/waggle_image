@@ -92,7 +92,7 @@ def main():
   element = build_config.get_node_element('Node Controller').eid
   # nc_uuid = uuid.uuid4()
   nc_armv7l_uuid = 'f6d47837-28dc-4958-877b-34123ce7a533'
-  date = '2017-03-07'
+  date = '2017-07-31'
   dependencies = build_config.get_dependencies()
   apt_type_id = build_config.get_dependency_type('apt').eid
   python2_type_id = build_config.get_dependency_type('python2').eid

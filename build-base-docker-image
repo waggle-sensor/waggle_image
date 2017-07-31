@@ -16,15 +16,11 @@ print_usage() {
   line="-r |--revision=<revision>      "
   line+="build revision <revision> of the specified version"
   echo "  $line"
-  line="-d |--deployment=<deployment>  "
-  line+="build deployment <deployment> of the specified version"
-  echo "  $line"
 }
 
 node_controller=0
 version=''
 revision=0
-deployment='Public'
 while [[ $# -gt 0 ]]; do
   key="$1"
   case $key in
@@ -60,13 +56,6 @@ while [[ $# -gt 0 ]]; do
     --revision=*)
       revision="${key#*=}"
       ;;
-    -d)
-      deployment="$2"
-      shift
-      ;;
-    --deployment=*)
-      deployment="${key#*=}"
-      ;;
       *)
       ;;
   esac
@@ -92,13 +81,13 @@ declare -r architecture=x86_64
 cd $script_dir
 
 if [ $node_controller -eq 1 ]; then
-  declare -r nc_dependencies=$(./get-build-dependencies -n --version=$version --revision=$revision --deployment=$deployment --architecture=$architecture)
+  declare -r nc_dependencies=$(./get-build-dependencies -n --version=$version --revision=$revision --architecture=$architecture)
   echo "Building Waggle Node Controller base image version $image_version"
   time docker build -t waggle-node-controller-base:${image_version} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
 fi
 
 if [ $edge_processor -eq 1 ]; then
-  declare -r ep_dependencies=$(./get-build-dependencies -e --version=$version --revision=$revision --deployment=$deployment --architecture=$architecture)
+  declare -r ep_dependencies=$(./get-build-dependencies -e --version=$version --revision=$revision --architecture=$architecture)
   echo "Building Waggle Edge Processor base image version $image_version"
   time docker build -t waggle-edge-processor-base:${image_version} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .
 fi

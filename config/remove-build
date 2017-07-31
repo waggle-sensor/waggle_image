@@ -20,21 +20,18 @@ def main(argv):
                           "print help screen\n", \
                           "  -v |--version=<version>         ", \
                           "set the build version to <version>\n", \
-                          "  -d |--deployment=<deployment>   ", \
-                          "set the build deployment to <deployment> (default 1)\n",
                           "  -a |--architecture=<architecture>   ", \
                           "set the build CPU architecture to <architecture> (default 1)\n"))
   try:
     opts, args = getopt.getopt(
       argv, "v:r:d:a:",
-      ["help", "version=", "revision=", "deployment=", "architecture="])
+      ["help", "version=", "revision=", "architecture="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
     sys.exit(1)
 
   version = None
-  deployment_name = None
   architecture_name = None
   for opt, arg in opts:
     if opt == '--help':
@@ -42,9 +39,7 @@ def main(argv):
       sys.exit(0)
     elif opt in ('-v', '--version'):
       version = arg
-    elif opt in ('-v', '--deployment'):
-      deployment_name = arg
-    elif opt in ('-v', '--architecture'):
+    elif opt in ('-a', '--architecture'):
       architecture_name = arg
     else:
       print("\n" + usage_message + "\n")
@@ -57,14 +52,6 @@ def main(argv):
 
   build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
-  deployment = None
-  if deployment_name == None:
-    deployment = build_config.get_deployment('Public')
-  else:
-    deployment = build_config.get_deployment(deployment_name)
-    if deployment == None:
-      print("Error: deployment '{}' does not exist".format(deployment_name))
-      sys.exit(6)
 
   architecture = None
   if architecture_name == None:
@@ -78,10 +65,9 @@ def main(argv):
   builds = build_config.get_builds()
   available_revisions \
     = [bld for bld in builds if bld['published_version'] == version and \
-                                bld['deployment'] == deployment.eid and \
                                 bld['cpu_architecture'] == architecture.eid]
   if len(available_revisions) == 0:
-    print("Error: build not found with version '{}' and deployment '{}'".format(version, deployment['name']))
+    print("Error: build not found with version '{}'".format(version))
     sys.exit(3)
   sorted_revisions = sorted(available_revisions,
     key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
@@ -89,7 +75,7 @@ def main(argv):
 
   print('{} {} ({}) {} {}:'.format(
     entry.eid, entry['published_version'], entry['revision'],
-    deployment['name'], entry['date']))
+    architecture['name'], entry['date']))
   print('  Bases:')
   base_ids = [entry['nc_base'], entry['ep_base']]
   for base_id in base_ids:

@@ -22,8 +22,6 @@ def main(argv):
                           "set the build version to <version>\n", \
                           "  -r |--revision=<revision>       ", \
                           "set the build revision to <revision>\n", \
-                          "  -d |--deployment=<deployment_name>   ", \
-                          "set the build deployment to <deployment>\n", \
                           "  -a |--architecture=<architecture>   ", \
                           "set the CPU architecture to <architecture>\n", \
                           "  -n |--nc-base=<base_id>         ", \
@@ -35,7 +33,7 @@ def main(argv):
   try:
     opts, args = getopt.getopt(
       argv, "v:r:d:a:n:e:t:",
-      ["help", "version=", "revision=", "deployment=", "architecture=", "nc-base=", "ep-base=", "date="])
+      ["help", "version=", "revision=", "architecture=", "nc-base=", "ep-base=", "date="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
@@ -43,7 +41,6 @@ def main(argv):
 
   version = None
   revision = None
-  deployment_name = None
   architecture_name = None
   nc_base_id = None
   ep_base_id = None
@@ -56,8 +53,6 @@ def main(argv):
       version = arg
     elif opt in ('-r', '--revision'):
       revision = int(arg)
-    elif opt in ('-d', '--deployment'):
-      deployment_name = arg
     elif opt in ('-a', '--architecture'):
       architecture_name = arg
     elif opt in ('-n', '--nc-base'):
@@ -73,13 +68,6 @@ def main(argv):
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
-
-  deployment = None
-  if deployment_name != None:
-    deployment = build_config.get_deployment(deployment_name)
-    if deployment == None:
-      print("Error: deployment '{}' does not exist".format(deployment_name))
-      sys.exit(6)
 
   architecture = None
   if architecture_name != None:
@@ -110,57 +98,51 @@ def main(argv):
   if version != None:
     print('CHECKPOINT 10')
     # version specified
-    # either create a new version or create a new deployment for an existing version
+    # either create a new build version or create a new architecture build for an existing version
     available_revisions = [bld for bld in builds if bld['published_version'] == version]
     if len(available_revisions) > 0:
       print('CHECKPOINT 20')
       # version exists
-      # assuming a request of a new deployment or architecture for an existing version and revision
+      # assuming a request of a new architecture for an existing version and revision
       if revision != None:
         print('CHECKPOINT 30')
         # revision specified
         # revision must exist to continue...
-        existing_deployments = [bld for bld in available_revisions if bld['revision'] == revision]
-        if len(existing_deployments) == 0:
+        revision_matches = [bld for bld in available_revisions if bld['revision'] == revision]
+        if len(revision_matches) == 0:
           print("Error: revision '{}' is unavailable".format(revision))
           sys.exit(1)
         else:
           print('CHECKPOINT 33')
           # revision exists
-          # default or specified deployment or architecture must *not* exist to continue...
-          if deployment == None:
-            deployment = build_config.get_deployment(eid=1)
+          # default or specified architecture must *not* exist to continue...
           if architecture == None:
             architecture = build_config.get_cpu_architecture(eid=1)
           conflicts \
-            = [bld for bld in existing_deployments if bld['deployment'] == deployment.eid and\
-                                                      bld['cpu_architecture'] == architecture.eid]
+            = [bld for bld in revision_matches if bld['cpu_architecture'] == architecture.eid]
           if len(conflicts) == 0:
             print('CHECKPOINT 36')
-            # default or specified deployment or architecture do not exist
-            # new deployment can be allocated
-            new_build = dict(existing_deployments[0])
-            new_build['deployment'] = deployment.eid
+            # default or specified architecture does not exist
+            # new architecture build can be allocated
+            new_build = dict(revision_matches[0])
             new_build['cpu_architecture'] = architecture.eid
             new_build['nc_base'] = nc_base_id
             new_build['ep_base'] = ep_base_id
           else:
-            print("Error: build with version '{}', revision '{}', deployment '{}', and "\
+            print("Error: build with version '{}', revision '{}', and "\
                   "architecture '{}' already exists".format(
-                    version, revision, deployment['name'], architecture['name']))
+                    version, revision, architecture['name']))
             sys.exit(2)
       else:
         print('CHECKPOINT 40')
         # no revision specified
-        # assuming a request for a new revision, deployment, or architecture
+        # assuming a request for a new revision, or architecture
 
         # get one of the builds of the most recent revision
         sorted_revisions = sorted(available_revisions, key=lambda bld: str(bld['revision']))
         new_build = dict(sorted_revisions[-1])
 
-        # get default deployment and architecture as needed
-        if deployment == None:
-          deployment = build_config.get_deployment(eid=1)
+        # get default architecture as needed
         if architecture == None:
           architecture = build_config.get_cpu_architecture(eid=1)
         print((nc_base_id, ep_base_id))
@@ -187,27 +169,24 @@ def main(argv):
           # commit IDs differ
           # increment the revision and set new commit IDs
           new_build['revision'] += 1
-          new_build['deployment'] = deployment.eid
           new_build['cpu_architecture'] = architecture.eid
           new_build['nc_base'] = nc_base_id
           new_build['ep_base'] = ep_base_id
         else:
           print('CHECKPOINT 46')
           # commit IDs are the same
-          # add another build of the same revision if either the default or specified deployment
-          #   or architecture do not conflict
+          # add another build of the same revision if the default or specified
+          #   architecture does not conflict
           revision = new_build['revision']
 
-          # make sure there are no conflicts with both deployment and architecture
+          # make sure there are no architectures conflicts
           conflicts \
-            = [bld for bld in available_revisions \
-               if bld['deployment'] == deployment.eid and bld['cpu_architecture'] == architecture.eid]
+            = [bld for bld in available_revisions if bld['cpu_architecture'] == architecture.eid]
           if len(conflicts) > 0:
-            print("Error: build with version '{}', revision '{}', deployment '{}', and "\
+            print("Error: build with version '{}', revision '{}', and "\
                   "architecture '{}' already exists".format(
-                    version, revision, deployment['name'], architecture['name']))
+                    version, revision, architecture['name']))
             sys.exit(7)
-          new_build['deployment'] = deployment.eid
           new_build['cpu_architecture'] = architecture.eid
           new_build['nc_base'] = nc_base_id
           new_build['ep_base'] = ep_base_id
@@ -219,8 +198,6 @@ def main(argv):
         print("Error: revision specified for new version")
         sys.exit(4)
       revision = 0
-      if deployment == None:
-        deployment = build_config.get_deployment(eid=1)
       if architecture == None:
         architecture = build_config.get_cpu_architecture(eid=1)
       if nc_base_id == None:
@@ -231,7 +208,6 @@ def main(argv):
       new_build = dict(sorted_builds[-1])
       new_build['published_version'] = version
       new_build['revision'] = revision
-      new_build['deployment'] = deployment.eid
       new_build['cpu_architecture'] = architecture.eid
       new_build['nc_base'] = nc_base_id
       new_build['ep_base'] = ep_base_id
@@ -265,7 +241,7 @@ def main(argv):
   # print(new_build)
   print('{} {} ({}) {} {}:'.format(
     new_build.eid, new_build['published_version'], new_build['revision'],
-    deployment['name'], new_build['date']))
+    architecture['name'], new_build['date']))
   print('  Bases:')
   base_ids = [new_build['nc_base'], new_build['ep_base']]
   for base_id in base_ids:

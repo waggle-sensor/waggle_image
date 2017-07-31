@@ -17,9 +17,9 @@ def main():
   build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
   for entry in build_config.get_builds():
-    deployment = build_config.get_deployment(eid=entry['deployment'])
+    architecture = build_config.get_cpu_architecture(eid=entry['cpu_architecture'])
     print('{} {} ({}) {} {}:'.format(
-      entry.eid, entry['published_version'], entry['revision'], deployment['name'], entry['date']))
+      entry.eid, entry['published_version'], entry['revision'], architecture['name'], entry['date']))
     print('  Bases:')
     base_ids = [entry['nc_base'], entry['ep_base']]
     for base_id in base_ids:

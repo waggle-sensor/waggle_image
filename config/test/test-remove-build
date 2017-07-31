@@ -36,41 +36,41 @@ declare -r date=$(date +%Y-%m-%d)
 
 # test removing the latest build revision [expect success]
 echo "[0;33;1m[TEST][0;30;39m remove latest build revision (success test)"
-./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep -o '1.2.3 (0) Development 1942-12-01'
+./add-build --version=1.2.3 --architecture=armv7l --date=1942-12-01 | grep -o '1.2.3 (0) armv7l 1942-12-01'
 sed -i -E 's/"waggle_image_commit": "[0-9a-f]{7}"/"waggle_image_commit": "0000000"/g' build_config.json
-./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep -o '1.2.3 (1) Development 1942-12-01'
+./add-build --version=1.2.3 --architecture=armv7l --date=1942-12-01 | grep -o '1.2.3 (1) armv7l 1942-12-01'
 sed -i -E 's/"core_commit": "[0-9a-f]{7}"/"core_commit": "0000000"/g' build_config.json
-./add-build --version=1.2.3 --deployment=Development --date=1942-12-01 | grep -o '1.2.3 (2) Development 1942-12-01'
+./add-build --version=1.2.3 --architecture=armv7l --date=1942-12-01 | grep -o '1.2.3 (2) armv7l 1942-12-01'
 sed -i -E 's/"nc_commit": "[0-9a-f]{7}"/"nc_commit": "0000000"/g' build_config.json
-./add-build --version=1.2.3 --revision=0 --deployment=Public --date=1942-12-01 | grep -o '1.2.3 (0) Public 1942-12-01'
-./remove-build --version=1.2.3 --deployment=Development | grep -o '1.2.3 (2) Development 1942-12-01'
+./add-build --version=1.2.3 --revision=0 --architecture=x86_64 --nc-base=2 --ep-base=4 --date=1942-12-01 | grep -o '1.2.3 (0) x86_64 1942-12-01'
+./remove-build --version=1.2.3 --architecture=armv7l | grep -o '1.2.3 (2) armv7l 1942-12-01'
 assert_equals $? 0
 
 declare -r builds=$(./get-builds)
 
-echo "[0;33;1m[TEST][0;30;39m verify build revision 0 deployment 3 (success test)"
-echo $builds | grep -o '1.2.3 (0) Development 1942-12-01'
+echo "[0;33;1m[TEST][0;30;39m verify build revision 0 architecture 1 (success test)"
+echo $builds | grep -o '1.2.3 (0) armv7l 1942-12-01'
 assert_equals $? 0
 
-echo "[0;33;1m[TEST][0;30;39m verify build revision 1 deployment 3 (success test)"
-echo $builds | grep -o '1.2.3 (1) Development 1942-12-01'
+echo "[0;33;1m[TEST][0;30;39m verify build revision 1 architecture 1 (success test)"
+echo $builds | grep -o '1.2.3 (1) armv7l 1942-12-01'
 assert_equals $? 0
 
-echo "[0;33;1m[TEST][0;30;39m verify missing build revision 2 deployment 3 (success test)"
-echo $builds | grep -o -v '1.2.3 (2) Development 1942-12-01'
+echo "[0;33;1m[TEST][0;30;39m verify missing build revision 2 architecture 1 (success test)"
+echo $builds | grep -o -v '1.2.3 (2) armv7l 1942-12-01'
 assert_equals $? 0
 
-echo "[0;33;1m[TEST][0;30;39m verify build revision 0 deployment 1 (success test)"
-echo $builds | grep -o '1.2.3 (0) Public 1942-12-01'
+echo "[0;33;1m[TEST][0;30;39m verify build revision 0 architecture 2 (success test)"
+echo $builds | grep -o '1.2.3 (0) x86_64 1942-12-01'
 assert_equals $? 0
 
 echo "[0;33;1m[TEST][0;30;39m attempt remove with bogus version (failure test)"
-./remove-build --version=0.1.2 --deployment=Public \
-  | grep "Error: build not found with version '0.1.2' and deployment 'Public'"
+./remove-build --version=0.1.2 --architecture=x86_64 \
+  | grep "Error: build not found with version '0.1.2'"
 assert_equals $? 0
 
 echo "[0;33;1m[TEST][0;30;39m attempt remove with bogus deployment (failure test)"
-./remove-build --version=1.2.3 --deployment=Foobar | grep "Error: deployment 'Foobar' does not exist"
+./remove-build --version=1.2.3 --architecture=Foobar | grep "Error: architecture 'Foobar' does not exist"
 assert_equals $? 0
 
 echo "${pass_count} out of ${test_count} tests passed"

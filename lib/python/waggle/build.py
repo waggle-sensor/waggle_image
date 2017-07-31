@@ -218,14 +218,13 @@ class Configuration:
 
 
   # build functions
-  def add_build(self, published_version='', revision=0, deployment_id=0, cpu_architecture_id=0,
+  def add_build(self, published_version='', revision=0, cpu_architecture_id=0,
                 nc_base_id=0, ep_base_id=0, waggle_image_commit_id='', core_commit_id='',
                 nc_commit_id='', ep_commit_id='', pm_commit_id='', date='', build=None):
     entry = tinydb.Query()
     if build != None:
       _build = self._builds.get((entry.published_version == build['published_version'])\
                                 & (entry.revision == build['revision'])
-                                & (entry.deployment == build['deployment'])
                                 & (entry.cpu_architecture == build['cpu_architecture']))
 
       if _build == None:
@@ -244,7 +243,6 @@ class Configuration:
     else:
       build = self._builds.get((entry.published_version == published_version)\
                                 & (entry.revision == revision)
-                                & (entry.deployment == deployment_id)
                                 & (entry.cpu_architecture == cpu_architecture_id))
       if build == None:
         # verify that the build and base architectures match and that the base node elements are sane
@@ -265,13 +263,13 @@ class Configuration:
               self.get_node_element(eid=base['node_element']))
         return self._builds.insert(
           {'published_version': published_version, 'revision': revision,
-           'cpu_architecture': cpu_architecture_id, 'deployment': deployment_id,
+           'cpu_architecture': cpu_architecture_id,
            'nc_base': nc_base_id, 'ep_base': ep_base_id,
            'waggle_image_commit': waggle_image_commit_id, 'core_commit': core_commit_id,
            'nc_commit': nc_commit_id, 'ep_commit': ep_commit_id, 'pm_commit': pm_commit_id,
            'date': date})
 
-  def get_build(self, published_version='', revision=0, deployment=1, architecture=1, eid=0):
+  def get_build(self, published_version='', revision=0, architecture=1, eid=0):
     if eid == None:
       return None
     if eid > 0:
@@ -279,17 +277,14 @@ class Configuration:
     entry = tinydb.Query()
     build = self._builds.get((entry.published_version == published_version)\
                               & (entry.revision == revision)
-                              & (entry.deployment == deployment)
                               & (entry.cpu_architecture == architecture))
     if build == None:
       return None
     return build
 
-  def get_latest_build(self, deployment_name='Public', architecture_name='armv7l'):
-    deployment_id = self.get_deployment(deployment_name).eid
+  def get_latest_build(self, architecture_name='armv7l'):
     architecture_id = self.get_cpu_architecture(architecture_name).eid
-    filtered_builds = [bld for bld in self._builds.all() if bld['deployment'] == deployment_id and \
-                                                            bld['cpu_architecture'] == architecture_id]
+    filtered_builds = [bld for bld in self._builds.all() if bld['cpu_architecture'] == architecture_id]
     if len(filtered_builds) > 0:
       sorted_builds = sorted(filtered_builds,
           key=lambda bld: ''.join((bld['published_version'], '-', str(bld['revision']))))
@@ -303,7 +298,7 @@ class Configuration:
     return self._builds.remove(eids=[eid,])
 
   def get_build_dependencies(
-      self, version='', revision=0, deployment_name='Public', architecture_name='armv7l'):
+      self, version='', revision=0, architecture_name='armv7l'):
     if version == None:
       sorted_builds = sorted(self.get_builds(), key=lambda bld: bld['published_version'])
       version = sorted_builds[-1]['published_version']
@@ -313,21 +308,17 @@ class Configuration:
       sorted_revisions = sorted(revisions, key=lambda bld: bld['revision'])
       revision = sorted_revisions[-1]['revision']
 
-    if deployment_name == None:
-      deployment_name = 'Public'
-    deployment = self.get_deployment(deployment_name)
-    if deployment == None:
-      print("Error: deployment '{}' does not exist".format(deployment_name))
-      sys.exit(6)
-
     if architecture_name == None:
       architecture_name = 'armv7l'
     architecture = self.get_cpu_architecture(architecture_name)
     if architecture == None:
-      print("Error: CPU architecture '{}' does not exist".format(architecture_name))
-      sys.exit(6)
+      raise ConfigurationError("CPU architecture '{}' does not exist".format(architecture_name))
 
-    target_build = self.get_build(version, revision, deployment.eid, architecture.eid)
+    target_build = self.get_build(version, revision, architecture.eid)
+    if target_build == None:
+      raise ConfigurationError(
+        "build not found with version '{}', revision '{}', and architecture '{}'".format(
+        version, revision, architecture_name))
     nc_base = self.get_base(eid=target_build['nc_base'])
     ep_base = self.get_base(eid=target_build['ep_base'])
 

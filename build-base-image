@@ -240,14 +240,12 @@ def main(argv):
                     "build version <version>\n"\
                     "  -r |--revision=<revision>      "\
                     "build revision <revision> of the specified version\n"\
-                    "  -d |--deployment=<deployment>  "\
-                    "build deployment <deployment> of the specified version\n"\
                     ""
     try:
         opts, args = getopt.getopt(
             argv,
             "b:v:r:d:",
-            ["help", "build-dir=", "version=", "revision=", "deployment="])
+            ["help", "build-dir=", "version=", "revision="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
         print(usage_message)
@@ -258,7 +256,6 @@ def main(argv):
     build_directory = '/root'
     version = None
     revision = None
-    deployment_name = 'Public'
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
@@ -269,8 +266,6 @@ def main(argv):
           version = arg
         elif opt in ('-r', '--revision'):
           revision = int(arg)
-        elif opt in ('-d', '--deployment'):
-          deployment_name = arg
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)

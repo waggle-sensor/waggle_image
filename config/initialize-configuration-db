@@ -187,18 +187,6 @@ def main():
   for name, fqdn, address in zip(build_host_names, build_host_fqdns, build_host_addresses):
     build_host_ids.append(build_config.add_build_host(name, fqdn, address))
 
-  # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host, build_host)
-  build_config.add_deployment('Public', shadow_entry_ids[0], False, wireless_config_ids[0],
-                               reg_key_ids[0], beehive_host_ids[0], build_host_ids[0])
-  build_config.add_deployment('Collaborator', shadow_entry_ids[1], True, wireless_config_ids[0],
-                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[1])
-  build_config.add_deployment('Development', shadow_entry_ids[1], True, wireless_config_ids[1],
-                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[0])
-  build_config.add_deployment('AoT', shadow_entry_ids[1], True, wireless_config_ids[1],
-                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[0])
-  build_config.add_deployment('Build', shadow_entry_ids[1], True, wireless_config_ids[1],
-                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[2])
-
   # add build (published version, revision, build SW commit ID, date)
   '''
   repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
@@ -211,20 +199,31 @@ def main():
   commit_ids = ['d6f69c5', '50b1b2a', '1764428', '6cf03fa', '9031d0e']
   date = '2017-07-22'
   revision = 0
-  deployment_id = build_config.get_deployment('Public').eid
   architecture_id = build_config.get_cpu_architecture('armv7l').eid
   nc_base_id = build_config.get_base(nc_armv7l_uuid).eid
   ep_base_id = build_config.get_base(ep_armv7l_uuid).eid
-  build_config.add_build('2.6.0', revision, deployment_id, architecture_id, nc_base_id, ep_base_id,
+  build_config.add_build('2.6.0', revision, architecture_id, nc_base_id, ep_base_id,
                          commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
                          date)
 
   architecture_id = build_config.get_cpu_architecture('x86_64').eid
   nc_base_id = build_config.get_base(nc_x86_64_uuid).eid
   ep_base_id = build_config.get_base(ep_x86_64_uuid).eid
-  build_config.add_build('2.6.0', revision, deployment_id, architecture_id, nc_base_id, ep_base_id,
+  build_config.add_build('2.6.0', revision, architecture_id, nc_base_id, ep_base_id,
                          commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
                          date)
+
+  # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host, build_host)
+  build_config.add_deployment('Public', shadow_entry_ids[0], False, wireless_config_ids[0],
+                               reg_key_ids[0], beehive_host_ids[0], build_host_ids[0])
+  build_config.add_deployment('Collaborator', shadow_entry_ids[1], True, wireless_config_ids[0],
+                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[1])
+  build_config.add_deployment('Development', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[0])
+  build_config.add_deployment('AoT', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[0])
+  build_config.add_deployment('Build', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[2])
 
 
   print_entries(build_config.get_dependency_types())
@@ -255,13 +254,13 @@ def main():
 
   print_entries(build_config.get_build_hosts())
 
-  print_entries(build_config.get_deployments())
-
   builds = build_config.get_builds()
   for the_build in builds:
     published_version = the_build['published_version']
     revision = the_build['revision']
     print('{0} {1}-{2}'.format(the_build.eid, published_version, revision))
+
+  print_entries(build_config.get_deployments())
 
 if __name__ == '__main__':
   main()

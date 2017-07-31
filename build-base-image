@@ -217,7 +217,7 @@ def upload_image(build_directory, base_image):
 
 
 def main(argv):
-    usage_message = "Usage: build-waggle-image  [OPTIONS]\n"\
+    usage_message = "Usage: build-waggle-image [OPTIONS]\n"\
                     "OPTIONS\n"\
                     "  --help                         "\
                     "show this usage message\n"\

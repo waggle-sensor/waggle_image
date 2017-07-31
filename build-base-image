@@ -135,7 +135,7 @@ def stage_image_build_script(waggle_image_directory, mount_point, branch):
     #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 
-def build_image(mount_point, version, revision):
+def build_image(mount_point, version, revision, node_element_name):
     if debug == 0:
         all_dependencies = build_config.get_build_dependencies(version, revision, 'armv7l')
         dependencies = ''
@@ -235,6 +235,10 @@ def main(argv):
                     "show this usage message\n"\
                     "  -b |--build-dir=<build_dir>    "\
                     "work on the disk image in the <build_dir> directory\n"\
+                    "  -n|--node-controller           "\
+                    "build a Node Controller image\n"\
+                    "  -e|--edge-processor            "\
+                    "build an Edge Processor image\n"\
                     "  -v |--version=<version>        "\
                     "build version <version>\n"\
                     "  -r |--revision=<revision>      "\
@@ -243,8 +247,8 @@ def main(argv):
     try:
         opts, args = getopt.getopt(
             argv,
-            "b:v:r:d:",
-            ["help", "build-dir=", "version=", "revision="])
+            "b:nev:r:",
+            ["help", "build-dir=", "node-controller", "edge-processor", "version=", "revision="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
         print(usage_message)
@@ -255,12 +259,18 @@ def main(argv):
     build_directory = '/root'
     version = None
     revision = None
+    node_controller = False
+    edge_processor = True
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
         elif opt in ('-b', '--build-dir'):
             build_directory = arg
+        elif opt in ('-n', '--node-controller'):
+            node_controller = True
+        elif opt in ('-e', '--edge-processor'):
+            edge_processor = True
         elif opt in ('-v', '--version'):
           version = arg
         elif opt in ('-r', '--revision'):
@@ -268,6 +278,14 @@ def main(argv):
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)
+
+    if node_controller and edge_processor:
+        print("Error: building both the Node Controller and Edge Processor image"
+              " on the same device is not currently supported.")
+        sys.exit(3)
+    elif (not node_controller) and (not edge_processor):
+        print("Error: please specify a node element with either --node-controller or --edge-processor")
+        sys.exit(3)
 
     if version == None:
         version,revision_default = build_config.get_latest_build('armv7l')
@@ -303,7 +321,10 @@ def main(argv):
 
     stage_image_build_script(waggle_image_directory, mount_point, branch)
 
-    build_image(mount_point, version, revision)
+    if node_controller:
+        build_image(mount_point, version, revision, 'Node Controller')
+    else:
+        build_image(mount_point, version, revision, 'Edge Processor')
 
     generate_report(build_directory, mount_point, base_image)
 

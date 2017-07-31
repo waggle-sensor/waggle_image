@@ -297,8 +297,7 @@ class Configuration:
   def remove_build(self, eid):
     return self._builds.remove(eids=[eid,])
 
-  def get_build_dependencies(
-      self, version='', revision=0, architecture_name='armv7l'):
+  def get_build_dependencies(self, version='', revision=0, architecture_name='armv7l'):
     if version == None:
       sorted_builds = sorted(self.get_builds(), key=lambda bld: bld['published_version'])
       version = sorted_builds[-1]['published_version']

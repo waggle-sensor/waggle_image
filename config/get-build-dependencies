@@ -26,14 +26,12 @@ def main(argv):
                           "set the build version to <version>\n", \
                           "  -r |--revision=<revision>       ", \
                           "set the build revision to <revision>\n", \
-                          "  -d |--deployment=<deployment_name>   ", \
-                          "set the build deployment to <deployment>\n", \
                           "  -a |--architecture=<architecture>   "))
   try:
     opts, args = getopt.getopt(
-      argv, "nev:r:d:a:",
+      argv, "nev:r:a:",
       ["help", "node-controller", "nc", "edge-processor", "ep",
-       "version=", "revision=", "deployment=", "architecture="])
+       "version=", "revision=", "architecture="])
   except getopt.GetoptError as ge:
     print("\nError:", str(ge))
     print(usage_message + "\n")
@@ -43,7 +41,6 @@ def main(argv):
   edge_processor = False
   version = None
   revision = None
-  deployment_name = None
   architecture_name = None
   for opt, arg in opts:
     if opt == '--help':
@@ -57,19 +54,21 @@ def main(argv):
       version = arg
     elif opt in ('-r', '--revision'):
       revision = int(arg)
-    elif opt in ('-d', '--deployment'):
-      deployment_name = arg
     elif opt in ('-a', '--architecture'):
       architecture_name = arg
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
 
+  if version == None:
+    print("Error: missing build version (use -v or --version)")
+    sys.exit(3)
+
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
 
-  dependencies = build_config.get_build_dependencies(version, revision, deployment_name, architecture_name)
+  dependencies = build_config.get_build_dependencies(version, revision, architecture_name)
 
   if node_controller:
     print(dependencies[0])

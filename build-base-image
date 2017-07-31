@@ -9,8 +9,13 @@ import sys
 import time
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+os.chdir(waggle_image_directory)
+
+sys.path.insert(0, os.path.realpath('{}/lib/python/'.format(waggle_image_directory)))
 from waggle.build import *
+
+config_db_path = os.path.realpath('{}/config/build_config.json'.format(waggle_image_directory))
+build_config = Configuration(str(config_db_path))
 
 debug=0 # skip chroot environment if 1
 
@@ -130,9 +135,17 @@ def stage_image_build_script(waggle_image_directory, mount_point, branch):
     #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 
-def build_image(mount_point):
+def build_image(mount_point, version, revision, deployment_name):
     if debug == 0:
-        run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_dependencies.sh' % (mount_point))
+        all_dependencies = build_config.get_build_dependencies(
+            version, revision, deployment_name, 'armv7l')
+        dependencies = ''
+        if node_element_name == 'Node Controller':
+            dependencies = all_dependencies[0]
+        elif node_element_name == 'Edge Processor':
+            dependencies = all_dependencies[0]
+        script_path = '/usr/lib/waggle/waggle_image/scripts/install_dependencies.sh'
+        run_command('chroot {0}/ /bin/bash {1} {2}'.format(mount_point, script_path, dependencies))
 
     shutil.rmtree('{0}/usr/lib/waggle/waggle_image'.format(mount_point))
 
@@ -184,7 +197,7 @@ def upload_image(build_directory, base_image):
     while 1:
         count +=1
         if (count >= 10):
-            print("error: scp failed after 10 trys\n")
+            print("error: scp failed after 10 tries\n")
             sys.exit(1)
 
         cmd_return = 1
@@ -221,9 +234,7 @@ def main(argv):
                     "OPTIONS\n"\
                     "  --help                         "\
                     "show this usage message\n"\
-                    "  -b |--branch=<branch>          "\
-                    "build the branch <branch>\n"\
-                    "  -l |--build-dir=<build_dir>    "\
+                    "  -b |--build-dir=<build_dir>    "\
                     "work on the disk image in the <build_dir> directory\n"\
                     "  -v |--version=<version>        "\
                     "build version <version>\n"\
@@ -235,8 +246,8 @@ def main(argv):
     try:
         opts, args = getopt.getopt(
             argv,
-            "b:l:v:r:d:",
-            ["help", "branch=", "build-dir=", "version=", "revision=", "deployment="])
+            "b:v:r:d:",
+            ["help", "build-dir=", "version=", "revision=", "deployment="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
         print(usage_message)
@@ -244,29 +255,38 @@ def main(argv):
 
     compress = False
     upload = False
-    branch = ''
     build_directory = '/root'
     version = None
-    revision = 0
-    deployment = 'Public'
+    revision = None
+    deployment_name = 'Public'
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
-        elif opt in ('-b', '--branch'):
-            branch = arg
-        elif opt in ('-l', '--build-dir'):
+        elif opt in ('-b', '--build-dir'):
             build_directory = arg
+        elif opt in ('-v', '--version'):
+          version = arg
+        elif opt in ('-r', '--revision'):
+          revision = int(arg)
+        elif opt in ('-d', '--deployment'):
+          deployment_name = arg
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)
 
     if version == None:
-        cwd = os.getcwd()
-        os.chdir('{}/config')
-        build_config = build.Configuration()
-        os.chdir(cwd)
+        version,revision_default = build_config.get_latest_build(deployment_name, 'armv7l')
+        if revision == None:
+            revision = revision_default
 
+    if revision == None:
+        revision = int(0)
+
+
+    branches = subprocess.check_output(['git', 'branch']).decode().split('\n')
+    branch = [b for b in branches if '*' in b][0][2:]
+    print("Building branch '{}'...".format(branch))
 
     create_b_image = 0 # will be 1 for XU3/4
 
@@ -289,7 +309,7 @@ def main(argv):
 
     stage_image_build_script(waggle_image_directory, mount_point, branch)
 
-    build_image(mount_point)
+    build_image(mount_point, version, revision, deployment_name)
 
     generate_report(build_directory, mount_point, base_image)
 

@@ -76,7 +76,7 @@ done
 declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ "x$version" == "x" ]; then
-  # TODO: query DB for latest version and revision if not specified
+  # query DB for latest version and revision if not specified
   cd ${script_dir}/config
   version_revision=$(./get-latest-build)
   version_revision_tuple=(${version_revision//-/ })

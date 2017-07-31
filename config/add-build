@@ -54,9 +54,9 @@ def main(argv):
       sys.exit(0)
     elif opt in ('-v', '--version'):
       version = arg
-    elif opt in ('-v', '--revision'):
+    elif opt in ('-r', '--revision'):
       revision = int(arg)
-    elif opt in ('-v', '--deployment'):
+    elif opt in ('-d', '--deployment'):
       deployment_name = arg
     elif opt in ('-a', '--architecture'):
       architecture_name = arg
@@ -64,7 +64,7 @@ def main(argv):
       nc_base_id = int(arg)
     elif opt in ('-e', '--ep-base'):
       ep_base_id = int(arg)
-    elif opt in ('-d', '--date'):
+    elif opt in ('-t', '--date'):
       date = arg
     else:
       print("\n" + usage_message + "\n")

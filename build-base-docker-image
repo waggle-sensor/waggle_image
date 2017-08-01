@@ -30,7 +30,7 @@ declare -r node_element=$($script_dir/config/get-bases | grep $uuid | awk '{prin
 declare -r base_date=$($script_dir/config/get-bases | grep $uuid | awk '{print $5}')
 declare -r dependencies=$($script_dir/config/get-base-dependencies $uuid)
 echo "Building Waggle $node_element base image from $base_date"
-if [ $node_element == "Node Controller" ]; then
+if [ "$node_element" == "Node Controller" ]; then
   time docker build -t waggle-node-controller-base:${base_date} \
                     -f dockerfiles/waggle-node-controller-base \
                     --build-arg dependencies=${dependencies} .

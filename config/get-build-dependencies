@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)
 import waggle.build as build
 
 def main(argv):
-  usage_message = ''.join(("Usage: setup-build [OPTIONS]\n", \
+  usage_message = ''.join(("Usage: get-build-dependencies [OPTIONS]\n", \
                           "OPTIONS\n", \
                           "  --help                          ", \
                           "print help screen\n", \
@@ -59,6 +59,9 @@ def main(argv):
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
+
+  if not node_controller and not edge_processor:
+    print("Error: node element was not specified. Use --node-controller (-n) and/or --edge-processor (-e).")
 
   if version == None:
     print("Error: missing build version (use -v or --version)")

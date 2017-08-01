@@ -1,29 +1,13 @@
 #!/bin/bash
 
 print_usage() {
-  echo "Usage: build-base-docker-image [OPTIONS]"
-  echo "OPTIONS"
-  line="--help                         "
-  line+="show this usage message"
-  echo "  $line"
-  line="-n |--node-controller        "
-  line+="build the Node Controller base Docker image"
-  echo "  $line"
-  line="-e |--edge-processor        "
-  line+="build the Edge Processor base Docker image"
-  echo "  $line"
-  line="-v |--version=<version>        "
-  line+="show this usage message"
-  echo "  $line"
-  line="-r |--revision=<revision>      "
-  line+="build revision <revision> of the specified version"
-  echo "  $line"
+  echo "Usage: build-base-docker-image --help"
+  echo "  show this usage message"
+  echo "       build-base-docker-image <uuid>"
+  echo "  build the base image with UUID <uuid>"
 }
 
-node_controller=0
-edge_processor=0
-version=''
-revision=0
+uuid=
 while [[ $# -gt 0 ]]; do
   key="$1"
   case $key in
@@ -31,35 +15,8 @@ while [[ $# -gt 0 ]]; do
       print_usage
       exit
       ;;
-    -n)
-      node_controller=1
-      shift
-      ;;
-    --node-controller=*)
-      node_controller=1
-      ;;
-    -e)
-      edge_processor=1
-      shift
-      ;;
-    --edge-processor=*)
-      edge_processor=1
-      ;;
-    -v)
-      version="$2"
-      shift
-      ;;
-    --version=*)
-      version="${key#*=}"
-      ;;
-    -r)
-      revision="$2"
-      shift
-      ;;
-    --revision=*)
-      revision="${key#*=}"
-      ;;
-      *)
+    *)
+      uuid=$key
       ;;
   esac
   shift
@@ -67,32 +24,18 @@ done
 
 declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ "x$version" == "x" ]; then
-  # query DB for latest version and revision if not specified
-  cd ${script_dir}/config
-  version_revision=$($script_dir/config/get-latest-build)
-  version_revision_tuple=(${version_revision//-/ })
-  version=${version_revision_tuple[0]}
-fi
-
-if [ $revision -ne 0 ]; then
-  revision=${version_revision_tuple[0]}
-fi
-
-declare -r architecture=x86_64
-
 cd $script_dir
 
-if [ $node_controller -eq 1 ]; then
-  declare -r nc_base_date=$($script_dir/config/get-builds | grep -A 2 "$version ($revision) $architecture" | tail -1 | awk '{print $5}')
-  declare -r nc_dependencies=$($script_dir/config/get-build-dependencies -n --version=$version --revision=$revision --architecture=$architecture)
-  echo "Building Waggle Node Controller base image version $nc_base_date"
-  time docker build -t waggle-node-controller-base:${nc_base_date} -f dockerfiles/waggle-node-controller-base --build-arg dependencies=${nc_dependencies} .
-fi
-
-if [ $edge_processor -eq 1 ]; then
-  declare -r ep_base_date=$($script_dir/config/get-builds | grep -A 3 "$version ($revision) $architecture" | tail -1 | awk '{print $5}')
-  declare -r ep_dependencies=$($script_dir/config/get-build-dependencies -e --version=$version --revision=$revision --architecture=$architecture)
-  echo "Building Waggle Edge Processor base image version $ep_base_date"
-  time docker build -t waggle-edge-processor-base:${ep_base_date} -f dockerfiles/waggle-edge-processor-base --build-arg dependencies=${ep_dependencies} .
+declare -r node_element=$($script_dir/config/get-bases | grep $uuid | awk '{print $2 " " $3}')
+declare -r base_date=$($script_dir/config/get-bases | grep $uuid | awk '{print $5}')
+declare -r dependencies=$($script_dir/config/get-base-dependencies $uuid)
+echo "Building Waggle $node_element base image from $base_date"
+if [ $node_element == "Node Controller" ]; then
+  time docker build -t waggle-node-controller-base:${base_date} \
+                    -f dockerfiles/waggle-node-controller-base \
+                    --build-arg dependencies=${dependencies} .
+else
+  time docker build -t waggle-edge-processor-base:${base_date} \
+                    -f dockerfiles/waggle-edge-processor-base \
+                    --build-arg dependencies=${dependencies} .
 fi

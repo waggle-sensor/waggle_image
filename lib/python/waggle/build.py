@@ -297,6 +297,24 @@ class Configuration:
   def remove_build(self, eid):
     return self._builds.remove(eids=[eid,])
 
+  def get_base_dependencies(self, uuid='', base=None):
+    if base == None:
+      base = self.get_base(uuid)
+    if base == None:
+      raise ConfigurationError("unable to find base with uuid '{}'".format(uuid))
+    string_buffer = []
+    dependencies = ''
+    first_dep = True
+    for dependency_id in base['dependencies']:
+      dependency = self.get_dependency(eid=dependency_id)
+      dependency_type = self.get_dependency_type(eid=dependency['type'])
+      if first_dep:
+        first_dep = False
+      else:
+        string_buffer.append(',')
+      string_buffer.append('{}:{}'.format(dependency['name'], dependency_type['name']))
+    return ''.join(string_buffer)
+
   def get_build_dependencies(self, version='', revision=0, architecture_name='armv7l'):
     if version == None:
       sorted_builds = sorted(self.get_builds(), key=lambda bld: bld['published_version'])
@@ -321,19 +339,9 @@ class Configuration:
     nc_base = self.get_base(eid=target_build['nc_base'])
     ep_base = self.get_base(eid=target_build['ep_base'])
 
-    string_buffer = []
     dependencies = []
-    for base in (nc_base,ep_base):
-      first_dep = True
-      for dependency_id in base['dependencies']:
-        dependency = self.get_dependency(eid=dependency_id)
-        dependency_type = self.get_dependency_type(eid=dependency['type'])
-        if first_dep:
-          first_dep = False
-        else:
-          string_buffer.append(',')
-        string_buffer.append('{}:{}'.format(dependency['name'], dependency_type['name']))
-      dependencies.append(''.join(string_buffer))
+    for base in (nc_base, ep_base):
+      dependencies.append(self.get_base_dependencies(base=base))
     return dependencies
 
 

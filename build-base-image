@@ -20,25 +20,13 @@ build_config = Configuration(str(config_db_path))
 debug=0 # skip chroot environment if 1
 
 
-def get_base_image_filename(build_directory, odroid_model):
-    is_edge_processor = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
-
-
-    if odroid_model == "odroid-xu3":
-        is_edge_processor = 1
-        create_b_image = 1
-
-
-    date_today=get_output('date +"%Y%m%d"').rstrip().decode()
-
-    if is_edge_processor:
+def get_base_image_filename(build_directory, base):
+    if base['node_element'] == 'Node Controller':
         image_type = "edge_processor"
     else:
-        image_type = "nodecontroller"
+        image_type = "node_controller"
 
-    print("image_type: ", image_type)
-
-    base_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today)
+    base_image_base="waggle-base-%s-%s-%s" % (image_type, base['cpu_architecture'], base['date'])
     return "%s.img" % (base_image_base)
 
 
@@ -135,14 +123,8 @@ def stage_image_build_script(waggle_image_directory, mount_point, branch):
     #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 
-def build_image(mount_point, version, revision, node_element_name):
+def build_image(mount_point, dependencies):
     if debug == 0:
-        all_dependencies = build_config.get_build_dependencies(version, revision, 'armv7l')
-        dependencies = ''
-        if node_element_name == 'Node Controller':
-            dependencies = all_dependencies[0]
-        elif node_element_name == 'Edge Processor':
-            dependencies = all_dependencies[1]
         script_path = '/usr/lib/waggle/waggle_image/scripts/install_dependencies.sh'
         run_command('chroot {0}/ /bin/bash {1} {2}'.format(mount_point, script_path, dependencies))
 
@@ -235,66 +217,42 @@ def main(argv):
                     "show this usage message\n"\
                     "  -b |--build-dir=<build_dir>    "\
                     "work on the disk image in the <build_dir> directory\n"\
-                    "  -n|--node-controller           "\
-                    "build a Node Controller image\n"\
-                    "  -e|--edge-processor            "\
-                    "build an Edge Processor image\n"\
-                    "  -v |--version=<version>        "\
-                    "build version <version>\n"\
-                    "  -r |--revision=<revision>      "\
-                    "build revision <revision> of the specified version\n"\
+                    "  -u|--uuid=<uuid>               "\
+                    "build the image with UUID <uuid>\n"\
                     ""
     try:
         opts, args = getopt.getopt(
             argv,
-            "b:nev:r:",
-            ["help", "build-dir=", "node-controller", "edge-processor", "version=", "revision="])
+            "b:u:",
+            ["help", "build-dir=", "uuid="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
         print(usage_message)
         sys.exit(1)
 
     compress = False
-    upload = False
     build_directory = '/root'
-    version = None
-    revision = None
-    node_controller = False
-    edge_processor = False
+    uuid = None
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
         elif opt in ('-b', '--build-dir'):
             build_directory = arg
-        elif opt in ('-n', '--node-controller'):
+        elif opt in ('-u', '--uuid'):
             node_controller = True
-        elif opt in ('-e', '--edge-processor'):
-            edge_processor = True
-        elif opt in ('-v', '--version'):
-          version = arg
-        elif opt in ('-r', '--revision'):
-          revision = int(arg)
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)
 
-    if node_controller and edge_processor:
-        print("Error: building both the Node Controller and Edge Processor image"
-              " on the same device is not currently supported.")
-        sys.exit(3)
-    elif (not node_controller) and (not edge_processor):
-        print("Error: please specify a node element with either --node-controller or --edge-processor")
+    if uuid == None:
+        print("Error: the UUID of the base image to build is required (use --uuid)")
         sys.exit(3)
 
-    if version == None:
-        version,revision_default = build_config.get_latest_build('armv7l')
-        if revision == None:
-            revision = revision_default
-
-    if revision == None:
-        revision = int(0)
-
+    base = build_config.get_base(uuid)
+    if base == None:
+        print("Error: unable to find a base image with UUID {}".format(uuid))
+        sys.exit(4)
 
     branches = subprocess.check_output(['git', 'branch']).decode().split('\n')
     branch = [b for b in branches if '*' in b][0][2:]
@@ -311,7 +269,7 @@ def main(argv):
     if not odroid_model:
         sys.exit(1)
 
-    base_image = get_base_image_filename(build_directory, odroid_model)
+    base_image = get_base_image_filename(build_directory, base['node_element'], base['date'])
 
     setup_mount_point(mount_point)
 
@@ -321,10 +279,7 @@ def main(argv):
 
     stage_image_build_script(waggle_image_directory, mount_point, branch)
 
-    if node_controller:
-        build_image(mount_point, version, revision, 'Node Controller')
-    else:
-        build_image(mount_point, version, revision, 'Edge Processor')
+    build_image(mount_point, build_config.get_base_dependencies(base=base))
 
     generate_report(build_directory, mount_point, base_image)
 

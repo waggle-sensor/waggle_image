@@ -58,7 +58,7 @@ In a location of your choosing, execute `git clone https://github.com/waggle-sen
 
 **INTERNAL USE ONLY**
 
-In order to upload the base image to MCS website after building, the Waggle web ssh key file `waggle-id_rsa` must be installed in the build directory (the directory specified using the --build-dir option of the build scripts).
+In order to upload the base image to the MCS Waggle website after building, the Waggle web ssh key file `waggle-id_rsa` must be installed in the build directory (the directory specified using the --build-dir option of the build scripts).
 
 To access the Waggle private configuration repository, the deploy key file `id_rsa_waggle_aot_private_config` must be installed in `/root`.
 
@@ -105,3 +105,7 @@ Be sure to unmount the data partition when you're done:
 To avoid a UUID collision between an SD and eMMC attached to the same Odroid, one of the card's partition UUIDs must be changed. Normally this is not a problem as the file system on the uSD card is copied to the eMMC and the eMMC partition UUID is changed automatically when the Waggle software first initializes. To change the UUID manually, use the following command (assuming the card device is /dev/sda):
 
 `change-partition-uuid /dev/sda`
+
+# Making Copies of Blessed Disk Images
+
+To make multiple copies of a blessed disk image, the uSD card can be replicated using a card duplicator. Alternatively the blessed disk image can be ripped using the `rip-disk` utility and burned manually as needed. Yet another option is to mount an unblessed image using the `mount-image` utility, bless it using the `bless-image` utility, and then transfer the blessed image file to another computer using `scp`. In this last case, you may want to consider compressing the image using, for example, `xz`.

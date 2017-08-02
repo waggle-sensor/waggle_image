@@ -122,6 +122,7 @@ DISABLE_ROOT_PASS=0
 CLEAN_UP=0
 KEY_PATH='/root/id_rsa_waggle_aot_config'
 MOUNT_POINT=''
+set -e
 while [[ $# -gt 0 ]]; do
   opt="$1"
   arg="$2"
@@ -146,18 +147,19 @@ while [[ $# -gt 0 ]]; do
       CLEAN_UP=1
       ;;
     -k)
-      KEY_PATH="$arg"
+      KEY_PATH=$(readlink -f "$arg")
       shift
       ;;
     --key-path=*)
-      KEY_PATH="${opt#*=}"
+      KEY_PATH=$(readlink -f "${opt#*=}")
       ;;
-      *)
-        MOUNT_POINT="$opt"
+    *)
+      MOUNT_POINT=$(readlink -f "$opt")
       ;;
   esac
   shift
 done
+set +e
 
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 declare -r ODROID_MODEL=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")

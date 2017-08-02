@@ -285,9 +285,6 @@ def main(argv):
     elif opt in ('-h', '--server-host'):
       server_host = arg
     elif opt in ('-s', '--bless'):
-      if target_device == None:
-        print("Error: blessing requested but target device was not specified (use --target=<target_dev>)")
-        sys.exit(3)
       bless = True
     elif opt in ('-t', '--target'):
       target_device = arg
@@ -296,6 +293,10 @@ def main(argv):
     else:
       print("\n" + usage_message + "\n")
       sys.exit(2)
+
+  if bless and target_device == None:
+    print("Error: blessing requested but target device was not specified (use --target=<target_dev>)")
+    sys.exit(3)
 
   # convert hostname to IP
   if re.search('[a-zA-Z]', server_host):

@@ -48,7 +48,7 @@ Once you have identified the IP address of the ODroid, log into the device with 
 
 ## Install Git and Curl
 
-`apt install git curl`
+`apt install -y git curl`
 
 ## Clone the waggle_image Repository
 

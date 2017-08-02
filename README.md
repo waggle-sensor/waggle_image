@@ -15,6 +15,8 @@ This repository contains scripts to create waggle disk images. The root of the r
 * unmount-disk _Unmount the specified mount point after unbinding special system directories._
 * rip-disk  _Produce a .img file from the specified disk device, only including the data inside the partition boundaries._
 * write-waggle-image  _Write the latest image to a disk, optionally blessing it._
+* santize-image  _(Experimental) remove all Waggle installation changes._
+* upgrade-waggle  _(Experimental) call santize-image and then re-install the specified Waggle repositories and bless._
 
 # How to Setup a Build Machine
 

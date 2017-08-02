@@ -141,7 +141,7 @@ def build_image(mount_point, server_host, branch):
 
 def generate_report(build_directory, mount_point, waggle_image):
   report_file = "report.txt"
-  build_report = os.path.realpath("{}/{}".format(mount_point, report_file))
+  build_report = os.path.realpath("{}/root/{}".format(mount_point, report_file))
   image_report = "{}.{}".format(waggle_image, report_file)
   try:
     os.remove(image_report)

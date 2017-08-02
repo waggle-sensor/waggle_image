@@ -140,19 +140,20 @@ def build_image(mount_point, server_host, branch):
   os.remove('{0}/usr/lib/waggle/install_waggle.sh'.format(mount_point))
 
 def generate_report(build_directory, mount_point, waggle_image):
-  report_file = "{}/report.txt".format(build_directory)
-
+  report_file = "report.txt"
+  build_report = os.path.realpath("{}/{}".format(mount_point, report_file))
+  image_report = "{}.{}".format(waggle_image, report_file)
   try:
-    os.remove(waggle_image+'.report.txt')
+    os.remove(image_report)
   except:
     pass
 
-  print("copy: ", mount_point+'/'+report_file, waggle_image+'.report.txt')
+  print("copy: ", build_report, image_report)
 
-  if os.path.exists(mount_point+'/'+report_file):
-    shutil.copyfile(mount_point+'/'+report_file, waggle_image+'.report.txt')
+  if os.path.exists(build_report):
+    shutil.copyfile(build_report, image_report)
   else:
-    print("file not found:", mount_point+'/'+report_file)
+    print("file not found:", build_report)
 
 
 def unmount_image(mount_point):
@@ -210,7 +211,7 @@ def upload_image(build_directory, waggle_image):
   run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(build_directory, scp_target))
 
 
-  if os.path.isfile( waggle_image +'.report.txt'):
+  if os.path.isfile(waggle_image +'.report.txt'):
     run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(build_directory, waggle_image,scp_target))
 
 

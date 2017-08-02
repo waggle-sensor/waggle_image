@@ -89,9 +89,9 @@ def mount_new_image(waggle_image, mount_point, odroid_model, build_directory):
   base_image_xz = base_image + '.xz'
 
   if not os.path.isfile(base_image_xz):
-      run_command('wget -P {3} {0}{1}'.format(base_images[odroid_model]['url'],
-                                              base_image_xz,
-                                              build_directory))
+      run_command('wget -P {} {}{}'.format(build_directory,
+                                           base_images[odroid_model]['url'],
+                                           base_image_xz))
 
   try:
       os.remove(waggle_image_xz)

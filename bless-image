@@ -53,7 +53,7 @@ configure_from_repository() {
     # install wvdial.conf
     if [ ${DISABLE_WVDIAL} -eq 0 ]; then
       echo "Installing AoT wvdial.conf..."
-      cp private_config/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
+      cp private_config/etc/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
       chmod 400 ${MOUNT_POINT}/etc/wvdial.conf
     fi
   fi

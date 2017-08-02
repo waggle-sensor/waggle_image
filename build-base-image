@@ -52,7 +52,12 @@ def setup_mount_point(mount_point):
     create_loop_devices()
 
 
-def mount_new_image(base_image, mount_point, odroid_model):
+def mount_new_image(base_image, mount_point, base):
+    architecture = build_config.get_cpu_architecture(base['cpu_architecture'])['name']
+    if architecture != 'armv7l':
+        print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))
+        sys.exit(6)
+    node_element = build_config.get_cpu_architecture(base['node_element'])['name']
     waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
     stock_images=   {
                     'odroid-xu3' : {
@@ -263,12 +268,7 @@ def main(argv):
 
     mount_point = "/mnt/newimage"
 
-    odroid_model = detect_odroid_model()
-
-    if not odroid_model:
-        sys.exit(1)
-
-    base_image = get_base_image_filename(build_directory, base['node_element'], base['date'])
+    base_image = get_base_image_filename(build_directory, base)
 
     setup_mount_point(mount_point)
 

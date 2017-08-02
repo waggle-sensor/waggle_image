@@ -60,7 +60,7 @@ In a location of your choosing, execute `git clone https://github.com/waggle-sen
 
 In order to upload the base image to the MCS Waggle website after building, the Waggle web ssh key file `waggle-id_rsa` must be installed in the build directory (the directory specified using the --build-dir option of the build scripts).
 
-To access the Waggle private configuration repository, the deploy key file `id_rsa_waggle_aot_private_config` must be installed in `/root`.
+To access the Waggle private configuration repository, the deploy key file `id_rsa_waggle_aot_private_config` must be installed in `/root`. Execute `ssh -T -i /root/id_rsa_waggle_aot_config git@github.com` and answer `yes` when asked to add the host to the list of known hosts.
 
 Consult a knowledgeable member of the Waggle team to obtain the above mentioned keys.
 

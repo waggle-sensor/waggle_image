@@ -296,6 +296,11 @@ def main(argv):
       print("\n" + usage_message + "\n")
       sys.exit(2)
 
+  # convert hostname to IP
+  if re.search('[a-zA-Z]', server_host):
+    hostname = server_host
+    server_host = socket.gethostbyname(hostname)
+    print("Resolved server host '{}' to IP '{}'.".format(hostname, server_host))
 
   create_b_image = 0 # will be 1 for XU3/4
 

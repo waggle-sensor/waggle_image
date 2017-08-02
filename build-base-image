@@ -211,20 +211,19 @@ def upload_image(build_directory, base_image):
 
 
 def main(argv):
-    usage_message = "Usage: build-base-image [OPTIONS]\n"\
+    usage_message = "Usage: build-base-image [OPTIONS] <uuid>\n"\
+                    "  build the image with UUID <uuid>\n"\
                     "OPTIONS\n"\
                     "  --help                         "\
                     "show this usage message\n"\
                     "  -b |--build-dir=<build_dir>    "\
                     "work on the disk image in the <build_dir> directory\n"\
-                    "  -u|--uuid=<uuid>               "\
-                    "build the image with UUID <uuid>\n"\
                     ""
     try:
         opts, args = getopt.getopt(
             argv,
-            "b:u:",
-            ["help", "build-dir=", "uuid="])
+            "b:",
+            ["help", "build-dir="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
         print(usage_message)
@@ -232,21 +231,21 @@ def main(argv):
 
     compress = False
     build_directory = '/root'
-    uuid = None
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
         elif opt in ('-b', '--build-dir'):
             build_directory = arg
-        elif opt in ('-u', '--uuid'):
-            node_controller = True
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)
 
-    if uuid == None:
-        print("Error: the UUID of the base image to build is required (use --uuid)")
+    uuid = None
+    if len(args) > 0:
+        uuid = args[0]
+    else:
+        print("Error: the UUID of the base image to build is required (see usage with --help)")
         sys.exit(3)
 
     base = build_config.get_base(uuid)

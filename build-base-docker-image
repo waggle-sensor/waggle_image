@@ -1,10 +1,10 @@
 #!/bin/bash
 
 print_usage() {
-  echo "Usage: build-base-docker-image --help"
-  echo "  show this usage message"
-  echo "       build-base-docker-image <uuid>"
+  echo "Usage: build-base-docker-image [OPTIONS] <uuid>"
   echo "  build the base image with UUID <uuid>"
+  echo "OPTIONS"
+  echo "  --help   show this usage message and exit"
 }
 
 uuid=

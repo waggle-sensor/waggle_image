@@ -21,7 +21,7 @@ debug=0 # skip chroot environment if 1
 
 
 def get_base_image_filename(build_directory, base):
-    node_element = build_config.get_node_element(eid=base['node_element']).replace(
+    node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
         ' ', '_').lower()
     if node_element == 'node_controller':
         device = "odroid_c1"

@@ -44,7 +44,7 @@ Connect power to the ODroid to boot.
 
 ## Log Into the ODroid
 
-Determine what network the ODroid is connected to and identify the IP address of the device. This can be done by using `nmap` or logging into your router and checking the DHCP allocation table.
+Determine what network the ODroid is connected to and identify the IP address of the device. This can be done by using `nmap -sn <ip_address_on_network>/24` or logging into your router and checking the DHCP allocation table.
 
 Once you have identified the IP address of the ODroid, log into the device with `ssh root@<IP_address>`. The default password for the stock ODroid image is `odroid`. If security is a concern, the default password should be changed and ssh keys should be setup appropriately.
 

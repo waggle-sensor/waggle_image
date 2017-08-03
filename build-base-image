@@ -26,7 +26,9 @@ def get_base_image_filename(build_directory, base):
     else:
         image_type = "node_controller"
 
-    base_image_base="waggle-base-%s-%s-%s" % (image_type, base['cpu_architecture'], base['date'])
+    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
+    date = base['date'].replace('-', '')
+    base_image_base="waggle-base-%s-%s-%s" % (image_type, architecture, base['date'])
     return "%s.img" % (base_image_base)
 
 
@@ -53,8 +55,6 @@ def setup_mount_point(mount_point):
 
 
 def mount_new_image(base_image, mount_point, base):
-    print("arch ID: {}".format(base['cpu_architecture']))
-    print("arch obj: {}".format(eid=build_config.get_cpu_architecture(base['cpu_architecture'])))
     architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
     if architecture != 'armv7l':
         print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))

@@ -28,7 +28,7 @@ def get_base_image_filename(build_directory, base):
 
     architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
     date = base['date'].replace('-', '')
-    base_image_base="waggle-base-%s-%s-%s" % (image_type, architecture, base['date'])
+    base_image_base="waggle-base-%s-%s-%s" % (image_type, architecture, date)
     return "%s.img" % (base_image_base)
 
 

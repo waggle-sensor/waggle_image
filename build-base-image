@@ -9,8 +9,6 @@ import sys
 import time
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-os.chdir(waggle_image_directory)
-
 sys.path.insert(0, os.path.realpath('{}/lib/python/'.format(waggle_image_directory)))
 from waggle.build import *
 
@@ -258,6 +256,7 @@ def main(argv):
         print("Error: unable to find a base image with UUID {}".format(uuid))
         sys.exit(4)
 
+    os.chdir(waggle_image_directory)
     branches = subprocess.check_output(['git', 'branch']).decode().split('\n')
     branch = [b for b in branches if '*' in b][0][2:]
     print("Building branch '{}'...".format(branch))

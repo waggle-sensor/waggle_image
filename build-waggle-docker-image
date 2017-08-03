@@ -1,150 +1,123 @@
-#!/bin/bash
+#!/usr/bin/python3
+
+import getopt
+import os
+import os.path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
+
+config_db_path = os.path.realpath('{}/config/build_config.json'.format(waggle_image_directory))
+build_config = Configuration(str(config_db_path))
 
 
-print_usage() {
-  echo "Usage: build-waggle-docker-images [OPTIONS]"
-  echo "OPTIONS"
-  line="--help                         "
-  line+="show this usage message"
-  echo "  $line"
-  line="-n |--node-controller        "
-  line+="build the Node Controller Waggle Docker image"
-  echo "  $line"
-  line="-e |--edge-processor        "
-  line+="build the Edge Processor Waggle Docker image"
-  echo "  $line"
-  line="-v |--version=<version>        "
-  line+="show this usage message"
-  echo "  $line"
-  line="-r |--revision=<revision>      "
-  line+="build revision <revision> of the specified version"
-  echo "  $line"
-  line="-d |--deployment=<deployment>      "
-  line+="configure the image according to deployment <deployment>"
-  echo "  $line"
-  line="-b |--branch=<branch>      "
-  line+="clone repositories from branch <branch>"
-  echo "  $line"
-  line="-h |--server-host=<server_host>      "
-  line+="configure the Beehive server to be <server_host>"
-  echo "  $line"
-}
+def print_usage():
+    usage_message = "Usage: build-waggle-docker-image [OPTIONS]\n"\
+                    "OPTIONS\n"\
+                    "  --help                         "\
+                    "show this usage message\n"\
+                    "  -l |--build-dir=<build_dir>    "\
+                    "work on the disk image in the <build_dir> directory\n"\
+                    "  -n |--node-controller    "\
+                    "build the Node Controller Waggle Docker image\n"\
+                    "  -e |--edge-processor    "\
+                    "build the Edge Processor Waggle Docker image\n"\
+                    "  -v |--version=<version>    "\
+                    "show this usage message\n"\
+                    "  -r |--revision=<revision>    "\
+                    "build revision <revision> of the specified version\n"\
+                    "  -d |--deployment=<deployment>    "\
+                    "configure the image according to deployment <deployment>\n"\
+                    ""
+    print(usage_message)
 
-node_controller=0
-edge_processor=0
-version=''
-revision=0
-deployment='Public'
-branch='master'
-server_host='beehive1.mcs.anl.gov'
-while [[ $# -gt 0 ]]; do
-  key="$1"
-  case $key in
-    --help)
-      print_usage
-      exit
-      ;;
-    -n)
-      node_controller=1
-      shift
-      ;;
-    --node-controller=*)
-      node_controller=1
-      ;;
-    -e)
-      edge_processor=1
-      shift
-      ;;
-    --edge-processor=*)
-      edge_processor=1
-      ;;
-    -v)
-      version="$2"
-      shift
-      ;;
-    --version=*)
-      version="${key#*=}"
-      ;;
-    -r)
-      revision="$2"
-      shift
-      ;;
-    --revision=*)
-      revision="${key#*=}"
-      ;;
-    -d)
-      deployment="$2"
-      shift
-      ;;
-    --deployment=*)
-      deployment="${key#*=}"
-      ;;
-    -b)
-      branch="$2"
-      shift
-      ;;
-    --branch=*)
-      branch="${key#*=}"
-      ;;
-    -h)
-      server_host="$2"
-      shift
-      ;;
-    --server-host=*)
-      server_host="${key#*=}"
-      ;;
-      *)
-      ;;
-  esac
-  shift
-done
+def main(argv):
+  try:
+    opts, args = getopt.getopt(argv, "b:nev:r:d:", ["help", "build-dir=", "node-controller", "edge-processor", "version=", "revision=", "deployment="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print_usage()
+    sys.exit(1)
 
-echo $server_host | grep '[a-z]'
-if [ $? -eq 0 ]; then
-  server_host=$(dig +short $server_host)
-fi
+  build_directory
+  node_controller = False
+  edge_processor = False
+  version = None
+  revision = None
+  deployment_name = 'Public'
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-b', '--build-dir'):
+      build_dir = arg
+    elif opt in ('-n', '--node-controller'):
+      node_controller = True
+    elif opt in ('-e', '--edge-processor'):
+      edge_processer = True
+    elif opt in ('-v', '--version'):
+      version = arg
+    elif opt in ('-r', '--revision'):
+      revision = int(arg)
+    elif opt in ('-d', '--deployment'):
+      deployment_name = arg
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
 
-declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  architecture = 'x86_64'
 
-if [ "x$version" == "x" ]; then
-  # query DB for latest version and revision if not specified
-  cd ${script_dir}/config
-  version_revision=$($script_dir/config/get-latest-build)
-  version_revision_tuple=(${version_revision//-/ })
-  version=${version_revision_tuple[0]}
-fi
+  if version == None:
+    version, tmp_revision = build_config.get_latest_build(architecture)
+    if revision == None:
+      revision = tmp_revision
+  else:
+    if revision == None:
+      revision = 0
 
-image_version=$version
-if [ $revision -ne 0 ]; then
-  image_version=${version}-${revision}
-fi
+  deployment = build_config.get_deployment(deployment_name)
+  if deployment == None:
+    print("Error: unable to find deployment with name '{}'".format(deployment))
+    sys.exit(3)
 
-declare -r architecture=x86_64
+  server_host = build_config.get_beehive_host(eid=deployment['beehive_host'])['address']
 
+  
+  os.chdir(waggle_image_directory)
+  branches = subprocess.check_output(['git', 'branch']).decode().split('\n')
+  branch = [b for b in branches if '*' in b][0][2:]
+  print("Building branch '{}'...".format(branch))
 
+  build = build_config.get_build(version, revision, architecture)
 
-cd $script_dir
+  if node_controller:
+    base_date = build_config.get_base(eid=build['nc_base'])['date']
+    rc = subprocess.check_call(["docker", "build", "-t", "waggle-node-controller:{}".format(base_date),
+                                "-f", "dockerfiles/waggle-node-controller",
+                                "--build-arg", "base-version={}".format(base_date),
+                                "--build-arg", "branch={}".format(branch),
+                                "--build-arg", "server_host={}".format(server_host)])
+    if rc != 0:
+      print("Error: docker build of Node Controller image exited with return code '{}'".format(rc))
+      sys.exit(rc)
 
-if [ $node_controller -eq 1 ]; then
-  declare -r nc_base_date=$($script_dir/config/get-builds \
-    | grep -A 2 "$version ($revision) $architecture" | tail -1 | awk '{print $5}')
-  declare -r nc_dependencies=$($script_dir/config/get-build-dependencies -n \
-    --version=$version --revision=$revision --architecture=$architecture)
-  echo "Building Waggle Node Controller base image version $image_version"
-  time docker build -t waggle-node-controller:$image_version -f dockerfiles/waggle-node-controller \
-       --build-arg base-version=$nc_base_date \
-       --build-arg branch=branch \
-       --build-arg server_host=$server_host .
-fi
+  if edge_processor:
+    base_date = build_config.get_base(eid=build['ep_base'])['date']
+    rc = subprocess.check_call(["docker", "build", "-t", "waggle-edge-processor:{}".format(base_date),
+                                "-f", "dockerfiles/waggle-edge-processor",
+                                "--build-arg", "base-version={}".format(base_date),
+                                "--build-arg", "branch={}".format(branch),
+                                "--build-arg", "server_host={}".format(server_host)])
+    if rc != 0:
+      print("Error: docker build of Edge Processor image exited with return code '{}'".format(rc))
+      sys.exit(rc)
 
-if [ $edge_processor -eq 1 ]; then
-  declare -r ep_base_date=$($script_dir/config/get-builds \
-    | grep -A 3 "$version ($revision) $architecture" | tail -1 | awk '{print $5}')
-  declare -r ep_dependencies=$($script_dir/config/get-build-dependencies -e \
-    --version=$version --revision=$revision --architecture=$architecture)
-  echo "Building Waggle Edge Processor base image version $image_version"
-  time docker build -t waggle-edge-processor:$image_version -f dockerfiles/waggle-edge-processor \
-       --build-arg base-version=$ep_base_date \
-       --build-arg branch=branch \
-       --build-arg server_host=$server_host .
-fi
+if __name__ == '__main__':
+    main(sys.argv[1:])

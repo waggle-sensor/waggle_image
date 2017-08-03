@@ -237,27 +237,28 @@ def bless_image(target_device):
   shutil.rmtree(tmp_dir)
 
 def main(argv):
-  usage_message = ''.join(("Usage: build-waggle-image  [OPTIONS]\n", \
-                          "OPTIONS\n", \
-                          "  --help                          ", \
-                          "print help screen\n", \
-                          "  -b |--branch=<branch>           ", \
-                          "build image using branch <branch>\n",
-                          "                                  (default 'master')\n", \
-                          "  -c|--compress                   ", \
-                          "compress the Waggle image\n", \
-                          "  -d |--build-dir=<build_dir>     ", \
-                          "directory in which the image is built\n", \
-                          "  -h |--server-host <server_host> ", \
-                          "server host to which the node should connect\n", \
-                          "  -s|--bless                      ", \
-                          "configure private AoT security settings\n", \
-                          "  -t |--target=<target_dev>       ", \
-                          "target memory device (e.g. /dev/sdb) \n",
-                          "                                  to which the image should be written\n", \
-                          "  -u|--upload                     ", \
-                          "upload the compressed image to the Waggle\n",
-                          "                                  downloads page (implies -c)\n"))
+  usage_message = "Usage: build-waggle-image  [OPTIONS]\n"\
+                          "OPTIONS\n"\
+                          "  --help                          "\
+                          "print help screen\n"\
+                          "  -b |--branch=<branch>           "\
+                          "build image using branch <branch>\n"\
+                          "                                  (default 'master')\n"\
+                          "  -c|--compress                   "\
+                          "compress the Waggle image\n"\
+                          "  -d |--build-dir=<build_dir>     "\
+                          "directory in which the image is built\n"\
+                          "  -h |--server-host <server_host> "\
+                          "server host to which the node should connect\n"\
+                          "  -s|--bless                      "\
+                          "configure private AoT security settings\n"\
+                          "  -t |--target=<target_dev>       "\
+                          "target memory device (e.g. /dev/sdb) \n"\
+                          "                                  to which the image should be written\n"\
+                          "  -u|--upload                     "\
+                          "upload the compressed image to the Waggle\n"\
+                          "                                  downloads page (implies -c)\n"\
+                          ""
   try:
     opts, args = getopt.getopt(argv, "b:cd:h:s:tu", ["help", "branch=", "compress", "build-dir=", "server-host=", "bless", "target=", "upload"])
   except getopt.GetoptError as ge:

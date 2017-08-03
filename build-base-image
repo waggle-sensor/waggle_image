@@ -53,18 +53,20 @@ def setup_mount_point(mount_point):
 
 
 def mount_new_image(base_image, mount_point, base):
-    architecture = build_config.get_cpu_architecture(base['cpu_architecture'])['name']
+    print("arch ID: {}".format(base['cpu_architecture']))
+    print("arch obj: {}".format(eid=build_config.get_cpu_architecture(base['cpu_architecture'])))
+    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
     if architecture != 'armv7l':
         print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))
         sys.exit(6)
-    node_element = build_config.get_cpu_architecture(base['node_element'])['name']
+    node_element = build_config.get_node_element(eid=base['node_element'])['name']
     waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
     stock_images=   {
-                    'odroid-xu3' : {
+                    'Edge Processor' : {
                             'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
                              'url': waggle_stock_url
                             },
-                    'odroid-c1' : {
+                    'Node Controller' : {
                             'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
                             'url': waggle_stock_url
                         }
@@ -73,15 +75,15 @@ def mount_new_image(base_image, mount_point, base):
     base_image_xz = base_image + '.xz'
 
     try:
-        stock_image = stock_images[odroid_model]['filename']
+        stock_image = stock_images[node_element]['filename']
     except:
-        print("image %s not found" % (odroid_model))
+        print("{} image not found".format(node_element))
         sys.exit(1)
 
     stock_image_xz = stock_image + '.xz'
 
     if not os.path.isfile(stock_image_xz):
-        run_command('wget '+ stock_images[odroid_model]['url'] + stock_image_xz)
+        run_command('wget '+ stock_images[node_element]['url'] + stock_image_xz)
 
     try:
         os.remove(base_image_xz)
@@ -274,7 +276,7 @@ def main(argv):
 
     os.chdir(build_directory)
 
-    mount_new_image(base_image, mount_point, odroid_model)
+    mount_new_image(base_image, mount_point, base)
 
     stage_image_build_script(waggle_image_directory, mount_point, branch)
 

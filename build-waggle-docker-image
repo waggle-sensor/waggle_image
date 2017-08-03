@@ -8,10 +8,10 @@ print_usage() {
   line+="show this usage message"
   echo "  $line"
   line="-n |--node-controller        "
-  line+="build the Node Controller base Docker image"
+  line+="build the Node Controller Waggle Docker image"
   echo "  $line"
   line="-e |--edge-processor        "
-  line+="build the Edge Processor base Docker image"
+  line+="build the Edge Processor Waggle Docker image"
   echo "  $line"
   line="-v |--version=<version>        "
   line+="show this usage message"
@@ -22,6 +22,12 @@ print_usage() {
   line="-d |--deployment=<deployment>      "
   line+="configure the image according to deployment <deployment>"
   echo "  $line"
+  line="-b |--branch=<branch>      "
+  line+="clone repositories from branch <branch>"
+  echo "  $line"
+  line="-h |--server-host=<server_host>      "
+  line+="configure the Beehive server to be <server_host>"
+  echo "  $line"
 }
 
 node_controller=0
@@ -29,6 +35,8 @@ edge_processor=0
 version=''
 revision=0
 deployment='Public'
+branch='master'
+server_host='beehive1.mcs.anl.gov'
 while [[ $# -gt 0 ]]; do
   key="$1"
   case $key in
@@ -71,18 +79,37 @@ while [[ $# -gt 0 ]]; do
     --deployment=*)
       deployment="${key#*=}"
       ;;
+    -b)
+      branch="$2"
+      shift
+      ;;
+    --branch=*)
+      branch="${key#*=}"
+      ;;
+    -h)
+      server_host="$2"
+      shift
+      ;;
+    --server-host=*)
+      server_host="${key#*=}"
+      ;;
       *)
       ;;
   esac
   shift
 done
 
+echo $server_host | grep '[a-z]'
+if [ $? -eq 0 ]; then
+  server_host=$(dig +short $server_host)
+fi
+
 declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ "x$version" == "x" ]; then
   # query DB for latest version and revision if not specified
   cd ${script_dir}/config
-  version_revision=$(./get-latest-build)
+  version_revision=$($script_dir/config/get-latest-build)
   version_revision_tuple=(${version_revision//-/ })
   version=${version_revision_tuple[0]}
 fi
@@ -106,8 +133,8 @@ if [ $node_controller -eq 1 ]; then
   echo "Building Waggle Node Controller base image version $image_version"
   time docker build -t waggle-node-controller:$image_version -f dockerfiles/waggle-node-controller \
        --build-arg base-version=$nc_base_date \
-       --build-arg branch=develop \
-       --build-arg server_host=10.10.10.5 .
+       --build-arg branch=branch \
+       --build-arg server_host=$server_host .
 fi
 
 if [ $edge_processor -eq 1 ]; then
@@ -118,6 +145,6 @@ if [ $edge_processor -eq 1 ]; then
   echo "Building Waggle Edge Processor base image version $image_version"
   time docker build -t waggle-edge-processor:$image_version -f dockerfiles/waggle-edge-processor \
        --build-arg base-version=$ep_base_date \
-       --build-arg branch=develop \
-       --build-arg server_host=10.10.10.5 .
+       --build-arg branch=branch \
+       --build-arg server_host=$server_host .
 fi

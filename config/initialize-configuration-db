@@ -214,13 +214,13 @@ def main():
                          date)
 
   # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host, build_host)
-  build_config.add_deployment('Public', shadow_entry_ids[0], False, wireless_config_ids[0],
+  build_config.add_deployment('Public', shadow_entry_ids[0], True, wireless_config_ids[0],
                                reg_key_ids[0], beehive_host_ids[0], build_host_ids[0])
   build_config.add_deployment('Collaborator', shadow_entry_ids[1], True, wireless_config_ids[0],
                                reg_key_ids[2], beehive_host_ids[2], build_host_ids[1])
   build_config.add_deployment('Development', shadow_entry_ids[1], True, wireless_config_ids[1],
                                reg_key_ids[2], beehive_host_ids[1], build_host_ids[0])
-  build_config.add_deployment('AoT', shadow_entry_ids[1], True, wireless_config_ids[1],
+  build_config.add_deployment('AoT', shadow_entry_ids[1], False, wireless_config_ids[1],
                                reg_key_ids[2], beehive_host_ids[2], build_host_ids[0])
   build_config.add_deployment('Build', shadow_entry_ids[1], True, wireless_config_ids[1],
                                reg_key_ids[2], beehive_host_ids[1], build_host_ids[2])

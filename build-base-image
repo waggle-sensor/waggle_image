@@ -21,14 +21,16 @@ debug=0 # skip chroot environment if 1
 
 
 def get_base_image_filename(build_directory, base):
-    if base['node_element'] == 'Node Controller':
-        image_type = "edge_processor"
+    node_element = build_config.get_node_element(eid=base['node_element']).replace(
+        ' ', '_').lower()
+    if node_element == 'node_controller':
+        device = "odroid_c1"
     else:
-        image_type = "node_controller"
+        device = "odroid_xu3"
 
-    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
     date = base['date'].replace('-', '')
-    base_image_base="waggle-base-%s-%s-%s" % (image_type, architecture, date)
+
+    base_image_base="waggle-base-%s-%s-%s" % (node_element, device, date)
     return "%s.img" % (base_image_base)
 
 

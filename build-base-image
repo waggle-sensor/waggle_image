@@ -18,7 +18,7 @@ build_config = Configuration(str(config_db_path))
 debug=0 # skip chroot environment if 1
 
 
-def get_base_image_filename(build_directory, base):
+def get_base_image_filename(base):
     node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
         ' ', '_').lower()
     if node_element == 'node_controller':
@@ -29,7 +29,7 @@ def get_base_image_filename(build_directory, base):
     date = base['date'].replace('-', '')
 
     base_image_base="waggle-base-%s-%s-%s" % (node_element, device, date)
-    return "%s.img" % (base_image_base)
+    return "{}.img".format(base_image_base)
 
 
 def setup_mount_point(mount_point):

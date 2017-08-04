@@ -113,6 +113,8 @@ def main(argv):
           "architecture '{}'".format(version, revision, architecture))
     sys.exit(4)
 
+  # TODO: bless image according to the deployment configuration
+
   if node_controller:
     print('Building Node Controller Waggle image...')
     base = build_config.get_base(eid=build['nc_base'])

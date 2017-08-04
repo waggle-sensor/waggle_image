@@ -55,6 +55,8 @@ configure_from_repository() {
       echo "Installing AoT wvdial.conf..."
       cp private_config/etc/wvdial.conf ${MOUNT_POINT}/etc/wvdial.conf
       chmod 400 ${MOUNT_POINT}/etc/wvdial.conf
+    else
+      cp ${MOUNT_POINT}/usr/lib/waggle/nodecontroller/etc/wvdial ${MOUNT_POINT}/etc/wvdia.conf
     fi
   fi
 
@@ -69,6 +71,10 @@ configure_from_repository() {
     echo "Setting the AoT root password..."
     aot_root_shadow_entry=$(cat private_config/root_shadow)
     sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
+  else
+    echo "Setting the default root password..."
+    default_root_shadow_entry=$(cat private_config/waggle_shadow)
+    sed -i -e "s/^root:..*/${default_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
   fi
 
 

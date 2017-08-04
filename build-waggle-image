@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import getopt
 import os
@@ -10,14 +10,16 @@ import sys
 import tempfile
 import time
 
-debug=0 # skip chroot environment if 1
-
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
 from waggle.build import *
 
 config_db_path = os.path.realpath('{}/config/build_config.json'.format(waggle_image_directory))
 build_config = Configuration(str(config_db_path))
+
+class BuildWaggleImageError(Exception):
+  def __init__(self, message):
+    super(Exception, self).__init__(message)
 
 def print_usage():
     usage_message = "Usage: build-waggle-docker-image [OPTIONS]\n"\
@@ -49,22 +51,19 @@ def print_usage():
 
 
 def get_waggle_image_filename(build, node_element):
-  node_element = node_element.replace(' ', '_').lower()
-
   device = None
-  if node_element == 'node_controller':
-      device = "odroid-c1"
-  else:
-      device = "odroid-xu3"
-
   base = None
   if node_element == 'Node Controller':
+    node_element = 'node_controller'
+    device = "odroid-c1"
     base = build_config.get_base(eid=build['nc_base'])
   elif node_element == 'Edge Processor':
+    node_element = 'edge_processor'
+    device = "odroid-xu3"
     base = build_config.get_base(eid=build['ep_base'])
   else:
-    print("Error: unknown node element '{}'".format(node_element))
-    sys.exit(6)
+    raise BuildWaggleImageError(
+      "unknown node element '{}'".format(node_element))
 
   version = build['published_version']
   revision = build['revision']
@@ -72,15 +71,6 @@ def get_waggle_image_filename(build, node_element):
   return "waggle-{}-{}-{}-{}".format(node_element, device, version, revision)
 
 def setup_mount_point(mount_point):
-  # install parted
-  if subprocess.call('hash partprobe > /dev/null 2>&1', shell=True):
-      run_command('apt-get install -y parted')
-
-  # install pipeviewer
-  if subprocess.call('hash pv > /dev/null 2>&1', shell=True):
-      run_command('apt-get install -y pv')
-
-
   # clean up first
   print("Unmounting lingering images.")
   unmount_mountpoint(mount_point)
@@ -114,8 +104,8 @@ def mount_new_image(build, node_element, mount_point, build_directory):
   elif node_element == 'Edge Processor':
     base = build_config.get_base(eid=build['ep_base'])
   else:
-    print("Error: unknown node element '{}'".format(node_element))
-    sys.exit(6)
+    raise BuildWaggleImageError(
+      "unknown node element '{}'".format(node_element))
   base_image = get_base_image_filename(base)
   base_image_xz = base_image + '.xz'
 
@@ -179,15 +169,15 @@ def build_image(build, node_element, mount_point):
   if node_element == 'Node Controller':
     base = build_config.get_base(eid=build['nc_base'])
     if base == None:
-      print("Error: unable to find base with DB id '{}'".format(build['nc_base']))
-      sys.exit(5)
+      raise BuildWaggleImageError(
+        "unable to find base with DB id '{}'".format(build['nc_base']))
     repositories = ['core', 'nodecontroller', 'plugin_manager']
     repositories_string = generate_repositories_string(build, repositories)
   elif node_element == 'Edge Processor':
     base = build_config.get_base(eid=build['nc_base'])
     if base == None:
-      print("Error: unable to find base with DB id '{}'".format(build['ep_base']))
-      sys.exit(5)
+      raise BuildWaggleImageError(
+        "unable to find base with DB id '{}'".format(build['ep_base']))
     repositories = ['core', 'edge_processor']
     repositories_string = generate_repositories_string(build, repositories)
 
@@ -232,8 +222,8 @@ def compress_image(waggle_image):
 
 def upload_image(deployment, build_directory, waggle_image):
   if deployment['name'] != 'Public':
-    print('Error: refusing to upload a non-public Waggle image to a public web site!')
-    sys.exit(7)
+    raise BuildWaggleImageError(
+      "refusing to upload a non-public Waggle image to a public web site!")
 
   if not os.path.isfile( build_directory+ '/waggle-id_rsa'):
       return
@@ -248,8 +238,7 @@ def upload_image(deployment, build_directory, waggle_image):
   while 1:
     count +=1
     if (count >= 10):
-      print("error: scp failed after 10 trys\n")
-      sys.exit(1)
+      raise BuildWaggleImageError("failed to upload the image after 10 trys")
 
     cmd_return = 1
     print("execute: ", cmd)
@@ -259,7 +248,7 @@ def upload_image(deployment, build_directory, waggle_image):
       cmd_return = child.returncode
 
     except Exception as e:
-      print("Error: %s" % (str(e)))
+      print("Warning: %s" % (str(e)))
       cmd_return = 1
 
     if cmd_return == 0:
@@ -300,7 +289,7 @@ def deploy_to_disk(waggle_image, target_device):
 def deploy(deployment, mount_point):
   disable_wvdial = ''
   wvdial_config = build_config.get_wireless_config(eid=deployment['wireless_config'])['name']
-  if wvdial_config = 'Default':
+  if wvdial_config == 'Default':
     disable_wvdial = '--disable-wvdial '
 
   enable_sudo = ''
@@ -315,8 +304,8 @@ def deploy(deployment, mount_point):
   rc = run_command('{0}/bless-image {1}{2}{3}{4} --clean-up'.format(
     waggle_image_directory, disable_wvdial, enable_sudo, disable_root_password, mount_point))
   if rc != 0:
-    print("Error: bless-image failed with return code '{}'".format(rc))
-    sys.exit(rc)
+    raise BuildWaggleImageError(
+      "bless-image failed with return code '{}'".format(rc))
 
 def main(argv):
   try:
@@ -329,44 +318,43 @@ def main(argv):
     print_usage()
     sys.exit(1)
 
-    build_directory = './'
-    node_controller = False
-    edge_processor = False
-    version = None
-    revision = None
-    deployment_name = 'Public'
-    target_device=None
-    compress = False
-    upload = False
-    for opt, arg in opts:
-      if opt == '--help':
-        print("\n" + usage_message + "\n")
-        sys.exit(0)
-      elif opt in ('-b', '--build-dir'):
-        build_dir = arg
-      elif opt in ('-n', '--node-controller'):
-        node_controller = True
-      elif opt in ('-e', '--edge-processor'):
-        edge_processor = True
-      elif opt in ('-v', '--version'):
-        version = arg
-      elif opt in ('-r', '--revision'):
-        revision = int(arg)
-      elif opt in ('-d', '--deployment'):
-        deployment_name = arg
-      elif opt in ('-t', '--target'):
-        target_device = arg
+  build_directory = './'
+  node_controller = False
+  edge_processor = False
+  version = None
+  revision = None
+  deployment_name = 'Public'
+  target_device=None
+  compress = False
+  upload = False
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-b', '--build-dir'):
+      build_dir = arg
+    elif opt in ('-n', '--node-controller'):
+      node_controller = True
+    elif opt in ('-e', '--edge-processor'):
+      edge_processor = True
+    elif opt in ('-v', '--version'):
+      version = arg
+    elif opt in ('-r', '--revision'):
+      revision = int(arg)
+    elif opt in ('-d', '--deployment'):
+      deployment_name = arg
+    elif opt in ('-t', '--target'):
+      target_device = arg
     elif opt in ('-c', '--compress'):
       compress = True
-      elif opt in ('-u', '--upload'):
-        upload = True
-      else:
-        print("\n" + usage_message + "\n")
-        sys.exit(2)
+    elif opt in ('-u', '--upload'):
+      upload = True
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
 
   architecture = 'armv7l'
-  architecture_id = build_config.get_cpu_architecture(architecture)
-
+  architecture_id = build_config.get_cpu_architecture(architecture).eid
 
   if version == None:
     version, tmp_revision = build_config.get_latest_build(architecture)
@@ -378,8 +366,8 @@ def main(argv):
 
   deployment = build_config.get_deployment(deployment_name)
   if deployment == None:
-    print("Error: unable to find deployment with name '{}'".format(deployment))
-    sys.exit(3)
+    raise BuildWaggleImageError(
+      "unable to find deployment with name '{}'".format(deployment))
 
   server_host = build_config.get_beehive_host(eid=deployment['beehive_host'])['address']
 
@@ -388,6 +376,18 @@ def main(argv):
   branch = [b for b in branches if '*' in b][0][2:]
 
   build = build_config.get_build(version, revision, architecture_id)
+  if build == None:
+    raise BuildWaggleImageError(
+      "unable to find build with version '{}', revision '{}', "\
+      "and architecture '{}'".format(version, revision, architecture))
+  node_element = None
+  if node_controller:
+    node_element = 'Node Controller'
+  elif edge_processor:
+    node_element = 'Edge Processor'
+  else:
+    raise BuildWaggleImageError(
+      "no node element specified (use either --node-controller or --edge-processor)")
 
   # convert hostname to IP
   if re.search('[a-zA-Z]', server_host):

@@ -30,9 +30,8 @@ def main():
         base['uuid']))
     print('  Commit IDs:')
     repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
-    keys = ['waggle_image_commit', 'core_commit', 'nc_commit', 'ep_commit', 'pm_commit']
-    for repo,key in zip(repos, keys):
-      print('    {} {}'.format(repo, entry[key]))
+    for repo in repos:
+      print('    {} {}'.format(repo, entry[repo.rstrip()+'_commit']))
 
 
 if __name__ == '__main__':

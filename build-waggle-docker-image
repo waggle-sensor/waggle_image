@@ -38,6 +38,17 @@ def print_usage():
                     ""
     print(usage_message)
 
+def generate_repositories_string(build, repositories):
+  version = build['published_version']
+  revision = build['revision']
+  repository_strings = []
+  for repository in repositories:
+    if revision == 0:
+      repository_strings.append("{}:v{}".format(repository, version))
+    else:
+      repository_strings.append("{}:{}".format(repository, build[repository+'_commit']))
+  return ','.join(repository_strings)
+
 def main(argv):
   try:
     opts, args = getopt.getopt(argv, "b:nev:r:d:", ["help", "build-dir=", "node-controller", "edge-processor", "version=", "revision=", "deployment="])
@@ -46,7 +57,7 @@ def main(argv):
     print_usage()
     sys.exit(1)
 
-  build_directory
+  build_directory = './'
   node_controller = False
   edge_processor = False
   version = None
@@ -61,7 +72,7 @@ def main(argv):
     elif opt in ('-n', '--node-controller'):
       node_controller = True
     elif opt in ('-e', '--edge-processor'):
-      edge_processer = True
+      edge_processor = True
     elif opt in ('-v', '--version'):
       version = arg
     elif opt in ('-r', '--revision'):
@@ -73,6 +84,7 @@ def main(argv):
       sys.exit(2)
 
   architecture = 'x86_64'
+  architecture_id = build_config.get_cpu_architecture(architecture).eid
 
   if version == None:
     version, tmp_revision = build_config.get_latest_build(architecture)
@@ -80,7 +92,7 @@ def main(argv):
       revision = tmp_revision
   else:
     if revision == None:
-      revision = 0
+      revision = int(0)
 
   deployment = build_config.get_deployment(deployment_name)
   if deployment == None:
@@ -93,28 +105,50 @@ def main(argv):
   os.chdir(waggle_image_directory)
   branches = subprocess.check_output(['git', 'branch']).decode().split('\n')
   branch = [b for b in branches if '*' in b][0][2:]
-  print("Building branch '{}'...".format(branch))
+  # print("Building branch '{}'...".format(branch))
 
-  build = build_config.get_build(version, revision, architecture)
+  build = build_config.get_build(version, revision, architecture_id)
+  if build == None:
+    print("Error: unable to find build with version '{}', revision '{}', and "\
+          "architecture '{}'".format(version, revision, architecture))
+    sys.exit(4)
 
   if node_controller:
-    base_date = build_config.get_base(eid=build['nc_base'])['date']
+    print('Building Node Controller Waggle image...')
+    base = build_config.get_base(eid=build['nc_base'])
+    if base == None:
+      print("Error: unable to find base with DB id '{}'".format(build['nc_base']))
+      sys.exit(5)
+    base_date = base['date']
+    repositories = ['core', 'nodecontroller', 'plugin_manager']
+    repositories_string = generate_repositories_string(build, repositories)
+
     rc = subprocess.check_call(["docker", "build", "-t", "waggle-node-controller:{}".format(base_date),
                                 "-f", "dockerfiles/waggle-node-controller",
-                                "--build-arg", "base-version={}".format(base_date),
-                                "--build-arg", "branch={}".format(branch),
-                                "--build-arg", "server_host={}".format(server_host)])
+                                "--build-arg", "base_version={}".format(base_date),
+                                "--build-arg", "repositories={}".format(repositories_string),
+                                "--build-arg", "server_host={}".format(server_host),
+                                "./"])
     if rc != 0:
       print("Error: docker build of Node Controller image exited with return code '{}'".format(rc))
       sys.exit(rc)
 
   if edge_processor:
-    base_date = build_config.get_base(eid=build['ep_base'])['date']
+    print('Building Edge Processor Waggle image...')
+    base = build_config.get_base(eid=build['ep_base'])
+    if base == None:
+      print("Error: unable to find base with DB id '{}'".format(build['ep_base']))
+      sys.exit(5)
+    base_date = base['date']
+    repositories = ['core', 'edge_processor']
+    repositories_string = generate_repositories_string(build, repositories)
+
     rc = subprocess.check_call(["docker", "build", "-t", "waggle-edge-processor:{}".format(base_date),
                                 "-f", "dockerfiles/waggle-edge-processor",
-                                "--build-arg", "base-version={}".format(base_date),
-                                "--build-arg", "branch={}".format(branch),
-                                "--build-arg", "server_host={}".format(server_host)])
+                                "--build-arg", "base_version={}".format(base_date),
+                                "--build-arg", "repositories={}".format(repositories_string),
+                                "--build-arg", "server_host={}".format(server_host),
+                                "./"])
     if rc != 0:
       print("Error: docker build of Edge Processor image exited with return code '{}'".format(rc))
       sys.exit(rc)

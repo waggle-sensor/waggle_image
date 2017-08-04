@@ -3,10 +3,12 @@
 set -e
 set -x
 
+echo $@
+
 # command-line options
 declare -r server_host=$1
 shift
-declare -r branch=$1
+declare -r repositories_string=$1
 shift
 repositories=()
 while [[ $# -gt 0 ]]; do
@@ -16,14 +18,16 @@ done
 
 mkdir -p /usr/lib/waggle
 
-for repository in ${repositories[@]}; do
+repository_strings=(${repositories_string//,/ })
+for repository_string in ${repository_strings[*]}; do
+  repository_tuple=(${repository_string//:/ })
+  repository=${repository_tuple[0]}
+  tag=${repository_tuple[1]}
+
   cd /usr/lib/waggle
-  if [ "x${branch}" == "x" ]; then
-  	git clone https://github.com/waggle-sensor/${repository}.git
-  else
-  	git clone -b ${branch} https://github.com/waggle-sensor/${repository}.git
-  fi
+  git clone https://github.com/waggle-sensor/${repository}.git
   cd /usr/lib/waggle/${repository}
+	git checkout $tag
   ./configure --system --server-host=${server_host}
 done
 

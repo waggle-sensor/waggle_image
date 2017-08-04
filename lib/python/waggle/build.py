@@ -220,7 +220,7 @@ class Configuration:
   # build functions
   def add_build(self, published_version='', revision=0, cpu_architecture_id=0,
                 nc_base_id=0, ep_base_id=0, waggle_image_commit_id='', core_commit_id='',
-                nc_commit_id='', ep_commit_id='', pm_commit_id='', date='', build=None):
+                nodecontroller_commit_id='', edge_processor_commit_id='', plugin_manager_commit_id='', date='', build=None):
     entry = tinydb.Query()
     if build != None:
       _build = self._builds.get((entry.published_version == build['published_version'])\
@@ -265,8 +265,11 @@ class Configuration:
           {'published_version': published_version, 'revision': revision,
            'cpu_architecture': cpu_architecture_id,
            'nc_base': nc_base_id, 'ep_base': ep_base_id,
-           'waggle_image_commit': waggle_image_commit_id, 'core_commit': core_commit_id,
-           'nc_commit': nc_commit_id, 'ep_commit': ep_commit_id, 'pm_commit': pm_commit_id,
+           'waggle_image_commit': waggle_image_commit_id,
+           'core_commit': core_commit_id,
+           'nodecontroller_commit': nodecontroller_commit_id,
+           'edge_processor_commit': edge_processor_commit_id,
+           'plugin_manager_commit': plugin_manager_commit_id,
            'date': date})
 
   def get_build(self, published_version='', revision=0, architecture=1, eid=0):

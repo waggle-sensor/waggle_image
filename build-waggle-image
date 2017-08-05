@@ -329,7 +329,7 @@ def main(argv):
   upload = False
   for opt, arg in opts:
     if opt == '--help':
-      print("\n" + usage_message + "\n")
+      print_usage()
       sys.exit(0)
     elif opt in ('-b', '--build-dir'):
       build_dir = arg

@@ -272,18 +272,6 @@ def burn_image(waggle_image, target_device):
   run_command('dd if={0} of={1} bs=100M status=progress'.format(waggle_image, target_device))
 
 
-def deploy_to_disk(waggle_image, target_device):
-  deploy_mount_point = tempfile.mkdtemp()
-  run_command('mount {0}2 {1}'.format(target_device, deploy_mount_point))
-
-  burn_image(waggle_image, target_device)
-
-  deploy(deploy_mount_point)
-
-  run_command('umount {0}'.format(deploy_mount_point))
-  shutil.rmtree(deploy_mount_point)
-
-
 # TODO: use the deployment details directly instead of converting them into parameters
 #       for the bless-image script
 def deploy(deployment, mount_point):
@@ -306,6 +294,18 @@ def deploy(deployment, mount_point):
   if rc != 0:
     raise BuildWaggleImageError(
       "bless-image failed with return code '{}'".format(rc))
+
+
+def deploy_to_disk(waggle_image, target_device, deployment):
+  deploy_mount_point = tempfile.mkdtemp()
+  run_command('mount {0}2 {1}'.format(target_device, deploy_mount_point))
+
+  burn_image(waggle_image, target_device)
+
+  deploy(deployment, deploy_mount_point)
+
+  run_command('umount {0}'.format(deploy_mount_point))
+  shutil.rmtree(deploy_mount_point)
 
 def main(argv):
   try:
@@ -417,7 +417,7 @@ def main(argv):
 
   if target_device != None:
     unmount_image(mount_point)
-    deploy_to_disk(waggle_image, target_device)
+    deploy_to_disk(waggle_image, target_device, deployment)
   else:
     deploy(mount_point)
     unmount_image(mount_point)

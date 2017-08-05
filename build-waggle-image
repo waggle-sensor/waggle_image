@@ -287,7 +287,7 @@ def deploy(deployment, mount_point):
   disable_root_password = ''
   shadow_entry = build_config.get_shadow_entry(eid=deployment['shadow_entry'])['name']
   if shadow_entry == 'Default':
-    disable_root_password = '--disable-root-password '
+    disable_root_password = '--disable-root-pass '
 
   rc = run_command('{0}/bless-image {1}{2}{3}{4} --clean-up'.format(
     waggle_image_directory, disable_wvdial, enable_sudo, disable_root_password, mount_point))

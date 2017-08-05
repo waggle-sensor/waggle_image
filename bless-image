@@ -170,19 +170,22 @@ set +e
 # Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
 declare -r ODROID_MODEL=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
 
-declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
+print_usage() {
+  echo
+  echo "Warning: this script has not been updated to take advantage of the build configuration database."
+  echo
+  echo "Usage: bless-image [--help] [-w|--disable-wvdial] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
+  echo
+}
 if [ ${PRINT_USAGE} -eq 1 ]; then
-  echo
-  echo ${USAGE_MESSAGE}
-  echo
+  print_usage
   exit 0
 fi
 
 if [ "x${MOUNT_POINT}" == "x" ]; then
   echo
   echo "Error: no mount point specified"
-  echo ${USAGE_MESSAGE}
-  echo
+  print_usage
   exit 1
 fi
 

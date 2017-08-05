@@ -70,7 +70,8 @@ def main(argv):
   # Commannd Line Arguments:
   #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
   #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
-  usage_message = "Usage: build-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>] [-t <target_dev>|--target=<target_dev>] [-s|--bless]"
+  usage_message = "Warning: this script has not been updated to take advantage of the build configuration database.\n\n"\
+    "Usage: write-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>] [-t <target_dev>|--target=<target_dev>] [-s|--bless]"
   try:
     opts, args = getopt.getopt(argv, "b:d:t:s", ["help", "branch=", "build-dir=", "target=", "bless"])
   except getopt.GetoptError as ge:

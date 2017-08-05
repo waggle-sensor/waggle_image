@@ -97,7 +97,7 @@ def get_base_image_filename(base):
     return "{}.img".format(base_image_base)
 
 
-def mount_new_image(build, node_element, mount_point, build_directory):
+def mount_new_image(build, node_element, mount_point):
   base = None
   if node_element == 'Node Controller':
     base = build_config.get_base(eid=build['nc_base'])
@@ -106,35 +106,31 @@ def mount_new_image(build, node_element, mount_point, build_directory):
   else:
     raise BuildWaggleImageError(
       "unknown node element '{}'".format(node_element))
-
   base_image = get_base_image_filename(base)
   base_image_xz = base_image + '.xz'
-  base_image_xz_path = os.path.join(build_directory, base_image_xz)
-  waggle_downloads_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
-
-  if not os.path.isfile(base_image_xz_path):
-    run_command('wget -P {} {}{}'.format(build_directory, waggle_downloads_url, base_image_xz))
-
 
   waggle_image = get_waggle_image_filename(build, node_element)
-  waggle_image_path = os.path.join(build_directory, waggle_image)
   waggle_image_xz = waggle_image + '.xz'
-  waggle_image_xz_path = os.path.join(build_directory, waggle_image_xz)
+
+  waggle_downloads_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
+
+  if not os.path.isfile(base_image_xz):
+    run_command('wget {}{}'.format(waggle_downloads_url, base_image_xz))
 
   try:
       os.remove(waggle_image_xz)
   except:
       pass
 
-  if not os.path.isfile(waggle_image_xz_path):
-      print("Copying file {} to {} ...".format(base_image_xz_path, waggle_image_xz_path))
-      shutil.copyfile(base_image_xz_path, waggle_image_xz_path)
+  if not os.path.isfile(waggle_image_xz):
+      print("Copying file %s to %s ..." % (base_image_xz, waggle_image_xz))
+      shutil.copyfile(base_image_xz, waggle_image_xz)
 
-  if not os.path.isfile(waggle_image_path):
-      print("Uncompressing file %s ..." % waggle_image_path_xz)
-      run_command("cd {} && unxz {}".format(build_directory, waggle_image_xz))
+  if not os.path.isfile(waggle_image):
+      print("Uncompressing file %s ..." % waggle_image_xz)
+      run_command('unxz ' + waggle_image_xz)
 
-  attach_loop_devices(waggle_image_path, 0)
+  attach_loop_devices(waggle_image, 0)
 
   time.sleep(3)
   print("first filesystem check on /dev/loop0p2")
@@ -336,7 +332,7 @@ def main(argv):
       print_usage()
       sys.exit(0)
     elif opt in ('-b', '--build-dir'):
-      build_dir = arg
+      build_directory = arg
     elif opt in ('-n', '--node-controller'):
       node_controller = True
     elif opt in ('-e', '--edge-processor'):

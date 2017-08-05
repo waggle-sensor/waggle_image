@@ -163,7 +163,7 @@ def generate_repositories_string(build, repositories):
   return ','.join(repository_strings)
 
 
-def build_image(build, node_element, mount_point):
+def build_image(build, node_element, deployment, mount_point):
   print('Building {} Waggle image...'.format(node_element))
   repositories_string = ''
   if node_element == 'Node Controller':
@@ -180,6 +180,8 @@ def build_image(build, node_element, mount_point):
         "unable to find base with DB id '{}'".format(build['ep_base']))
     repositories = ['core', 'edge_processor']
     repositories_string = generate_repositories_string(build, repositories)
+
+  server_host = deployment['address']
 
   run_command('chroot {}/ /bin/bash /usr/lib/waggle/install_waggle.sh {} {}'.format(
     mount_point, server_host, repositories_string))
@@ -411,7 +413,7 @@ def main(argv):
 
   stage_image_build_script(waggle_image_directory, mount_point)
 
-  build_image(build, node_element, mount_point)
+  build_image(build, node_element, deployment, mount_point)
 
   generate_report(build_directory, mount_point, waggle_image)
 

@@ -419,7 +419,7 @@ def main(argv):
     unmount_image(mount_point)
     deploy_to_disk(waggle_image, target_device, deployment)
   else:
-    deploy(mount_point)
+    deploy(deployment, mount_point)
     unmount_image(mount_point)
 
   attach_loop_devices(waggle_image, 0)

@@ -407,7 +407,7 @@ def main(argv):
 
   os.chdir(build_directory)
 
-  mount_new_image(build, node_element, mount_point, build_directory)
+  mount_new_image(build, node_element, mount_point)
 
   stage_image_build_script(waggle_image_directory, mount_point)
 

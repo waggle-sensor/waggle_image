@@ -4,4 +4,4 @@ declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cd $script_dir/scripts
 
-./install_dependencies.sh git:apt,curl:apt,python3-pip:apt,tinydb:python3
+./install_dependencies.sh curl:apt,python3-pip:apt,tinydb:python3

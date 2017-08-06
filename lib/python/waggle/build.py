@@ -116,8 +116,8 @@ class Configuration:
 
   # base version functions
   def add_base(self, uuid, date, dependency_ids, node_element_id, cpu_architecture_id):
-    print(uuid)
-    print(self._bases.get(tinydb.Query().uuid == uuid))
+    # print(uuid)
+    # print(self._bases.get(tinydb.Query().uuid == uuid))
     if self._bases.get(tinydb.Query().uuid == uuid) == None:
       return self._bases.insert(
         {'uuid': uuid, 'date': date, 'dependencies': dependency_ids,
@@ -230,7 +230,7 @@ class Configuration:
         # verify that the build and base architectures match
         for base_id in [build['nc_base'], build['ep_base']]:
           base = self.get_base(eid=base_id)
-          print(base)
+          # print(base)
           if base == None:
             raise ConfigurationError("base with UUID '{}' was not found".format(base_id))
           if build['cpu_architecture'] != base['cpu_architecture']:

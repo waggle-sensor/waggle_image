@@ -122,16 +122,16 @@ def main(argv):
     version = new_build['published_version']
 
   # update version, revision, and base IDs
-  print('CHECKPOINT 10')
+  # print('CHECKPOINT 10')
   # version specified
   # either create a new build version or create a new architecture build for an existing version
   available_revisions = [bld for bld in builds if bld['published_version'] == version]
   if len(available_revisions) > 0:
-    print('CHECKPOINT 20')
+    # print('CHECKPOINT 20')
     # version exists
     # assuming a request of a new revision or architecture for an existing revision
     if revision != None:
-      print('CHECKPOINT 30')
+      # print('CHECKPOINT 30')
       # revision specified
       # assuming a request for a new architecture
       revision_matches = [bld for bld in available_revisions if bld['revision'] == revision]
@@ -139,7 +139,7 @@ def main(argv):
         print("Error: revision '{}' is unavailable".format(revision))
         sys.exit(1)
       else:
-        print('CHECKPOINT 33')
+        # print('CHECKPOINT 33')
         # revision exists
         # default or specified architecture must *not* exist to continue...
         if architecture == None:
@@ -147,7 +147,7 @@ def main(argv):
         conflicts \
           = [bld for bld in revision_matches if bld['cpu_architecture'] == architecture.eid]
         if len(conflicts) == 0:
-          print('CHECKPOINT 36')
+          # print('CHECKPOINT 36')
           # default or specified architecture does not exist
           # new architecture build can be allocated
           new_build = dict(revision_matches[0])
@@ -163,7 +163,7 @@ def main(argv):
                   version, revision, architecture['name']))
           sys.exit(2)
     else:
-      print('CHECKPOINT 40')
+      # print('CHECKPOINT 40')
       # no revision specified
       # assuming a request for a new revision, or architecture
 
@@ -174,7 +174,7 @@ def main(argv):
       # get default architecture as needed
       if architecture == None:
         architecture = build_config.get_cpu_architecture(eid=1)
-      print((nc_base_id, ep_base_id))
+      # print((nc_base_id, ep_base_id))
 
       commits = get_commits(branch)
 
@@ -186,7 +186,7 @@ def main(argv):
           new_build[key] = commits[key]
 
       if increment_revision:
-        print('CHECKPOINT 43')
+        # print('CHECKPOINT 43')
         # commit IDs differ
         # increment the revision and set new commit IDs
         new_build['revision'] += 1
@@ -194,7 +194,7 @@ def main(argv):
         new_build['nc_base'] = nc_base_id
         new_build['ep_base'] = ep_base_id
       else:
-        print('CHECKPOINT 46')
+        # print('CHECKPOINT 46')
         # commit IDs are the same
         # add another build of the same revision if the default or specified
         #   architecture does not conflict
@@ -212,7 +212,7 @@ def main(argv):
         new_build['nc_base'] = nc_base_id
         new_build['ep_base'] = ep_base_id
   else:
-    print('CHECKPOINT 50')
+    # print('CHECKPOINT 50')
     # version does not exist
     # create a new version as specified
     if revision != None:
@@ -241,9 +241,9 @@ def main(argv):
   new_build['date'] = date
 
   # add
-  print(new_build)
+  # print(new_build)
   eid = build_config.add_build(build=new_build)
-  print('eid: {}'.format(eid))
+  # print('eid: {}'.format(eid))
   new_build = build_config.get_build(eid=eid)
   # print(new_build)
   print('{} {} ({}) {} {}:'.format(

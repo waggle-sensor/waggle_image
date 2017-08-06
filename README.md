@@ -52,7 +52,7 @@ Alternatively you can simply attach a monitor and keyboard and login as root, ag
 
 ## Install Dependencies
 
-`apt install -y git curl`
+`apt install -y git curl python3-pip`
 
 `pip3 install tinydb`
 

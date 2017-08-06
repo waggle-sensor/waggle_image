@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set +e
 
 # command-line options
 declare -r dependencies_string=$1
@@ -44,6 +44,8 @@ if [ $? -eq 0 ]; then
     wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add -
   fi
 fi
+
+set -e
 
 apt-get update
 apt-key update

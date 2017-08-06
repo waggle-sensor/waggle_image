@@ -52,7 +52,8 @@ Alternatively you can simply attach a monitor and keyboard and login as root, ag
 
 ## Install Dependencies
 
-`apt install -y git curl`
+`apt install -y git curl python3-pip`
+
 `pip3 install tinydb`
 
 ## Clone the waggle_image Repository
@@ -87,7 +88,7 @@ The `build-waggle-image` script builds a Waggle image ontop of an existing base 
 
 By default the script will query the database or the latest version and revision for the 'armv7l' architecture, but the options `--version` and `--revision` can be used to select any previous build that is recorded in the database. If the revision is 0, the master branch will be used for all of the software repositories (`core`, `nodecontroller`, `edge_processor`, and `plugin_manager`). If the revision is non-zero, the particular commit IDs associated with the build will be used.
 
-To build an image from a set of commits that are not associated with a build in the configuration database, simply create a temporary branch of the waggle_image repository, add a revision of an appropriate Waggle version build with the desired commit IDs of the other software repositories, and run this script with the version and revision that match the new build configuration.
+To build an image from a branch, simply create a temporary branch of the waggle_image repository, add a revision of an appropriate Waggle version build using the `--branch` option of the `add-build` script, and run this script with the version and revision that match the new build configuration.
 
 The default deployment configuration is 'Public'. This contains no organization-specific security keys, passwords, or configurations. To configure the image with a particular deployment configuration, use the `get-deployments` utility in the `config/` subdirectory of the waggle_image repository to get a list of available configurations. One can then use the `--deployment` option, passing the name of the deployment configuration (i.e. 'Public', 'AoT', etc...) as the options value. See the section above on installing the private configuration key.
 

@@ -53,8 +53,12 @@ apt-key update
 
 
 # Install Ubuntu package dependencies.
-echo "Installing the following Ubuntu packages: ${apt_packages[@]}"
-apt-get install -y ${apt_packages[@]}
+if [ "x" == "x${apt_packages[*]}" ]; then
+  echo "No APT packages specified. Skipping apt operation."
+else
+  echo "Installing the following Ubuntu packages: ${apt_packages[@]}"
+  apt install -y ${apt_packages[@]}
+fi
  
 
 # Install Python 2 package dependencies.

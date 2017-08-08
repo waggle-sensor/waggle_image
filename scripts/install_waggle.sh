@@ -35,6 +35,7 @@ mkdir -p /usr/lib/waggle
 
 for repository in ${repositories[@]}; do
   cd /usr/lib/waggle
+  rm -rf $repository
   if [ "x${branch}" == "x" ]; then
   	git clone https://github.com/waggle-sensor/${repository}.git
   else

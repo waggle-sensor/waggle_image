@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ ! -e /root/shadow_waggle ]; then
+  echo "The shadow file not presented under /root/shadow_waggle"
+  exit 2
+fi
+
+echo "Unlocking the Waggle system"
+ln -sf /root/shadow_waggle /etc/shadow
+
+echo "Unlocking is done"

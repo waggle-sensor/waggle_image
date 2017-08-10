@@ -89,7 +89,7 @@ configure_from_repository() {
   sed -i -e "s|^root:..*|${default_root_shadow_entry}|" ${MOUNT_POINT}/etc/shadow
   cp ${MOUNT_POINT}/etc/shadow ${MOUNT_POINT}/root/shadow_waggle
   chmod 640 ${MOUNT_POINT}/root/shadow_waggle
-  ln -sf ${MOUNT_POINT}/root/shadow_waggle ${MOUNT_POINT}/etc/shadow
+  ln -sf /root/shadow_waggle ${MOUNT_POINT}/etc/shadow
 
   echo "Installing waggle-lock and unlock scripts..."
   cp waggle-lock ${MOUNT_POINT}/usr/bin/waggle-lock

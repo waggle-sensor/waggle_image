@@ -6,6 +6,6 @@ if [ ! -e /root/shadow_aot ]; then
 fi
 
 echo "Locking the Waggle system"
-ln -s /root/shadow_aot /etc/shadow
+ln -sf /root/shadow_aot /etc/shadow
 
 echo "Locking is done"

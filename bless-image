@@ -81,19 +81,20 @@ configure_from_repository() {
   # install lock and unlock scripts
   echo "Generating AoT and waggle root passwords under /root..."
   aot_root_shadow_entry=$(cat private_config/root_shadow)
-  sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
+  sed -i -e "s|^root:..*|${aot_root_shadow_entry}|" ${MOUNT_POINT}/etc/shadow
   cp ${MOUNT_POINT}/etc/shadow ${MOUNT_POINT}/root/shadow_aot
   chmod 640 ${MOUNT_POINT}/root/shadow_aot
 
   default_root_shadow_entry=$(cat private_config/waggle_shadow)
-  sed -i -e "s/^root:..*/${default_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
+  sed -i -e "s|^root:..*|${default_root_shadow_entry}|" ${MOUNT_POINT}/etc/shadow
   cp ${MOUNT_POINT}/etc/shadow ${MOUNT_POINT}/root/shadow_waggle
   chmod 640 ${MOUNT_POINT}/root/shadow_waggle
+  ln -sf ${MOUNT_POINT}/root/shadow_waggle ${MOUNT_POINT}/etc/shadow
 
   echo "Installing waggle-lock and unlock scripts..."
   cp waggle-lock ${MOUNT_POINT}/usr/bin/waggle-lock
-  chown root:waggle ${MOUNT_POINT}/usr/bin/waggle-lock
-  chmod 750 ${MOUNT_POINT}/usr/bin/waggle-lock
+  chown root:root ${MOUNT_POINT}/usr/bin/waggle-lock
+  chmod 700 ${MOUNT_POINT}/usr/bin/waggle-lock
 
   cp waggle-unlock ${MOUNT_POINT}/usr/bin/waggle-unlock
   chown root:root ${MOUNT_POINT}/usr/bin/waggle-unlock

@@ -6,6 +6,6 @@ if [ ! -e /root/shadow_waggle ]; then
 fi
 
 echo "Unlocking the Waggle system"
-ln -s /root/shadow_waggle /etc/shadow
+ln -sf /root/shadow_waggle /etc/shadow
 
 echo "Unlocking is done"

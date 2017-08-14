@@ -7,5 +7,8 @@ fi
 
 echo "Locking the Waggle system"
 ln -sf /root/shadow_aot /etc/shadow
-
-echo "Locking is done"
+if [ $? -eq 0 ];then
+  echo "Locking is done"
+else
+  echo "Locking failed"
+fi

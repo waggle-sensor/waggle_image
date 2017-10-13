@@ -267,7 +267,7 @@ def main(argv):
 
     mount_point = "/mnt/newimage"
 
-    base_image = get_base_image_filename(build_directory, base)
+    base_image = get_base_image_filename(base)
 
     setup_mount_point(mount_point)
 

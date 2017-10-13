@@ -21,7 +21,7 @@ def get_commits(branch):
     if branch == None:
       cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
     else:
-      cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | grep {}".format(repo, branch)
+      cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | grep {} | tail -n 1".format(repo, branch)
     commits[repo.rstrip()+'_commit'] \
       = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7]
   return commits

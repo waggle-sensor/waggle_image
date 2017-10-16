@@ -92,12 +92,13 @@ configure_from_repository() {
   chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
   ln -sf /etc/passwds/shadow_waggle ${MOUNT_POINT}/etc/shadow
 
+  waggle_image_dir=$(dirname "${BASH_SOURCE[0]}")
   echo "Installing waggle-lock and unlock scripts..."
-  cp waggle-pw-lock ${MOUNT_POINT}/usr/bin/waggle-pw-lock
+  cp ${waggle_image_dir}/waggle-pw-lock ${MOUNT_POINT}/usr/bin/waggle-pw-lock
   chown root:root ${MOUNT_POINT}/usr/bin/waggle-pw-lock
   chmod 700 ${MOUNT_POINT}/usr/bin/waggle-pw-lock
 
-  cp waggle-pw-unlock ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
+  cp ${waggle_image_dir}/waggle-pw-unlock ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
   chown root:root ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
   chmod 700 ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
 

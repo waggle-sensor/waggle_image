@@ -81,15 +81,19 @@ configure_from_repository() {
   # install lock and unlock scripts
   echo "Generating AoT and waggle root passwords under /root..."
   mkdir -p ${MOUNT_POINT}/etc/passwds
-  aot_root_shadow_entry=$(cat private_config/root_shadow)
-  sed -i -e "s|^root:..*|${aot_root_shadow_entry}|" ${MOUNT_POINT}/etc/shadow
-  cp ${MOUNT_POINT}/etc/shadow ${MOUNT_POINT}/etc/passwds/shadow_aot
-  chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
 
-  default_root_shadow_entry=$(cat private_config/waggle_shadow)
-  sed -i -e "s|^root:..*|${default_root_shadow_entry}|" ${MOUNT_POINT}/etc/shadow
-  cp ${MOUNT_POINT}/etc/shadow ${MOUNT_POINT}/etc/passwds/shadow_waggle
-  chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
+  if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
+    cp private_config/nc_shadow/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
+    chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
+    cp private_config/nc_shadow/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
+    chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
+  elif [ "${ODROID_MODEL}" == "ODROID-XU3" ]; then
+    cp private_config/ep_shadow/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
+    chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
+    cp private_config/ep_shadow/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
+    chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
+  fi
+
   ln -sf /etc/passwds/shadow_waggle ${MOUNT_POINT}/etc/shadow
 
   waggle_image_dir=$(dirname "${BASH_SOURCE[0]}")
@@ -101,7 +105,7 @@ configure_from_repository() {
   cp ${waggle_image_dir}/waggle-pw-unlock ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
   chown root:root ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
   chmod 700 ${MOUNT_POINT}/usr/bin/waggle-pw-unlock
-
+  
   if [ ${CLEAN_UP} -eq 1 ]; then
     rm -rf private_config
   fi

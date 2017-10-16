@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import socket
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)

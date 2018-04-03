@@ -77,6 +77,7 @@ if [ "x" == "x${python3_packages[*]}" ]; then
 else
   echo "Installing the following Python 3 packages: ${python3_packages[@]}"
   pip3 install --upgrade pip
+  cd ${script_dir}/../var/cache/pip3/archives
   pip3 install ${python3_packages[@]}
 fi
 

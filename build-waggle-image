@@ -179,7 +179,7 @@ def build_image(build, node_element, server_host, mount_point):
     if base == None:
       raise BuildWaggleImageError(
         "unable to find base with DB id '{}'".format(build['ep_base']))
-    repositories = ['core', 'edge_processor']
+    repositories = ['core', 'edge_processor', 'plugin_manager']
     repositories_string = generate_repositories_string(build, repositories)
 
   run_command('chroot {}/ /bin/bash /usr/lib/waggle/install_waggle.sh {} {}'.format(

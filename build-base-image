@@ -63,11 +63,11 @@ def mount_new_image(base_image, mount_point, base):
     waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
     stock_images=   {
                     'Edge Processor' : {
-                            'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
+                            'filename': "ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img",
                              'url': waggle_stock_url
                             },
                     'Node Controller' : {
-                            'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
+                            'filename':"ubuntu-16.04.3-minimal-odroid-c1-20170914.img",
                             'url': waggle_stock_url
                         }
                     }

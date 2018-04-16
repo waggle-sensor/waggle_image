@@ -542,7 +542,7 @@ def detect_odroid_model():
     print("Detected device: %s" % odroid_model_raw)
 
     odroid_model = ''
-    if odroid_model_raw == "ODROID-XU3":
+    if odroid_model_raw == "ODROID-XU3" or odroid_model_raw == "ODROID-XU4":
       # The XU4 is actually a XU3.
       odroid_model = 'odroid-xu3'
     elif odroid_model_raw == "ODROIDC":

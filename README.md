@@ -1,3 +1,7 @@
+<!--
+waggle_topic=Waggle/Node,Building System Images
+-->
+
 # Repository Summary
 
 This repository contains scripts to create waggle disk images. The root of the repository contains the following scripts:

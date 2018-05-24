@@ -76,6 +76,8 @@ Attach a USB memory card reader with either an SD or eMMC. Use `blkid` or some o
 
 # How to Build a Base Image
 
+_To add packages before buliding base image, go [how_to_add_packages](how_to_add_packages.md)_
+
 Use the `build-base-image` script to bulid a base image listed in the build configuration database which contains all of the Ubuntu and Python package dependencies for the Waggle software. The `--build-dir=<build-dir>` option allows one to set the directory in which the stock Odroid image will be downloaded and the new base image will be assembled. The only non-option argument is the UUID of the base image. Use the `get-bases` script in the `config/` subdirectory of the waggle_image repository to get a list of the available base images. Be sure to use one with the 'armv7l' CPU architecture.
 
 After the build process finishes, the new base image will be compressed into a `.xz` file. If, in addition, the `waggle-id_rsa` private key is in the build directory, the compressed base image will be uploaded to http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/.

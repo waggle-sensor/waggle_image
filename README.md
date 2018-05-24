@@ -86,6 +86,8 @@ Note that the name of the last base image to be uploaded is also pushed to the l
 
 # How to Build a Waggle Image
 
+_To add a Waggle build before buliding Waggle image, go [how_to_add_waggle_build](how_to_add_waggle_build.md)_
+
 The `build-waggle-image` script builds a Waggle image ontop of an existing base image. To determine the correct base image, the script queries the build configration database for the Node Controller and Edge Processor base images associated with the specified Waggle version. The `--node-controller` and `--edge-processor` options select for which node element to build the image. 
 
 By default the script will query the database or the latest version and revision for the 'armv7l' architecture, but the options `--version` and `--revision` can be used to select any previous build that is recorded in the database. If the revision is 0, the master branch will be used for all of the software repositories (`core`, `nodecontroller`, `edge_processor`, and `plugin_manager`). If the revision is non-zero, the particular commit IDs associated with the build will be used.

@@ -1,5 +1,5 @@
 <!--
-waggle_topic=Waggle/Node,Building Disk Images
+waggle_topic=/operations,Building Disk Images
 -->
 
 # Repository Summary

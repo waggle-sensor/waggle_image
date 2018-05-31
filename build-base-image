@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import getopt
 import os
@@ -9,33 +9,27 @@ import sys
 import time
 
 waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
-#print("### Run directory for build_image.py: %s" % waggle_image_directory)
-sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+sys.path.insert(0, os.path.realpath('{}/lib/python/'.format(waggle_image_directory)))
 from waggle.build import *
+
+config_db_path = os.path.realpath('{}/config/build_config.json'.format(waggle_image_directory))
+build_config = Configuration(str(config_db_path))
 
 debug=0 # skip chroot environment if 1
 
 
-def get_base_image_filename(build_directory, odroid_model):
-    is_edge_processor = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
-
-
-    if odroid_model == "odroid-xu3":
-        is_edge_processor = 1
-        create_b_image = 1
-
-
-    date_today=get_output('date +"%Y%m%d"').rstrip().decode()
-
-    if is_edge_processor:
-        image_type = "edge_processor"
+def get_base_image_filename(base):
+    node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
+        ' ', '_').lower()
+    if node_element == 'node_controller':
+        device = "odroid-c1"
     else:
-        image_type = "nodecontroller"
+        device = "odroid-xu3"
 
-    print("image_type: ", image_type)
+    date = base['date'].replace('-', '')
 
-    base_image_base="waggle-base-%s-%s-%s" % (image_type, odroid_model, date_today)
-    return "%s.img" % (base_image_base)
+    base_image_base="waggle-base-%s-%s-%s" % (node_element, device, date)
+    return "{}.img".format(base_image_base)
 
 
 def setup_mount_point(mount_point):
@@ -60,15 +54,20 @@ def setup_mount_point(mount_point):
     create_loop_devices()
 
 
-def mount_new_image(base_image, mount_point, odroid_model):
+def mount_new_image(base_image, mount_point, base):
+    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
+    if architecture != 'armv7l':
+        print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))
+        sys.exit(6)
+    node_element = build_config.get_node_element(eid=base['node_element'])['name']
     waggle_stock_url='http://www.mcs.anl.gov/research/projects/waggle/downloads/waggle_images/base/'
     stock_images=   {
-                    'odroid-xu3' : {
-                            'filename': "ubuntu-16.04-minimal-odroid-xu3-20160706.img",
+                    'Edge Processor' : {
+                            'filename': "ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img",
                              'url': waggle_stock_url
                             },
-                    'odroid-c1' : {
-                            'filename':"ubuntu-16.04-minimal-odroid-c1-20160817.img",
+                    'Node Controller' : {
+                            'filename':"ubuntu-16.04.3-minimal-odroid-c1-20170914.img",
                             'url': waggle_stock_url
                         }
                     }
@@ -76,15 +75,15 @@ def mount_new_image(base_image, mount_point, odroid_model):
     base_image_xz = base_image + '.xz'
 
     try:
-        stock_image = stock_images[odroid_model]['filename']
+        stock_image = stock_images[node_element]['filename']
     except:
-        print("image %s not found" % (odroid_model))
+        print("{} image not found".format(node_element))
         sys.exit(1)
 
     stock_image_xz = stock_image + '.xz'
 
     if not os.path.isfile(stock_image_xz):
-        run_command('wget '+ stock_images[odroid_model]['url'] + stock_image_xz)
+        run_command('wget '+ stock_images[node_element]['url'] + stock_image_xz)
 
     try:
         os.remove(base_image_xz)
@@ -124,14 +123,17 @@ def stage_image_build_script(waggle_image_directory, mount_point, branch):
     else:
         run_command('mkdir -p {0}/usr/lib/waggle && cd {0}/usr/lib/waggle && git clone https://github.com/waggle-sensor/waggle_image.git'.format(mount_point))
 
+    run_command('cd {0}/root && wget https://www.rabbitmq.com/rabbitmq-release-signing-key.asc'.format(mount_point))
+
     ### Copy the image build script ###
     #shutil.copyfile('%s/scripts/configure_base.sh' % waggle_image_directory, '%s/root/configure_base.sh' % mount_point)
     #run_command('chmod +x %s/root/configure_base.sh' % mount_point)
 
 
-def build_image(mount_point):
+def build_image(mount_point, dependencies):
     if debug == 0:
-        run_command('chroot %s/ /bin/bash /usr/lib/waggle/waggle_image/scripts/install_dependencies.sh' % (mount_point))
+        script_path = '/usr/lib/waggle/waggle_image/scripts/install_dependencies.sh'
+        run_command('chroot {0}/ /bin/bash {1} {2}'.format(mount_point, script_path, dependencies))
 
     shutil.rmtree('{0}/usr/lib/waggle/waggle_image'.format(mount_point))
 
@@ -183,7 +185,7 @@ def upload_image(build_directory, base_image):
     while 1:
         count +=1
         if (count >= 10):
-            print("error: scp failed after 10 trys\n")
+            print("error: scp failed after 10 tries\n")
             sys.exit(1)
 
         cmd_return = 1
@@ -203,10 +205,6 @@ def upload_image(build_directory, base_image):
         time.sleep(10)
 
 
-    run_command('echo "{0}" > {1}/latest.txt'.format(base_image + ".xz", build_directory))
-    run_command('scp -o "StrictHostKeyChecking no" -i {0}/waggle-id_rsa {0}/latest.txt {1}/'.format(build_directory, scp_target))
-
-
     if os.path.isfile( base_image +'.report.txt'):
         run_command('scp -o "StrictHostKeyChecking no" -v -i {0}/waggle-id_rsa {1}.report.txt {2}'.format(build_directory, base_image,scp_target))
 
@@ -216,33 +214,52 @@ def upload_image(build_directory, base_image):
 
 
 def main(argv):
-    # Commannd Line Arguments:
-    #   --help                                  - print the command usage
-    #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
-    #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
-    usage_message = "Usage: build-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>]"
+    usage_message = "Usage: build-base-image [OPTIONS] <uuid>\n"\
+                    "  build the image with UUID <uuid>\n"\
+                    "OPTIONS\n"\
+                    "  --help                         "\
+                    "show this usage message\n"\
+                    "  -b |--build-dir=<build_dir>    "\
+                    "work on the disk image in the <build_dir> directory\n"\
+                    ""
     try:
-        opts, args = getopt.getopt(argv, "b:d:", ["help", "branch=", "build-dir="])
+        opts, args = getopt.getopt(
+            argv,
+            "b:",
+            ["help", "build-dir="])
     except getopt.GetoptError as ge:
         print("\nError:", str(ge))
-        print(usage_message + "\n")
+        print(usage_message)
         sys.exit(1)
 
     compress = False
-    upload = False
-    branch = ''
     build_directory = '/root'
     for opt, arg in opts:
         if opt == '--help':
             print("\n" + usage_message + "\n")
             sys.exit(0)
-        elif opt in ('-b', '--branch'):
-            branch = arg
-        elif opt in ('-d', '--build-dir'):
+        elif opt in ('-b', '--build-dir'):
             build_directory = arg
         else:
             print("\n" + usage_message + "\n")
             sys.exit(2)
+
+    uuid = None
+    if len(args) > 0:
+        uuid = args[0]
+    else:
+        print("Error: the UUID of the base image to build is required (see usage with --help)")
+        sys.exit(3)
+
+    base = build_config.get_base(uuid)
+    if base == None:
+        print("Error: unable to find a base image with UUID {}".format(uuid))
+        sys.exit(4)
+
+    os.chdir(waggle_image_directory)
+    branches = subprocess.check_output(['git', 'branch']).decode().split('\n')
+    branch = [b for b in branches if '*' in b][0][2:]
+    print("Building branch '{}'...".format(branch))
 
     create_b_image = 0 # will be 1 for XU3/4
 
@@ -250,22 +267,17 @@ def main(argv):
 
     mount_point = "/mnt/newimage"
 
-    odroid_model = detect_odroid_model()
-
-    if not odroid_model:
-        sys.exit(1)
-
-    base_image = get_base_image_filename(build_directory, odroid_model)
+    base_image = get_base_image_filename(base)
 
     setup_mount_point(mount_point)
 
     os.chdir(build_directory)
 
-    mount_new_image(base_image, mount_point, odroid_model)
+    mount_new_image(base_image, mount_point, base)
 
     stage_image_build_script(waggle_image_directory, mount_point, branch)
 
-    build_image(mount_point)
+    build_image(mount_point, build_config.get_base_dependencies(base=base))
 
     generate_report(build_directory, mount_point, base_image)
 

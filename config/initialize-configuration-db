@@ -1,0 +1,266 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import sys
+import subprocess
+import tinydb
+import uuid
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def add_dependencies(build_config, dep_type_name, dep_names):
+  if build_config.get_dependency_type(dep_type_name) == None:
+    build_config.add_dependency_type(dep_type_name)
+
+  dep_type = build_config.get_dependency_type(dep_type_name).eid
+
+  for dep_name in dep_names:
+    if build_config.get_dependency(dep_name, dep_type) == None:
+      build_config.add_dependency(dep_name, dep_type)
+
+def print_entries(entries):
+  for entry in entries:
+    name = entry['name']
+    print('{} {}'.format(entry.eid, name))
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  # add APT dependency type and dependencies
+  dep_type_name = 'apt'
+  apt_common_deps = ["htop", "iotop", "iftop", "bwm-ng", "screen", "git", "python-dev", "python-pip",
+               "python3-dev", "python3-pip", "dosfstools", "parted", "bash-completion", "v4l-utils",
+               "network-manager", "usbutils", "nano", "stress-ng", "rabbitmq-server", "python-psutil",
+               "python3-psutil"]
+  apt_docker_deps = ["git", "wget", "locales", "tzdata", "ssh", "sudo", "psmisc"]
+  apt_nc_deps = ["wvdial", "autossh", "bossa-cli", "curl", "python3-zmq"]
+  apt_ep_deps = ["fswebcam", "alsa-utils", "portaudio19-dev", "libavcodec-ffmpeg56",
+               "libavformat-ffmpeg56", "libavutil-ffmpeg54", "libc6", "libcairo2", "libgdk-pixbuf2.0-0",
+               "libglib2.0-0", "libgtk-3-0", "libpng12-0", "libstdc++6", "libswscale-ffmpeg3", "zlib1g",
+               "libhdf5-10", "libjasper1", "libvtk6.2"]
+  dep_names = apt_common_deps + apt_docker_deps + apt_nc_deps + apt_ep_deps
+  add_dependencies(build_config, dep_type_name, dep_names)
+
+  # add python 2 dependency type and dependencies
+  dep_type_name = 'python2'
+  python2_common_deps = ["tabulate", "pika"]
+  python2_nc_deps = ["crcmod", "pyserial"]
+  python2_ep_deps = ["numpy"]
+  dep_names = python2_common_deps + python2_nc_deps + python2_ep_deps
+  add_dependencies(build_config, dep_type_name, dep_names)
+
+  # add python 3 dependency type and dependencies
+  dep_type_name = 'python3'
+  python3_common_deps = ["tabulate", "pika", "tinydb"]
+  python3_nc_deps = ["crcmod", "pyserial", "netifaces", "pyzmq", "pyinotify", "pynmea2"]
+  python3_ep_deps = ["pyaudio", "numpy"]
+  dep_names = python3_common_deps + python3_nc_deps + python3_ep_deps
+  add_dependencies(build_config, dep_type_name, dep_names)
+
+  # add standalone deb package dependency type and dependencies
+  dep_type_name = 'deb'
+  deb_common_deps = []
+  deb_nc_armv7l_deps = []
+  deb_nc_x86_64_deps = []
+  deb_ep_armv7l_deps = ["OpenCV-3.2.0-armv7l-dev.deb", "OpenCV-3.2.0-armv7l-libs.deb",\
+                        "OpenCV-3.2.0-armv7l-main.deb", "OpenCV-3.2.0-armv7l-python.deb",\
+                        "OpenCV-3.2.0-armv7l-samples.deb"]
+  deb_ep_x86_64_deps = ["OpenCV-3.2.0-x86_64-dev.deb", "OpenCV-3.2.0-x86_64-libs.deb",\
+                        "OpenCV-3.2.0-x86_64-main.deb", "OpenCV-3.2.0-x86_64-python.deb",\
+                        "OpenCV-3.2.0-x86_64-samples.deb"]
+  dep_names = deb_common_deps + deb_nc_armv7l_deps + deb_nc_x86_64_deps \
+            + deb_ep_armv7l_deps + deb_ep_x86_64_deps
+  add_dependencies(build_config, dep_type_name, dep_names)
+
+  # add node elements
+  node_element_names = ["Node Controller", "Edge Processor"]
+  for name in node_element_names:
+    build_config.add_node_element(name)
+
+  # add CPU architectures
+  cpu_architecture_names = ["armv7l", "x86_64"]
+  for name in cpu_architecture_names:
+    build_config.add_cpu_architecture(name)
+
+  # add base versions
+  arch_id = build_config.get_cpu_architecture('armv7l').eid
+  element = build_config.get_node_element('Node Controller').eid
+  # nc_uuid = uuid.uuid4()
+  nc_armv7l_uuid = 'f6d47837-28dc-4958-877b-34123ce7a533'
+  date = '2017-07-31'
+  dependencies = build_config.get_dependencies()
+  apt_type_id = build_config.get_dependency_type('apt').eid
+  python2_type_id = build_config.get_dependency_type('python2').eid
+  python3_type_id = build_config.get_dependency_type('python3').eid
+  deb_type_id = build_config.get_dependency_type('deb').eid
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_common_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_armv7l_deps]
+  element_id = build_config.get_node_element('Node Controller').eid
+  architecture_id = build_config.get_cpu_architecture('armv7l').eid
+  build_config.add_base(str(nc_armv7l_uuid), date, dependency_ids, element_id, architecture_id)
+
+  nc_x86_64_uuid = '95a9569b-fc3d-40b7-aec4-afb905132e87'
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_nc_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_docker_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_nc_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_common_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_nc_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_nc_x86_64_deps]
+  architecture_id = build_config.get_cpu_architecture('x86_64').eid
+  build_config.add_base(str(nc_x86_64_uuid), date, dependency_ids, element_id, architecture_id)
+
+  ep_armv7l_uuid = '1f93c407-6a17-47b6-ad35-3d3291861cc8'
+  dependencies = build_config.get_dependencies()
+  apt_type_id = build_config.get_dependency_type('apt').eid
+  python2_type_id = build_config.get_dependency_type('python2').eid
+  python3_type_id = build_config.get_dependency_type('python3').eid
+  deb_type_id = build_config.get_dependency_type('deb').eid
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_common_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_armv7l_deps]
+  element_id = build_config.get_node_element('Edge Processor').eid
+  architecture_id = build_config.get_cpu_architecture('armv7l').eid
+  ep_base_id = build_config.add_base(str(ep_armv7l_uuid), date, dependency_ids, element_id, architecture_id)
+
+  ep_x86_64_uuid = '6a8170f5-7915-439a-9ee4-277db2ee7c39'
+  dependency_ids = [build_config.get_dependency(name, apt_type_id).eid for name in apt_common_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_ep_deps]\
+                 + [build_config.get_dependency(name, apt_type_id).eid for name in apt_docker_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_common_deps]\
+                 + [build_config.get_dependency(name, python2_type_id).eid for name in python2_ep_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_common_deps]\
+                 + [build_config.get_dependency(name, python3_type_id).eid for name in python3_ep_deps]\
+                 + [build_config.get_dependency(name, deb_type_id).eid for name in deb_ep_x86_64_deps]
+  architecture_id = build_config.get_cpu_architecture('x86_64').eid
+  ep_base_id = build_config.add_base(str(ep_x86_64_uuid), date, dependency_ids, element_id, architecture_id)
+
+  # add shadows
+  shadow_entry_names = ["Default", "AoT"]
+  shadow_entry_files = ['waggle_shadow', 'root_shadow']
+  shadow_entry_ids = []
+  for name, file in zip(shadow_entry_names, shadow_entry_files):
+    shadow_entry_ids.append(build_config.add_shadow_entry(name, file))
+
+  # add wireless configs
+  wireless_config_names = ["Default", "AoT"]
+  wireless_config_repos = ['nodecontroller', 'private_config']
+  wireless_config_ids = []
+  for name, repo in zip(wireless_config_names, wireless_config_repos):
+    wireless_config_ids.append(build_config.add_wireless_config(name, repo))
+
+  # add registration keys
+  reg_key_names = ["None", "Development", "AoT"]
+  reg_key_files = ['', 'id_rsa_waggle_dev_registration', 'id_rsa_waggle_aot_registration']
+  reg_key_ids = []
+  for name, file in zip(reg_key_names, reg_key_files):
+    reg_key_ids.append(build_config.add_registration_key(name, file))
+
+  # add beehive hosts
+  beehive_host_names = ["Default", "Development", "AoT"]
+  beehive_host_fqdns = ['localhost', 'beehive-dev', 'beehive1.mcs.anl.gov']
+  beehive_host_addresses = ['127.0.0.1', '10.10.10.5', '']
+  beehive_host_ids = []
+  for name, fqdn, address in zip(beehive_host_names, beehive_host_fqdns, beehive_host_addresses):
+    beehive_host_ids.append(build_config.add_beehive_host(name, fqdn, address))
+
+  # add build hosts
+  build_host_names = ["None", "Local", "Development"]
+  build_host_fqdns = ['', 'localhost', 'beehive-dev']
+  build_host_addresses = ['', '127.0.0.1', '10.10.10.5']
+  build_host_ids = []
+  for name, fqdn, address in zip(build_host_names, build_host_fqdns, build_host_addresses):
+    build_host_ids.append(build_config.add_build_host(name, fqdn, address))
+
+  # add build (published version, revision, build SW commit ID, date)
+  '''
+  repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  commit_ids = []
+  for repo in repos:
+    cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
+    commit_ids.append(subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7])
+  print(commit_ids)
+  '''
+  commit_ids = ['d6f69c5', '50b1b2a', '1764428', '6cf03fa', '9031d0e']
+  date = '2017-07-22'
+  revision = 0
+  architecture_id = build_config.get_cpu_architecture('armv7l').eid
+  nc_base_id = build_config.get_base(nc_armv7l_uuid).eid
+  ep_base_id = build_config.get_base(ep_armv7l_uuid).eid
+  build_config.add_build('2.6.0', revision, architecture_id, nc_base_id, ep_base_id,
+                         commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
+                         date)
+
+  architecture_id = build_config.get_cpu_architecture('x86_64').eid
+  nc_base_id = build_config.get_base(nc_x86_64_uuid).eid
+  ep_base_id = build_config.get_base(ep_x86_64_uuid).eid
+  build_config.add_build('2.6.0', revision, architecture_id, nc_base_id, ep_base_id,
+                         commit_ids[0], commit_ids[1], commit_ids[2], commit_ids[3], commit_ids[4],
+                         date)
+
+  # add deployments (name, root shadow, sudo, wvdial config, reg. key, beehive host, build_host)
+  build_config.add_deployment('Public', shadow_entry_ids[0], True, wireless_config_ids[0],
+                               reg_key_ids[0], beehive_host_ids[0], build_host_ids[0])
+  build_config.add_deployment('Collaborator', shadow_entry_ids[1], True, wireless_config_ids[0],
+                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[1])
+  build_config.add_deployment('Development', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[0])
+  build_config.add_deployment('AoT', shadow_entry_ids[1], False, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[2], build_host_ids[0])
+  build_config.add_deployment('Build', shadow_entry_ids[1], True, wireless_config_ids[1],
+                               reg_key_ids[2], beehive_host_ids[1], build_host_ids[2])
+
+
+  print_entries(build_config.get_dependency_types())
+
+  # print out the dependencies
+  deps = build_config.get_dependencies()
+  for dep in deps:
+    name = dep['name']
+    type_id = dep['type']
+    dep_type = build_config.get_dependency_type(eid=type_id)['name']
+    print('{} {} {}'.format(dep.eid, name, dep_type))
+
+  print_entries(build_config.get_node_elements())
+
+  print_entries(build_config.get_cpu_architectures())
+
+  for entry in build_config.get_bases():
+    base_uuid = entry['uuid']
+    print('{} {}'.format(entry.eid, base_uuid))
+
+  print_entries(build_config.get_shadow_entries())
+
+  print_entries(build_config.get_registration_keys())
+
+  print_entries(build_config.get_wireless_configs())
+
+  print_entries(build_config.get_beehive_hosts())
+
+  print_entries(build_config.get_build_hosts())
+
+  builds = build_config.get_builds()
+  for the_build in builds:
+    published_version = the_build['published_version']
+    revision = the_build['revision']
+    print('{0} {1}-{2}'.format(the_build.eid, published_version, revision))
+
+  print_entries(build_config.get_deployments())
+
+if __name__ == '__main__':
+  main()

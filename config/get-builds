@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import inspect
+import os
+import os.path
+import sys
+import tinydb
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  for entry in build_config.get_builds():
+    architecture = build_config.get_cpu_architecture(eid=entry['cpu_architecture'])
+    print('{} {} ({}) {} {}:'.format(
+      entry.eid, entry['published_version'], entry['revision'], architecture['name'], entry['date']))
+    print('  Bases:')
+    base_ids = [entry['nc_base'], entry['ep_base']]
+    for base_id in base_ids:
+      base = build_config.get_base(eid=base_id)
+      print('    {} {} ({}) {} - {}:'.format(
+        base.eid, build_config.get_node_element(eid=base['node_element'])['name'],
+        build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name'], base['date'],
+        base['uuid']))
+    print('  Commit IDs:')
+    repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
+    for repo in repos:
+      print('    {} {}'.format(repo, entry[repo.rstrip()+'_commit']))
+
+
+if __name__ == '__main__':
+  main()

@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+import copy
+import getopt
+import os
+import os.path
+import subprocess
+import sys
+import time
+import tinydb
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def main(argv):
+  usage_message = ''.join(("Usage: add-build [OPTIONS]\n", \
+                          "OPTIONS\n", \
+                          "  --help                          ", \
+                          "print help screen\n", \
+                          "  -v |--version=<version>         ", \
+                          "set the build version to <version>\n", \
+                          "  -a |--architecture=<architecture>   ", \
+                          "set the build CPU architecture to <architecture> (default 1)\n"))
+  try:
+    opts, args = getopt.getopt(
+      argv, "v:r:d:a:",
+      ["help", "version=", "revision=", "architecture="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  version = None
+  architecture_name = None
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-v', '--version'):
+      version = arg
+    elif opt in ('-a', '--architecture'):
+      architecture_name = arg
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  if version == None:
+    print("Error: version not specified")
+
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+
+  architecture = None
+  if architecture_name == None:
+    architecture = build_config.get_cpu_architecture('armv7l')
+  else:
+    architecture = build_config.get_cpu_architecture(architecture_name)
+    if architecture == None:
+      print("Error: architecture '{}' does not exist".format(architecture_name))
+      sys.exit(6)
+
+  builds = build_config.get_builds()
+  available_revisions \
+    = [bld for bld in builds if bld['published_version'] == version and \
+                                bld['cpu_architecture'] == architecture.eid]
+  if len(available_revisions) == 0:
+    print("Error: build not found with version '{}'".format(version))
+    sys.exit(3)
+  sorted_revisions = sorted(available_revisions,
+    key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
+  entry = sorted_revisions[-1]
+
+  print('{} {} ({}) {} {}:'.format(
+    entry.eid, entry['published_version'], entry['revision'],
+    architecture['name'], entry['date']))
+  print('  Bases:')
+  base_ids = [entry['nc_base'], entry['ep_base']]
+  for base_id in base_ids:
+    base = build_config.get_base(eid=base_id)
+    print('    {} {} ({}) {} - {}:'.format(
+      base.eid, build_config.get_node_element(eid=base['node_element'])['name'],
+      build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name'], base['date'],
+      base['uuid']))
+  print('  Commit IDs:')
+  repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  for repo in repos:
+    print('    {} {}'.format(repo, entry[repo.rstrip()+'_commit']))
+
+  build_config.remove_build(entry.eid)
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

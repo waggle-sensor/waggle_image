@@ -1,0 +1,47 @@
+#!/bin/bash
+
+print_usage() {
+  echo "Usage: build-base-docker-image [OPTIONS] <uuid>"
+  echo "  build the base image with UUID <uuid>"
+  echo "OPTIONS"
+  echo "  --help   show this usage message and exit"
+}
+
+uuid=
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case $key in
+    --help)
+      print_usage
+      exit
+      ;;
+    *)
+      uuid=$key
+      ;;
+  esac
+  shift
+done
+
+declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+cd $script_dir
+
+declare -r node_element=$($script_dir/config/get-bases | grep $uuid | awk '{print $2 " " $3}')
+declare -r base_date=$($script_dir/config/get-bases | grep $uuid | awk '{print $5}')
+declare -r dependencies=$($script_dir/config/get-base-dependencies $uuid)
+declare -r architecture=$($script_dir/config/get-bases | grep $uuid | sed 's/..*(\(..*\))..*/\1/')
+if [ "$architecture" != "x86_64" ]; then
+  echo "Error: expected base image architecture 'x86_64', but got '$architecture'"
+  exit 5
+fi
+
+echo "Building Waggle $node_element base image from $base_date"
+if [ "$node_element" == "Node Controller" ]; then
+  time docker build -t waggle-node-controller-base:${base_date} \
+                    -f dockerfiles/waggle-node-controller-base \
+                    --build-arg dependencies=${dependencies} .
+else
+  time docker build -t waggle-edge-processor-base:${base_date} \
+                    -f dockerfiles/waggle-edge-processor-base \
+                    --build-arg dependencies=${dependencies} .
+fi

@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+
+import getopt
+import os
+import os.path
+import re
+import sys
+import time
+import uuid
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def main(argv):
+  usage_message = ''.join(("Usage: add-build [OPTIONS]\n", \
+                          "OPTIONS\n", \
+                          "  --help                          ", \
+                          "print help screen\n", \
+                          "  -e |--element=<element>         ", \
+                          "set the node element to <element>\n", \
+                          "('Node Controller', 'nc', 'Edge Processor', 'ep')\n", \
+                          "  -a |--architecture=<cpu_architecture>   ", \
+                          "set the CPU architecture to <cpu_architecture>\n", \
+                          "  -d |--dependencies=<dependency_list>         ", \
+                          "set dependencies using <dependency_list>\n", \
+                          "(format: dep1:type1,dep2:type2,...)\n", \
+                          "  -t |--date=<date>   ", \
+                          "set the creation date to <date>\n", \
+                          "(format: YYYY-MM-DD)\n",
+                          "  -u |--uuid=<uuid>   ", \
+                          "set the base uuid to <uuid>\n"))
+  try:
+    opts, args = getopt.getopt(
+      argv, "e:a:d:t:u:",
+      ["help", "element=", "architecture=", "dependencies=", "date=", "uuid="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  element_name = None
+  architecture_name = None
+  dependency_list = None
+  date = None
+  base_uuid = None
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-e', '--element'):
+      element_name = arg
+    elif opt in ('-a', '--architecture'):
+      architecture_name = arg
+    elif opt in ('-d', '--dependencies'):
+      dependency_list = arg
+    elif opt in ('-t', '--date'):
+      date = arg
+    elif opt in ('-u', '--uuid'):
+      base_uuid = arg
+    else:
+      print("Error: unknown option '{}'".format(arg))
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  # check the date format YYYY-MM-DD
+  if date == None:
+    date = time.strftime('%Y-%m-%d')
+  else:
+    match = re.match('^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$', date)
+    if match == None:
+      print("Error: invalid date (expected YYYY-MM-DD)")
+      sys.exit(2)
+
+
+  # check the node element name or short name
+  if element_name == None:
+    print("Error: node element was not specified")
+    print("\n" + usage_message + "\n")
+    sys.exit(2)
+  if element_name.lower() == 'nc':
+    element_name = 'Node Controller'
+  elif element_name.lower() == 'ep':
+    element_name = 'Edge Processor'
+  element = build_config.get_node_element(element_name)
+  if element == None:
+    print("Error: node element '{}' does not exist".format(element_name))
+    sys.exit(6)
+
+  # check the architecture name
+  if architecture_name == None:
+    print("Error: node CPU architecture was not specified")
+    print("\n" + usage_message + "\n")
+    sys.exit(2)
+  architecture = build_config.get_cpu_architecture(architecture_name)
+  if architecture == None:
+    print("Error: CPU architecture '{}' does not exist".format(architecture_name))
+    sys.exit(6)
+
+  # parse and check the dependencies
+  dependencies = []
+  for dependency_str in dependency_list.split(','):
+    dependency_name, dependency_type_name = dependency_str.split(':')
+    dependency_type = build_config.get_dependency_type(dependency_type_name)
+    if dependency_type == None:
+      print("Error: dependency type '{}' does not exist".format(dependency_type_name))
+      sys.exit(6)
+    dependency = build_config.get_dependency(dependency_name, dependency_type.eid)
+    if dependency == None:
+      print("Error: dependency with name '{}' and type '{}' does not exist".format(
+        dependency_name, dependency_type['name']))
+      sys.exit(6)
+    dependencies.append(dependency)
+  dependency_ids = [dep.eid for dep in dependencies]
+
+  # create new uuid if one was not specified
+  if base_uuid == None:
+    base_uuid = str(uuid.uuid4())
+
+  base_id = build_config.add_base(base_uuid, date, dependency_ids, element.eid, architecture.eid)
+  entry = build_config.get_base(eid=base_id)
+  print('{} {} ({}) {} - {}:'.format(
+    entry.eid, build_config.get_node_element(eid=entry['node_element'])['name'],
+    build_config.get_cpu_architecture(eid=entry['cpu_architecture'])['name'], entry['date'],
+    entry['uuid']))
+  for dependency_id in entry['dependencies']:
+    dependency = build_config.get_dependency(eid=dependency_id)
+    print('  {} {} ({})'.format(
+     dependency_id, dependency['name'],
+       build_config.get_dependency_type(eid=dependency['type'])['name']))
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

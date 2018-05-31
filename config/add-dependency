@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+import copy
+import getopt
+import os
+import os.path
+import subprocess
+import sys
+import time
+import tinydb
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def main(argv):
+  usage_message = ''.join(("Usage: add-dependency <name> <type>\n"
+                           "       add-dependency --help       \n"
+                           "OPTIONS\n", \
+                           "  --help                          ", \
+                           "print help screen\n"))
+  try:
+    opts, args = getopt.gnu_getopt(argv, "", ["help"])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  for opt, arg in opts:
+    print((opt, arg))
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  if len(argv) != 2:
+    print("Error: invalid number of arguments")
+    print("\n" + usage_message + "\n")
+    sys.exit(3)
+
+  dependency_name = argv[0]
+  dependency_type_name = argv[1]
+
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  dependency_type = build_config.get_dependency_type(dependency_type_name) 
+  if dependency_type == None:
+    print("Error: unknown dependency type name '{}'".format(dependency_type_name))
+    sys.exit(4)
+
+  dependency_id = build_config.add_dependency(dependency_name, dependency_type.eid)
+  if dependency_id == None:
+    print("Error: dependency exists with name '{}' and type '{}'".format(
+      dependency_name, dependency_type_name))
+    sys.exit(5)
+
+  entry = build_config.get_dependency(eid=dependency_id)
+  print('{} {} ({})'.format(
+    entry.eid, entry['name'], build_config.get_dependency_type(eid=entry['type'])['name']))
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

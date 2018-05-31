@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import sys
+import tinydb
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  for entry in build_config.get_beehive_hosts():
+    if len(entry['address']) > 0:
+      print('{} {}: {} ({})'.format(entry.eid, entry['name'], entry['fqdn'], entry['address']))
+    else:
+      print('{} {}: {}'.format(entry.eid, entry['name'], entry['fqdn']))
+
+if __name__ == '__main__':
+  main()

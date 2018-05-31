@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import os
+import os.path
+import sys
+import tinydb
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def main():
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  for entry in build_config.get_deployments():
+    print('{} {}:'.format(entry.eid, entry['name']))
+    shadow_entry = build_config.get_shadow_entry(eid=entry['shadow_entry'])
+    print('    Shadow Entry:     {}'.format(shadow_entry['name']))
+    print('    Sudo Enabled:     {}'.format(entry['sudo']))
+    wireless_config = build_config.get_wireless_config(eid=entry['wireless_config'])
+    print('    Wireless Config:  {}'.format(wireless_config['name']))
+    reg_key = build_config.get_registration_key(eid=entry['reg_key'])
+    print('    Registration Key: {}'.format(reg_key['name']))
+    beehive_host = build_config.get_beehive_host(eid=entry['beehive_host'])
+    print('    Beehive Host:     {}'.format(beehive_host['name']))
+    build_host = build_config.get_build_host(eid=entry['build_host'])
+    print('    Build Host:       {}'.format(build_host['name']))
+
+if __name__ == '__main__':
+  main()

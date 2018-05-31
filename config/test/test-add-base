@@ -1,0 +1,142 @@
+#!/bin/bash
+
+rm -rf temp lib
+mkdir -p temp lib/python/waggle
+cp -Rf ../../lib .
+declare -r files=("initialize-configuration-db" "add-base" "get-bases")
+for file in ${files[@]}; do
+  if [ ! -f "../$file" ]; then
+    echo "Error: file $file does not exist!"
+    exit 1
+  fi
+  cp ../$file temp
+done
+cd temp
+
+./initialize-configuration-db > /dev/null
+
+test_count=0
+pass_count=0
+
+assert_equals() {
+  local -r actual=$1
+  local -r expected=$2
+  ((test_count++))
+  if [ "$actual" == "$expected" ]; then
+    ((pass_count++))
+    echo "[0;32;1m[PASS][0;30;39m"
+  else
+    echo "[0;31;1m[FAIL][0;30;39m"
+  fi
+  echo
+}
+
+declare -r date=$(date +%Y-%m-%d)
+
+declare -r uuid_base='763abc2c-1004-4190-b363-4d1ea6c2c93'
+uuid_index=0
+
+# test adding a Node Controller base by element name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add Node Controller base by element name (success test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element='Node Controller' --architecture=armv7l --uuid=$uuid \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python3'\
+                 ',OpenCV-unknown-armv7l-dev:deb,OpenCV-unknown-armv7l-python:deb'\
+                 | grep "Node Controller (armv7l) $date - $uuid"
+assert_equals $? 0
+
+output=$(./get-bases | grep -A 6 $uuid)
+search_strings=("wvdial:(apt)" "curl:(apt)" "crcmod:(python2)" "pyserial:(python2)"\
+                "crcmod:(python3)" "pynmea2:(python3)")
+for search_string in ${search_strings[*]}; do
+  echo "[0;33;1m[TEST][0;30;39m check for ${search_string/:/ } in add-base output (success test)"
+  echo $output | grep -o "${search_string/:/ }"
+  assert_equals $? 0
+done
+
+# test adding a Node Controller base by element short name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add Node Controller base by element short name (success test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element=nc --arch=x86_64 --uuid=$uuid \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python3'\
+                 ',OpenCV-unknown-armv7l-dev:deb,OpenCV-unknown-armv7l-python:deb'\
+                 | grep "Node Controller (x86_64) $date - $uuid"
+assert_equals $? 0
+
+output=$(./get-bases | grep -A 6 $uuid)
+for search_string in ${search_strings[*]}; do
+  echo "[0;33;1m[TEST][0;30;39m check for ${search_string/:/ } in add-base output (success test)"
+  echo $output | grep -o "${search_string/:/ }"
+  assert_equals $? 0
+done
+
+# test adding a Edge Processor base by element name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add Node Controller base by element name (success test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element='Edge Processor' --arch=armv7l --uuid=$uuid \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python3'\
+                 ',OpenCV-unknown-armv7l-dev:deb,OpenCV-unknown-armv7l-python:deb'\
+                 | grep "Edge Processor (armv7l) $date - $uuid"
+assert_equals $? 0
+
+output=$(./get-bases | grep -A 6 $uuid)
+for search_string in ${search_strings[*]}; do
+  echo "[0;33;1m[TEST][0;30;39m check for ${search_string/:/ } in add-base output (success test)"
+  echo $output | grep -o "${search_string/:/ }"
+  assert_equals $? 0
+done
+
+# test adding a Node Controller base by element short name [expect success]
+echo "[0;33;1m[TEST][0;30;39m add Node Controller base by element short name (success test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element=ep --arch=x86_64 --uuid=$uuid \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python3'\
+                 ',OpenCV-unknown-armv7l-dev:deb,OpenCV-unknown-armv7l-python:deb'\
+                 | grep "Edge Processor (x86_64) $date - $uuid"
+assert_equals $? 0
+
+output=$(./get-bases | grep -A 6 $uuid)
+for search_string in ${search_strings[*]}; do
+  echo "[0;33;1m[TEST][0;30;39m check for ${search_string/:/ } in add-base output (success test)"
+  echo $output | grep -o "${search_string/:/ }"
+  assert_equals $? 0
+done
+
+# test adding a base using a bogus element name [expect failure]
+echo "[0;33;1m[TEST][0;30;39m add base with bogus element name (failure test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element='Bogus Element' --arch=armb7l --uuid=$uuid \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python3'\
+                 ',OpenCV-unknown-armv7l-dev:deb,OpenCV-unknown-armv7l-python:deb'\
+                 | grep "Error: node element 'Bogus Element' does not exist"
+assert_equals $? 0
+
+# test adding a base using a bogus dependency type name [expect failure]
+echo "[0;33;1m[TEST][0;30;39m add Node Controller base by element name (success test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element='Node Controller' --architecture=armv7l --uuid=$uuid \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python4'\
+                 | grep "Error: dependency type 'python4' does not exist"
+assert_equals $? 0
+
+# test adding a Node Controller base without a uuid [expect success]
+echo "[0;33;1m[TEST][0;30;39m add Node Controller base without uuid (success test)"
+uuid=${uuid_base}${uuid_index}
+((uuid_index++))
+./add-base --element='Node Controller' --architecture=armv7l \
+  --dependencies='wvdial:apt,curl:apt,crcmod:python2,pyserial:python2,crcmod:python3,pynmea2:python3'\
+                 ',OpenCV-unknown-armv7l-dev:deb,OpenCV-unknown-armv7l-python:deb'\
+                 | grep "Node Controller (armv7l) $date"
+assert_equals $? 0
+
+
+echo "${pass_count} out of ${test_count} tests passed"
+
+cd ..
+rm -rf temp lib

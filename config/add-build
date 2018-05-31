@@ -1,0 +1,267 @@
+#!/usr/bin/env python3
+
+import copy
+import getopt
+import os
+import os.path
+import re
+import subprocess
+import sys
+import time
+
+config_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)))
+import waggle.build as build
+
+def get_commits(branch):
+  # get the latest repo commit keys
+  repos = ['waggle_image', 'core', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  commits = {}
+  for repo in repos:
+    if branch == None:
+      cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | head -1".format(repo)
+    else:
+      cmd = "git ls-remote https://github.com/waggle-sensor/{}.git | grep -w {} | tail -n 1".format(repo, branch)
+    commits[repo.rstrip()+'_commit'] \
+      = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0].decode()[:7]
+  return commits
+
+def main(argv):
+  usage_message = "Usage: add-build [OPTIONS]\n"\
+                  "OPTIONS\n"\
+                  "  --help                          "\
+                  "print help screen\n"\
+                  "  -v |--version=<version>         "\
+                  "set the build version to <version>\n"\
+                  "  -r |--revision=<revision>       "\
+                  "set the build revision to <revision>\n"\
+                  "  -a |--architecture=<architecture>   "\
+                  "set the CPU architecture to <architecture>\n"\
+                  "  -n |--nc-base=<base_id>         "\
+                  "set the Node Controller base ID to <base_id>\n"\
+                  "  -e |--ep-base=<base_id>         "\
+                  "set the Edge Processor base ID to <base_id>\n"\
+                  "  -t |--date=<base_id>            "\
+                  "set the date to <date>\n"\
+                  "  -b |--branch=<branch>            "\
+                  "get commit IDs for the specified branch\n"\
+                  ""
+  try:
+    opts, args = getopt.getopt(
+      argv, "v:r:d:a:n:e:t:b:",
+      ["help", "version=", "revision=", "architecture=", "nc-base=", "ep-base=", "date=", "branch="])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  version = None
+  revision = None
+  architecture_name = None
+  nc_base_id = None
+  ep_base_id = None
+  date = None
+  branch = None
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-v', '--version'):
+      version = arg
+    elif opt in ('-r', '--revision'):
+      revision = int(arg)
+    elif opt in ('-a', '--architecture'):
+      architecture_name = arg
+    elif opt in ('-n', '--nc-base'):
+      nc_base_id = int(arg)
+    elif opt in ('-e', '--ep-base'):
+      ep_base_id = int(arg)
+    elif opt in ('-t', '--date'):
+      date = arg
+    elif opt in ('-b', '--branch'):
+      branch = arg
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+
+  build_config = build.Configuration(os.path.join(script_dir, 'build_config.json'))
+
+  architecture = None
+  if architecture_name != None:
+    architecture = build_config.get_cpu_architecture(architecture_name)
+    if architecture == None:
+      print("Error: CPU architecture '{}' does not exist".format(architecture_name))
+      sys.exit(6)
+
+  if nc_base_id == None:
+    nc_base_id = 1
+
+  if ep_base_id == None:
+    ep_base_id = 3
+
+  if date == None:
+    date = time.strftime('%Y-%m-%d')
+  else:
+    match = re.match('^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$', date)
+    if match == None:
+      print("Error: invalid date (expected YYYY-MM-DD)")
+      sys.exit(2)
+
+  builds = build_config.get_builds()
+  sorted_builds = sorted(builds,
+    key=lambda bld: ''.join((bld['published_version'], str(bld['revision']))))
+
+  new_build = None
+  if version == None:
+    if revision != None:
+      print("Error: revision specified without a version")
+      sys.exit(5)
+    new_build = dict(sorted_builds[-1])
+    version = new_build['published_version']
+
+  # update version, revision, and base IDs
+  # print('CHECKPOINT 10')
+  # version specified
+  # either create a new build version or create a new architecture build for an existing version
+  available_revisions = [bld for bld in builds if bld['published_version'] == version]
+  if len(available_revisions) > 0:
+    # print('CHECKPOINT 20')
+    # version exists
+    # assuming a request of a new revision or architecture for an existing revision
+    if revision != None:
+      # print('CHECKPOINT 30')
+      # revision specified
+      # assuming a request for a new architecture
+      revision_matches = [bld for bld in available_revisions if bld['revision'] == revision]
+      if len(revision_matches) == 0:
+        print("Error: revision '{}' is unavailable".format(revision))
+        sys.exit(1)
+      else:
+        # print('CHECKPOINT 33')
+        # revision exists
+        # default or specified architecture must *not* exist to continue...
+        if architecture == None:
+          architecture = build_config.get_cpu_architecture(eid=1)
+        conflicts \
+          = [bld for bld in revision_matches if bld['cpu_architecture'] == architecture.eid]
+        if len(conflicts) == 0:
+          # print('CHECKPOINT 36')
+          # default or specified architecture does not exist
+          # new architecture build can be allocated
+          new_build = dict(revision_matches[0])
+          commits = get_commits(branch)
+          for key in commits.keys():
+            new_build[key] = commits[key]
+          new_build['cpu_architecture'] = architecture.eid
+          new_build['nc_base'] = nc_base_id
+          new_build['ep_base'] = ep_base_id
+        else:
+          print("Error: build with version '{}', revision '{}', and "\
+                "architecture '{}' already exists".format(
+                  version, revision, architecture['name']))
+          sys.exit(2)
+    else:
+      # print('CHECKPOINT 40')
+      # no revision specified
+      # assuming a request for a new revision, or architecture
+
+      # get one of the builds of the most recent revision
+      sorted_revisions = sorted(available_revisions, key=lambda bld: str(bld['revision']))
+      new_build = dict(sorted_revisions[-1])
+
+      # get default architecture as needed
+      if architecture == None:
+        architecture = build_config.get_cpu_architecture(eid=1)
+      # print((nc_base_id, ep_base_id))
+
+      commits = get_commits(branch)
+
+      # set new commit IDs if the latest commit IDs differ from those of the current revision
+      increment_revision = False
+      for key in commits.keys():
+        if new_build[key] != commits[key]:
+          increment_revision = True
+          new_build[key] = commits[key]
+
+      if increment_revision:
+        # print('CHECKPOINT 43')
+        # commit IDs differ
+        # increment the revision and set new commit IDs
+        new_build['revision'] += 1
+        new_build['cpu_architecture'] = architecture.eid
+        new_build['nc_base'] = nc_base_id
+        new_build['ep_base'] = ep_base_id
+      else:
+        # print('CHECKPOINT 46')
+        # commit IDs are the same
+        # add another build of the same revision if the default or specified
+        #   architecture does not conflict
+        revision = new_build['revision']
+
+        # make sure there are no architectures conflicts
+        conflicts \
+          = [bld for bld in available_revisions if bld['cpu_architecture'] == architecture.eid]
+        if len(conflicts) > 0:
+          print("Error: build with version '{}', revision '{}', and "\
+                "architecture '{}' already exists".format(
+                  version, revision, architecture['name']))
+          sys.exit(7)
+        new_build['cpu_architecture'] = architecture.eid
+        new_build['nc_base'] = nc_base_id
+        new_build['ep_base'] = ep_base_id
+  else:
+    # print('CHECKPOINT 50')
+    # version does not exist
+    # create a new version as specified
+    if revision != None:
+      print("Error: revision specified for new version")
+      sys.exit(4)
+    revision = 0
+    if architecture == None:
+      architecture = build_config.get_cpu_architecture(eid=1)
+    if nc_base_id == None:
+      nc_base_id = 1
+    if ep_base_id == None:
+      ep_base_id = 3
+    # TODO: CHECK SORTED BUILDS!!!
+    new_build = dict(sorted_builds[-1])
+    new_build['published_version'] = version
+    new_build['revision'] = revision
+    new_build['cpu_architecture'] = architecture.eid
+    new_build['nc_base'] = nc_base_id
+    new_build['ep_base'] = ep_base_id
+
+  if new_build == None:
+    print("Error: logic error (new_build == None)")
+    sys.exit(99)
+
+  # set the date
+  new_build['date'] = date
+
+  # add
+  # print(new_build)
+  eid = build_config.add_build(build=new_build)
+  # print('eid: {}'.format(eid))
+  new_build = build_config.get_build(eid=eid)
+  # print(new_build)
+  print('{} {} ({}) {} {}:'.format(
+    new_build.eid, new_build['published_version'], new_build['revision'],
+    architecture['name'], new_build['date']))
+  print('  Bases:')
+  base_ids = [new_build['nc_base'], new_build['ep_base']]
+  for base_id in base_ids:
+    base = build_config.get_base(eid=base_id)
+    print('    {} {} ({}) {} - {}:'.format(
+      base.eid, build_config.get_node_element(eid=base['node_element'])['name'],
+      build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name'], base['date'],
+      base['uuid']))
+  print('  Commit IDs:')
+  repos = ['waggle_image  ', 'core          ', 'nodecontroller', 'edge_processor', 'plugin_manager']
+  for repo in repos:
+    print('    {} {}'.format(repo, new_build[repo.rstrip()+'_commit']))
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

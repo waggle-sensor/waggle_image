@@ -1,12 +1,15 @@
 FROM ubuntu:16.04
 
+ARG dependencies
+
 ADD . /usr/lib/waggle/waggle_image/
 WORKDIR /usr/lib/waggle/waggle_image/
 
-RUN apt-get update
-RUN apt-get install -y git wget locales tzdata ssh sudo psmisc
+ADD https://www.rabbitmq.com/rabbitmq-release-signing-key.asc /root/rabbitmq-release-signing-key.asc
+# RUN apt-get update
+# RUN apt-get install -y git wget locales tzdata ssh sudo psmisc
 
 ENV ODROID_MODEL=ODROIDC
-RUN ./scripts/install_dependencies.sh
+RUN ./scripts/install_dependencies.sh $dependencies
 
 RUN cd /usr/lib/waggle && rm -rf waggle_image

@@ -1,15 +1,15 @@
-FROM waggle-node-controller-base:0.3
+ARG base_version
 
-ARG branch=master
+FROM waggle-node-controller-base:$base_version
+
 ARG server_host=beehive1.mcs.anl.gov
+ARG repositories
 
 ADD . /usr/lib/waggle/waggle_image/
 WORKDIR /usr/lib/waggle/waggle_image/
 
-# RUN apt install -y tzdata ssh sudo psmisc
-
 ENV ODROID_MODEL=ODROIDC
 ENV NODE_ID_PREFIX=0d0c
-RUN ./scripts/install_waggle.sh $branch $server_host
+RUN ./scripts/install_waggle.sh $server_host $repositories
 
 RUN cd /usr/lib/waggle && rm -rf waggle_image

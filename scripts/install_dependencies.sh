@@ -1,74 +1,95 @@
 #!/bin/bash
 
-set -e
+set +e
 
-# Detect the Odroid model. This yields either ODROIDC or ODROID-XU3.
-if [ "x${ODROID_MODEL}" == "x" ]; then
-  declare -r odroid_model=$(cat /proc/cpuinfo | grep Hardware | grep -o "[^ ]*$")
-else
-  declare -r odroid_model=${ODROID_MODEL}
-fi
+# command-line options
+declare -r dependencies_string=$1
+
+# Parse dependency string
+apt_packages=()
+python2_packages=()
+python3_packages=()
+deb_packages=()
+dependency_strings=(${dependencies_string//,/ })
+for dependency_string in ${dependency_strings[*]}; do
+  dependency_tuple=(${dependency_string//:/ })
+  dependency=${dependency_tuple[0]}
+  dependency_type=${dependency_tuple[1]}
+  if [ "$dependency_type" == "apt" ]; then
+    apt_packages="${apt_packages} $dependency"
+  elif [ "$dependency_type" == "python2" ]; then
+    python2_packages="${python2_packages} $dependency"
+  elif [ "$dependency_type" == "python3" ]; then
+    python3_packages="${python3_packages} $dependency"
+  elif [ "$dependency_type" == "deb" ]; then
+    deb_packages="${deb_packages} $dependency"
+  fi
+done
+
+echo "APT packages: ${apt_packages[*]}"
+echo "Python 2 packages: ${python2_packages[*]}"
+echo "Python 3 packages: ${python3_packages[*]}"
+echo "Debian packages: ${deb_packages[*]}"
+
+declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 export LC_ALL=C
 
-echo 'deb http://www.rabbitmq.com/debian/ testing main' | tee /etc/apt/sources.list.d/rabbitmq.list
-wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add -
+echo ${apt_packages[*]} | grep rabbitmq
+if [ $? -eq 0 ]; then
+  echo 'deb http://www.rabbitmq.com/debian/ testing main' | tee /etc/apt/sources.list.d/rabbitmq.list
+  if [ -e /root/rabbitmq-release-signing-key.asc ]; then
+    apt-key add /root/rabbitmq-release-signing-key.asc
+  else
+    wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add -
+  fi
+fi
+
+set -e
 
 apt-get update
 apt-key update
 
-# Define Ubuntu package dependencies
-declare -r base_apt_packages=("htop" "iotop" "iftop" "bwm-ng" "screen" "git" "python-dev" "python-pip"
-                              "python3-dev" "python3-pip" "dosfstools" "parted" "bash-completion"
-                              "v4l-utils" "network-manager" "usbutils" "nano" "stress-ng" "rabbitmq-server"
-                              "python-psutil" "python3-psutil")
-declare -r nc_apt_packages=(" wvdial" "autossh" "bossa-cli" "curl" "python3-zmq")
-declare -r ep_apt_packages=(" fswebcam" "alsa-utils" "portaudio19-dev")
-
-
-# Define Python 2 package dependencies
-declare -r base_python2_packages=("tabulate" "pika")
-declare -r nc_python2_packages=(" crcmod" "pyserial")
-declare -r ep_python2_packages=""
-
-# Define Python 3 package dependencies
-declare -r base_python3_packages=("tabulate" "pika")
-declare -r nc_python3_packages=(" crcmod" "pyserial" "netifaces" "pyzmq" "pyinotify" "pynmea2")
-declare -r ep_python3_packages=(" pyaudio")
-
-# Assemble dependencies for the particular Odroid on which this is running.
-apt_packages=${base_apt_packages[@]}
-python2_packages=${base_python2_packages[@]}
-python3_packages=${base_python3_packages[@]}
-if [ "${odroid_model}" == "ODROIDC" ]; then
-  apt_packages+=${nc_apt_packages[@]}
-  python2_packages+=${nc_python2_packages[@]}
-  python3_packages+=${nc_python3_packages[@]}
-elif [ "${odroid_model}" == "ODROID-XU3" ]; then
-  apt_packages+=${ep_apt_packages[@]}
-  python2_packages+=${ep_python2_packages[@]}
-  python3_packages+=${ep_python3_packages[@]}
-elif [ "x${odroid_model}" == "x" ]; then
-  echo "Error: no Odroid model detected. This script must be run on an Odroid C1+ or XU4."
-  exit 1
-else
-  echo "Error: unrecognized Odroid model '${odroid_model}'."
-  exit 2
-fi
 
 
 # Install Ubuntu package dependencies.
-echo "Installing the following Ubuntu packages: ${apt_packages}"
-apt-get install -y ${apt_packages[@]}
+if [ "x" == "x${apt_packages[*]}" ]; then
+  echo "No APT packages specified. Skipping apt operation."
+else
+  echo "Installing the following Ubuntu packages: ${apt_packages[@]}"
+  apt install -y ${apt_packages[@]}
+fi
  
 
 # Install Python 2 package dependencies.
-echo "Installing the following Python 2 packages: ${python2_packages}"
-pip install --upgrade pip
-pip install ${python2_packages[@]}
+if [ "x" == "x${python2_packages[*]}" ]; then
+  echo "No Python 2 packages specified. Skipping pip operation."
+else
+  echo "Installing the following Python 2 packages: ${python2_packages[@]}"
+  pip install --upgrade pip==9.0.3
+  pip install ${python2_packages[@]}
+fi
 
 
 # Install Python 3 package dependencies.
-echo "Installing the following Python 3 packages: ${python3_packages}"
-pip3 install --upgrade pip
-pip3 install ${python3_packages[@]}
+if [ "x" == "x${python3_packages[*]}" ]; then
+  echo "No Python 3 packages specified. Skipping pip3 operation."
+else
+  echo "Installing the following Python 3 packages: ${python3_packages[@]}"
+  pip3 install --upgrade pip==9.0.3
+  cd ${script_dir}/../var/cache/pip3/archives
+  pip3 install ${python3_packages[@]}
+fi
+
+# Install Debian package dependencies.
+if [ "x" == "x${deb_packages[*]}" ]; then
+  echo "No Debian packages specified. Skipping dpkg operation."
+else
+  echo "Installing the following Debian packages: ${deb_packages[@]}"
+  cd ${script_dir}/../var/cache/apt/archives
+  dpkg -i ${deb_packages[@]}
+fi
+
+apt update
+apt install -f
+apt autoremove

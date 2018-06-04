@@ -1,3 +1,9 @@
+<!--
+waggle_topic=IGNORE
+-->
+
+# Raw Image Preparation
+
 The raw Ubuntu minimal image available from [hardkernel] (https://odroid.in/ubuntu_16.04lts/) is a raw disk image with the rootfs 
 set to about 1.5GB ext partition. This image when used as the starting point for waggle-base image building will fail as the process 
 will run out of space in the raw image for installing packages. It is hence required that the root partition of the raw image be 

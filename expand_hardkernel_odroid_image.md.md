@@ -9,14 +9,7 @@ set to about 1.5GB ext partition. This image when used as the starting point for
 will run out of space in the raw image for installing packages. It is hence required that the root partition of the raw image be 
 extended to 2.1 GB (at the time of this writing, may be further more as we add more packages). The process for it under Linux is 
 described using an example XU4 image here- 
-
-### Download raw image: 
-
-```
-$wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz
-$wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz.md5sum
-```
-Check md5sum, and if it check out, 
+ 
 ### unzip image:
 
 ```

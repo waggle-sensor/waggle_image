@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cleanup() {
+  umount /mnt
+  losetup -d $device
+}
+
+trap cleanup EXIT
+
+image=$1
+shift
+
+device=$(losetup -f -P --show $image)
+mount "$device"p2 /mnt
+systemd-nspawn -q -D /mnt --bind-ro=/etc/resolv.conf:/etc/resolv.conf $*

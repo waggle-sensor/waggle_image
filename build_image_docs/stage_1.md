@@ -52,20 +52,20 @@ gparted /dev/loop3
 This would open a gui window, where you drag the occupied space to occupy the *grey* unallocated space. Once the 
 unallocated space has been occupied, the gparted window can be closed.
 
-#### 5.2 Command line Method
+#### 5.2 Command line Method-
 ```bash
 sudo parted --script /dev/loop3 resizepart 2 100%
 sudo e2fsck -f /dev/loop3p2
 sudo resize2fs /dev/loop3p2
 ```
 
-#### 7. Unmount the loop devices
+#### 7. Unmount the loop devices-
 
 ```bash
 sudo losetup -d /dev/loop3
 ```
 
-#### 8. Now, check whether the image has the new extended partition.
+#### 8. Now, check whether the image has the new extended partition-
 
 ```bash
 fdisk -l stage1_c1+.img
@@ -77,4 +77,29 @@ It should list two image under the *device* column.
 
 ```bash
 xz -1 stage1_c1+.img
+```
+
+### Script:
+Steps 3 to 9 are coded in the script below for easy image creation:
+
+```bash
+#!/bin/bash
+set -e
+image_file="stage1_c1+.img"
+dd if=/dev/zero bs=1M count=700 >> $image_file
+available_device=$(losetup -f)
+sudo losetup $available_device $image_file
+losetup -l | grep "$image_file\|SIZELIMIT"
+sudo parted --script $available_device resizepart 2 100%
+sudo e2fsck -f $available_device"p2"
+sudo resize2fs $available_device"p2"
+sudo losetup -d  $available_device
+if [ `fdisk -l $image_file | awk '{print $1}' | grep "stage1" | wc -l` -eq 2 ];then
+    echo "Success, now compressing image"
+    rm -rf $image_file".xz"
+    xz -1 $image_file
+    echo "Stage 1 image successfully created."
+else 
+    echo "Unsuccessful in creating Stage 1 image. Retry manually to check for errors."
+fi
 ```

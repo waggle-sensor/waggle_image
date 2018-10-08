@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set +e
-
 # command-line options
 declare -r dependencies_string=$1
 
@@ -50,38 +49,12 @@ set -e
 apt-get update
 apt-key update
 
-
-
-
 # Install Ubuntu package dependencies.
 if [ "x" == "x${apt_packages[*]}" ]; then
   echo "No APT packages specified. Skipping apt operation."
 else
   echo "Installing the following Ubuntu packages: ${apt_packages[@]}"
   apt install -y ${apt_packages[@]}
-fi
- 
-
-# Install Python 2 package dependencies.
-if [ "x" == "x${python2_packages[*]}" ]; then
-  echo "No Python 2 packages specified. Skipping pip operation."
-else
-  echo "Installing the following Python 2 packages: ${python2_packages[@]}"
-  #pip install --upgrade pip==9.0.3
-  pip install --upgrade pip
-  pip install ${python2_packages[@]}
-fi
-
-
-# Install Python 3 package dependencies.
-if [ "x" == "x${python3_packages[*]}" ]; then
-  echo "No Python 3 packages specified. Skipping pip3 operation."
-else
-  echo "Installing the following Python 3 packages: ${python3_packages[@]}"
-  #pip3 install --upgrade pip==9.0.3
-  pip3 install --upgrade pip
-  cd ${script_dir}/../var/cache/pip3/archives
-  pip3 install ${python3_packages[@]}
 fi
 
 # Install Debian package dependencies.
@@ -93,6 +66,31 @@ else
   dpkg -i ${deb_packages[@]}
 fi
 
-apt update
-apt install -f
-apt autoremove
+
+apt-get update
+apt-get install -f
+apt-get autoremove
+apt-get clean
+apt-get autoclean
+
+# Install Python 2 package dependencies.
+if [ "x" == "x${python2_packages[*]}" ]; then
+  echo "No Python 2 packages specified. Skipping pip operation."
+else
+  echo "Installing the following Python 2 packages: ${python2_packages[@]}"
+  pip --no-cache-dir install --upgrade pip==9.0.3
+  pip --no-cache-dir install ${python2_packages[@]}
+fi
+
+# Install Python 3 package dependencies.
+if [ "x" == "x${python3_packages[*]}" ]; then
+  echo "No Python 3 packages specified. Skipping pip3 operation."
+else
+  echo "Installing the following Python 3 packages: ${python3_packages[@]}"
+  pip3 --no-cache-dir install --upgrade pip==9.0.3
+  cd ${script_dir}/../var/cache/pip3/archives
+  pip3 --no-cache-dir install ${python3_packages[@]}
+fi
+
+
+

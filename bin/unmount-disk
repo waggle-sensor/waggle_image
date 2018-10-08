@@ -1,0 +1,19 @@
+#!/bin/bash
+
+unmount() {
+  local mountpoint=$(echo $1 | sed 's:/$::g')
+  local exit_code
+  for directory in "/dev" "/proc" "/run" "/sys"; do
+    mount | grep ${mountpoint}${directory}
+    exit_code=$?
+    while [ ${exit_code} -eq 0 ]; do
+      umount -d ${mountpoint}${directory}
+      sleep 3
+      mount | grep ${mountpoint}${directory}
+      exit_code=$?
+    done
+  done
+  umount ${mountpoint}
+}
+
+unmount $1

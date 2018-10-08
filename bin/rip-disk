@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# By default 1) install the registration key, 2) install Edge Processor key, 3) install the wvdial.conf with the AoT APN,
+# 4) disable sudo, and 5) set the AoT root password.
+#
+# Disable any of these actions except 1 and 2 with approprite options
+
+
+if [ $# -ne 2 ]; then
+  echo "Error: incorrect number of arguments"
+  echo "Usage: rip-disk <device> <img file>"
+fi
+
+declare -r DISK_DEVICE=$1
+declare -r FILE_OUT=$2
+
+sector_count=$(fdisk -lu ${DISK_DEVICE} | grep "${DISK_DEVICE}2" | awk '{print $3}')
+((sector_count+=1))
+size=$(expr ${sector_count} \* 512 / 1024 / 1024)
+
+dd if=${DISK_DEVICE} of=${FILE_OUT} bs=1M count=${size} status=progress

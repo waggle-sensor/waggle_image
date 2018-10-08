@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+
+import getopt
+import glob
+import os
+import os.path
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
+#print("### Run directory for build_image.py: %s" % waggle_image_directory)
+sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
+from waggle.build import *
+
+debug=0 # skip chroot environment if 1
+
+
+def get_waggle_image_filename(build_directory, odroid_model, branch):
+  is_edge_processor = 0 # will be set automatically to 1 if an odroid-xu3 is detected !
+
+
+  if odroid_model == "odroid-xu3":
+      is_edge_processor = 1
+      create_b_image = 1
+
+
+  # date_today=get_output('date +"%Y%m%d"').rstrip().decode()
+
+  if is_edge_processor:
+      image_type = "edge_processor"
+  else:
+      image_type = "nodecontroller"
+
+  print("image_type: ", image_type)
+
+  waggle_image_prefix = "waggle-{0}-{1}-".format(image_type, odroid_model)
+  waggle_image_suffix = ".img"
+  if len(branch) > 0:
+    waggle_image_suffix = "-{}.img".format(branch)
+  glob_pattern = "{0}/{1}*{2}".format(build_directory,
+                                      waggle_image_prefix,
+                                      waggle_image_suffix)
+  waggle_image_filenames = sorted(glob.glob(glob_pattern), reverse=True)
+  if len(waggle_image_filenames) == 0:
+    print("Error: no image files found matching the pattern {}".format(
+      glob_pattern))
+    return None
+  return waggle_image_filenames[0]
+
+def burn_image(waggle_image, target_device):
+  run_command('dd if={0} of={1} bs=500M status=progress'.format(waggle_image, target_device))
+
+def bless_image(target_device):
+  tmp_dir = tempfile.mkdtemp()
+  if 'mmc' in target_device:
+    # upgrading a node, so clone the system config
+    run_command('mount {0}p2 {1}'.format(target_device, tmp_dir))
+    run_command('{0}/bless-image --clone {1}'.format(waggle_image_directory, tmp_dir))
+  else:
+    # creating a master image, so configure using the private_config repo
+    run_command('mount {0}2 {1}'.format(target_device, tmp_dir))
+    run_command('{0}/bless-image {1}'.format(waggle_image_directory, tmp_dir))
+  run_command('umount {0}'.format(tmp_dir))
+  shutil.rmtree(tmp_dir)
+
+def main(argv):
+  # Commannd Line Arguments:
+  #   -b <branch>|--branch=<branch>           - build the image using branch <branch> instead of master
+  #   -d <build_dir>|--build-dir=<build_dir>  - specify the directory in which the image is built
+  usage_message = "Warning: this script has not been updated to take advantage of the build configuration database.\n\n"\
+    "Usage: write-waggle-image  [--help] [-b <branch>|--branch=<branch>] [-d <build_dir>|--build-dir=<build_dir>] [-t <target_dev>|--target=<target_dev>] [-s|--bless]"
+  try:
+    opts, args = getopt.getopt(argv, "b:d:t:s", ["help", "branch=", "build-dir=", "target=", "bless"])
+  except getopt.GetoptError as ge:
+    print("\nError:", str(ge))
+    print(usage_message + "\n")
+    sys.exit(1)
+
+  branch = ''
+  build_directory = '/root'
+  target_device=None
+  bless = False
+  for opt, arg in opts:
+    if opt == '--help':
+      print("\n" + usage_message + "\n")
+      sys.exit(0)
+    elif opt in ('-b', '--branch'):
+      branch = arg
+    elif opt in ('-d', '--build-dir'):
+      build_directory = arg
+    elif opt in ('-t', '--target'):
+      target_device = arg
+    elif opt in ('-s', '--bless'):
+      if target_device == None:
+        print("Error: blessing requested but target device was not specified (use --target=<target_dev>)")
+        sys.exit(3)
+      bless = True
+    else:
+      print("\n" + usage_message + "\n")
+      sys.exit(2)
+
+  if target_device == None:
+        print("Error: target device was not specified (use --target=<target_dev>)")
+        sys.exit(4)
+
+  odroid_model = detect_odroid_model()
+
+  if not odroid_model:
+    sys.exit(1)
+
+  waggle_image = get_waggle_image_filename(build_directory, odroid_model, branch)
+  if waggle_image == None:
+    sys.exit(5)
+
+  os.chdir(build_directory)
+
+  burn_image(waggle_image, target_device)
+
+  if bless == True:
+    bless_image(target_device)
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

@@ -1,0 +1,163 @@
+{"Registration Key":
+{"2":
+{"name": "Development", "file": "id_rsa_waggle_dev_registration"}, "1":
+{"name": "None", "file": ""}, "3":
+{"name": "AoT", "file": "id_rsa_waggle_aot_registration"}}, "Waggle":
+{}, "Dependency Type":
+{"2":
+{"name": "python2"}, "4":
+{"name": "deb"}, "1":
+{"name": "apt"}, "3":
+{"name": "python3"}}, "Build Host":
+{"2":
+{"name": "Local", "fqdn": "localhost", "address": "127.0.0.1"}, "1":
+{"name": "None", "fqdn": "", "address": ""}, "3":
+{"name": "Development", "fqdn": "beehive-dev", "address": "10.10.10.5"}}, "Wireless Config":
+{"2":
+{"name": "AoT", "repo": "private_config"}, "1":
+{"name": "Default", "repo": "nodecontroller"}}, "Dependency":
+{"38":
+{"type": 1, "name": "libavutil-ffmpeg54"}, "85":
+{"type": 1, "name": "libv4l-dev"}, "3":
+{"type": 1, "name": "iftop"}, "69":
+{"type": 4, "name": "OpenCV-3.2.0-armv7l-main.deb"}, "42":
+{"type": 1, "name": "libglib2.0-0"}, "60":
+{"type": 3, "name": "pyserial"}, "17":
+{"type": 1, "name": "nano"}, "79":
+{"type": 3, "name": "piexif"}, "33":
+{"type": 1, "name": "fswebcam"}, "88":
+{"type": 3, "name": "v4l2-0.2.tar.gz"}, "65":
+{"type": 3, "name": "pyaudio"}, "68":
+{"type": 4, "name": "OpenCV-3.2.0-armv7l-libs.deb"}, "21":
+{"type": 1, "name": "python3-psutil"}, "93":
+{"type": 4, "name": "libstdc++6_8-20180424-0ubuntu1~16.04.1_armhf.deb"}, "9":
+{"type": 1, "name": "python3-dev"}, "75":
+{"type": 4, "name": "OpenCV-3.2.0-x86_64-python.deb"}, "61":
+{"type": 3, "name": "netifaces"}, "46":
+{"type": 1, "name": "libswscale-ffmpeg3"}, "48":
+{"type": 1, "name": "libhdf5-10"}, "97":
+{"type": 1, "name": "libasound-dev"}, "45":
+{"type": 1, "name": "libstdc++6"}, "4":
+{"type": 1, "name": "bwm-ng"}, "32":
+{"type": 1, "name": "python3-zmq"}, "86":
+{"type": 1, "name": "libdc1394-22"}, "40":
+{"type": 1, "name": "libcairo2"}, "92":
+{"type": 4, "name": "libgcc1_1%3a8-20180424-0ubuntu1~16.04.1_armhf.deb"}, "8":
+{"type": 1, "name": "python-pip"}, "41":
+{"type": 1, "name": "libgdk-pixbuf2.0-0"}, "99":
+{"type": 1, "name": "libportaudiocpp0"}, "59":
+{"type": 3, "name": "crcmod"}, "98":
+{"type": 1, "name": "libportaudio2"}, "14":
+{"type": 1, "name": "v4l-utils"}, "11":
+{"type": 1, "name": "dosfstools"}, "35":
+{"type": 1, "name": "portaudio19-dev"}, "80":
+{"type": 3, "name": "v4l2capture-1.5.tar.gz"}, "29":
+{"type": 1, "name": "autossh"}, "30":
+{"type": 1, "name": "bossa-cli"}, "89":
+{"type": 4, "name": "gcc-8-base_8-20180424-0ubuntu1~16.04.1_armhf.deb"}, "51":
+{"type": 2, "name": "tabulate"}, "50":
+{"type": 1, "name": "libvtk6.2"}, "94":
+{"type": 1, "name": "mali-fbdev"}, "31":
+{"type": 1, "name": "curl"}, "1":
+{"type": 1, "name": "htop"}, "13":
+{"type": 1, "name": "bash-completion"}, "63":
+{"type": 3, "name": "pyinotify"}, "22":
+{"type": 1, "name": "wget"}, "73":
+{"type": 4, "name": "OpenCV-3.2.0-x86_64-libs.deb"}, "71":
+{"type": 4, "name": "OpenCV-3.2.0-armv7l-samples.deb"}, "56":
+{"type": 3, "name": "tabulate"}, "64":
+{"type": 3, "name": "pynmea2"}, "34":
+{"type": 1, "name": "alsa-utils"}, "5":
+{"type": 1, "name": "screen"}, "28":
+{"type": 1, "name": "wvdial"}, "53":
+{"type": 2, "name": "crcmod"}, "6":
+{"type": 1, "name": "git"}, "12":
+{"type": 1, "name": "parted"}, "83":
+{"type": 4, "name": "OpenCV-3.4.1-armv7l-main.deb"}, "24":
+{"type": 1, "name": "tzdata"}, "95":
+{"type": 3, "name": "pydub"}, "27":
+{"type": 1, "name": "psmisc"}, "37":
+{"type": 1, "name": "libavformat-ffmpeg56"}, "7":
+{"type": 1, "name": "python-dev"}, "82":
+{"type": 4, "name": "OpenCV-3.4.1-armv7l-libs.deb"}, "78":
+{"type": 1, "name": "lsof"}, "57":
+{"type": 3, "name": "pika"}, "84":
+{"type": 4, "name": "OpenCV-3.4.1-armv7l-python.deb"}, "16":
+{"type": 1, "name": "usbutils"}, "96":
+{"type": 1, "name": "ffmpeg"}, "55":
+{"type": 2, "name": "numpy"}, "87":
+{"type": 1, "name": "libgtk2.0-0"}, "62":
+{"type": 3, "name": "pyzmq"}, "18":
+{"type": 1, "name": "stress-ng"}, "100":
+{"type": 3, "name": "wave"}, "25":
+{"type": 1, "name": "ssh"}, "70":
+{"type": 4, "name": "OpenCV-3.2.0-armv7l-python.deb"}, "77":
+{"type": 1, "name": "avrdude"}, "76":
+{"type": 4, "name": "OpenCV-3.2.0-x86_64-samples.deb"}, "90":
+{"type": 3, "name": "tensorflow-1.8.0-cp35-none-any.whl"}, "67":
+{"type": 4, "name": "OpenCV-3.2.0-armv7l-dev.deb"}, "36":
+{"type": 1, "name": "libavcodec-ffmpeg56"}, "52":
+{"type": 2, "name": "pika"}, "2":
+{"type": 1, "name": "iotop"}, "44":
+{"type": 1, "name": "libpng12-0"}, "15":
+{"type": 1, "name": "network-manager"}, "20":
+{"type": 1, "name": "python-psutil"}, "81":
+{"type": 4, "name": "OpenCV-3.4.1-armv7l-dev.deb"}, "66":
+{"type": 3, "name": "numpy"}, "74":
+{"type": 4, "name": "OpenCV-3.2.0-x86_64-main.deb"}, "23":
+{"type": 1, "name": "locales"}, "43":
+{"type": 1, "name": "libgtk-3-0"}, "49":
+{"type": 1, "name": "libjasper1"}, "91":
+{"type": 4, "name": "libc6_2.23-0ubuntu10_armhf.deb"}, "58":
+{"type": 3, "name": "tinydb"}, "54":
+{"type": 2, "name": "pyserial"}, "47":
+{"type": 1, "name": "zlib1g"}, "26":
+{"type": 1, "name": "sudo"}, "72":
+{"type": 4, "name": "OpenCV-3.2.0-x86_64-dev.deb"}, "19":
+{"type": 1, "name": "rabbitmq-server"}, "10":
+{"type": 1, "name": "python3-pip"}, "39":
+{"type": 1, "name": "libc6"}}, "Beehive Host":
+{"2":
+{"name": "Development", "fqdn": "beehive-dev", "address": "10.10.10.5"}, "1":
+{"name": "Default", "fqdn": "localhost", "address": "127.0.0.1"}, "3":
+{"name": "AoT", "fqdn": "beehive1.mcs.anl.gov", "address": "beehive1.mcs.anl.gov"}}, "Shadow Entry":
+{"2":
+{"name": "AoT", "file": "root_shadow"}, "1":
+{"name": "Default", "file": "waggle_shadow"}}, "Build":
+{"5":
+{"date": "2017-12-13", "plugin_manager_commit": "13af1f5", "ep_base": 6, "nc_base": 5, "edge_processor_commit": "f34c36e", "waggle_image_commit": "54982ed", "core_commit": "009a8dc", "revision": 0, "nodecontroller_commit": "80d93d6", "cpu_architecture": 1, "published_version": "2.8.1"}, "3":
+{"date": "2017-11-15", "plugin_manager_commit": "9031d0e", "ep_base": 6, "nc_base": 5, "edge_processor_commit": "6cf03fa", "waggle_image_commit": "d6f69c5", "core_commit": "50b1b2a", "revision": 0, "nodecontroller_commit": "1764428", "cpu_architecture": 1, "published_version": "2.8.0"}, "12":
+{"date": "2018-04-24", "plugin_manager_commit": "4e00a92", "ep_base": 7, "nc_base": 5, "edge_processor_commit": "70c57ef", "waggle_image_commit": "5ac0ac4", "core_commit": "f81ffb6", "revision": 1, "nodecontroller_commit": "e9e1513", "cpu_architecture": 1, "published_version": "2.9.0-rc1"}, "6":
+{"date": "2017-12-13", "plugin_manager_commit": "a516104", "ep_base": 6, "nc_base": 5, "edge_processor_commit": "187eb2b", "waggle_image_commit": "", "core_commit": "4843a11", "revision": 1, "nodecontroller_commit": "0d7f506", "cpu_architecture": 1, "published_version": "2.8.1"}, "1":
+{"date": "2017-07-22", "plugin_manager_commit": "9031d0e", "ep_base": 3, "nc_base": 1, "edge_processor_commit": "6cf03fa", "waggle_image_commit": "d6f69c5", "core_commit": "50b1b2a", "revision": 0, "nodecontroller_commit": "1764428", "cpu_architecture": 1, "published_version": "2.6.0"}, "13":
+{"date": "2018-05-29", "plugin_manager_commit": "4e00a92", "ep_base": 7, "nc_base": 5, "edge_processor_commit": "70c57ef", "waggle_image_commit": "5ac0ac4", "core_commit": "f81ffb6", "revision": 0, "nodecontroller_commit": "e9e1513", "cpu_architecture": 1, "published_version": "2.9.0"}, "14":
+{"date": "2018-05-29", "plugin_manager_commit": "1f3d2d0", "ep_base": 7, "nc_base": 5, "edge_processor_commit": "22cf407", "waggle_image_commit": "69b813e", "core_commit": "56f5410", "revision": 1, "nodecontroller_commit": "599d855", "cpu_architecture": 1, "published_version": "2.9.0"}, "2":
+{"date": "2017-07-22", "plugin_manager_commit": "9031d0e", "ep_base": 4, "nc_base": 2, "edge_processor_commit": "6cf03fa", "waggle_image_commit": "d6f69c5", "core_commit": "50b1b2a", "revision": 0, "nodecontroller_commit": "1764428", "cpu_architecture": 2, "published_version": "2.6.0"}, "11":
+{"date": "2018-04-24", "plugin_manager_commit": "95111c1", "ep_base": 7, "nc_base": 5, "edge_processor_commit": "51b8b19", "waggle_image_commit": "5ac0ac4", "core_commit": "3e6c43e", "revision": 0, "nodecontroller_commit": "4de1cf9", "cpu_architecture": 1, "published_version": "2.9.0-rc1"}, "10":
+{"date": "2018-04-16", "plugin_manager_commit": "95111c1", "ep_base": 7, "nc_base": 5, "edge_processor_commit": "51b8b19", "waggle_image_commit": "5ac0ac4", "core_commit": "3e6c43e", "revision": 1, "nodecontroller_commit": "4de1cf9", "cpu_architecture": 1, "published_version": "2.9.0-rc"}, "8":
+{"date": "2017-12-14", "plugin_manager_commit": "1dec008", "ep_base": 6, "nc_base": 5, "edge_processor_commit": "944ae29", "waggle_image_commit": "", "core_commit": "0a93cc2", "revision": 1, "nodecontroller_commit": "c438207", "cpu_architecture": 1, "published_version": "2.8.2"}, "9":
+{"date": "2018-04-16", "plugin_manager_commit": "1dec008", "ep_base": 7, "nc_base": 5, "edge_processor_commit": "944ae29", "waggle_image_commit": "", "core_commit": "0a93cc2", "revision": 0, "nodecontroller_commit": "c438207", "cpu_architecture": 1, "published_version": "2.9.0-rc"}, "4":
+{"date": "2017-11-15", "plugin_manager_commit": "13af1f5", "ep_base": 6, "nc_base": 5, "edge_processor_commit": "f34c36e", "waggle_image_commit": "54982ed", "core_commit": "009a8dc", "revision": 1, "nodecontroller_commit": "80d93d6", "cpu_architecture": 1, "published_version": "2.8.0"}, "7":
+{"date": "2017-12-14", "plugin_manager_commit": "a516104", "ep_base": 6, "nc_base": 5, "edge_processor_commit": "187eb2b", "waggle_image_commit": "", "core_commit": "4843a11", "revision": 0, "nodecontroller_commit": "0d7f506", "cpu_architecture": 1, "published_version": "2.8.2"}}, "_default":
+{}, "CPU Architecture":
+{"2":
+{"name": "x86_64"}, "1":
+{"name": "armv7l"}}, "Deployment":
+{"2":
+{"beehive_host": 3, "build_host": 2, "shadow_entry": 2, "name": "Collaborator", "reg_key": 3, "sudo": true, "wireless_config": 1}, "4":
+{"beehive_host": 3, "build_host": 1, "shadow_entry": 2, "name": "AoT", "reg_key": 3, "sudo": false, "wireless_config": 2}, "1":
+{"beehive_host": 1, "build_host": 1, "shadow_entry": 1, "name": "Public", "reg_key": 1, "sudo": true, "wireless_config": 1}, "3":
+{"beehive_host": 2, "build_host": 1, "shadow_entry": 2, "name": "Development", "reg_key": 3, "sudo": true, "wireless_config": 2}, "5":
+{"beehive_host": 2, "build_host": 3, "shadow_entry": 2, "name": "Build", "reg_key": 3, "sudo": true, "wireless_config": 2}}, "Base":
+{"1":
+{"date": "2017-07-31", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 28, 29, 30, 31, 32, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64], "node_element": 1, "uuid": "f6d47837-28dc-4958-877b-34123ce7a533", "cpu_architecture": 1}, "2":
+{"date": "2017-07-31", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 28, 29, 30, 31, 32, 6, 22, 23, 24, 25, 26, 27, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64], "node_element": 1, "uuid": "95a9569b-fc3d-40b7-aec4-afb905132e87", "cpu_architecture": 2}, "3":
+{"date": "2017-07-31", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 55, 56, 57, 58, 65, 66, 67, 68, 69, 70, 71], "node_element": 2, "uuid": "1f93c407-6a17-47b6-ad35-3d3291861cc8", "cpu_architecture": 1}, "4":
+{"date": "2017-07-31", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 6, 22, 23, 24, 25, 26, 27, 51, 52, 55, 56, 57, 58, 65, 66, 72, 73, 74, 75, 76], "node_element": 2, "uuid": "6a8170f5-7915-439a-9ee4-277db2ee7c39", "cpu_architecture": 2}, "5":
+{"date": "2017-10-13", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 28, 29, 30, 31, 32, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 77, 78], "node_element": 1, "uuid": "A9024069-8E15-4946-A8DA-2BC9DAD8CCB0", "cpu_architecture": 1}, "6":
+{"date": "2017-10-13", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 55, 56, 57, 58, 65, 66, 67, 68, 69, 70, 71, 78, 79], "node_element": 2, "uuid": "58687CAF-2418-470F-A82B-2020BAD694C3", "cpu_architecture": 1}, "7":
+{"date": "2018-03-30", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45, 46, 47, 48, 49, 50, 56, 57, 58, 65, 66, 81, 82, 83, 84, 78, 79, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94], "node_element": 2, "uuid": "77c1857d-4ce5-4b24-b15c-4925baca7059", "cpu_architecture": 1}, "8":
+{"date": "2018-07-02", "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45, 46, 47, 48, 49, 50, 56, 57, 58, 65, 66, 81, 82, 83, 84, 78, 79, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 35, 98, 99, 65, 100], "node_element": 2, "uuid": "a166a364-33f3-4cdd-a293-7174af2828d2", "cpu_architecture": 1}}, "Node Element":
+{"2":
+{"name": "Edge Processor"}, "1":
+{"name": "Node Controller"}}}

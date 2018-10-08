@@ -16,6 +16,6 @@ $mkdir images
 $cd images
 $mkdir stage0
 $cd stage0
-$wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz
-$wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz
+$wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz -O stage0_c1+.img.xz
+$wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz -O stage0_xu4.img.xz
 ```

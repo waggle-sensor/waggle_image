@@ -1,14 +1,6 @@
 ### Process:
 
-The raw Ubuntu minimal image available from [hardkernel] (https://odroid.in/ubuntu_16.04lts/) is a raw disk image with the rootfs set to about 1.5GB ext partition. This image when used as the starting point for waggle-base image building will fail as the process will run out of space in the raw image for installing packages. It is hence required that the root partition of the raw image be extended to 2.1 GB (at the time of this writing, may be further more as we add more packages). The process for it under Linux is described using an example XU4 image here-
-
-#### 0. Fetch Hardkernel Odroid Image: 
-
-The C1+ (Node Controller) and XU4 are built around the latest minimal Ubuntu image released by Hardkernel. The current version of the 
-images are - 
-
-  * [Node Controller](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz)
-  * [Edge Processor](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz)
+The raw Ubuntu minimal image available from [hardkernel](https://odroid.in/ubuntu_16.04lts/) is a raw disk image with the rootfs set to about 1.5GB ext partition. Based on the current package list, the `Stage 0` image's rootfs should be extended to 2.1 GB. The process for it under Linux is described using an example XU4 image here (follow the same process for the C1+ image)-
 
 #### 1. Pre-installation step
 

@@ -62,8 +62,7 @@ sudo losetup /dev/loop0 ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img
 The documentation given on the github repository of waggle-image, above command is executed without `sudo`. While testing, 
 it was found that this would not work without `sudo`.
 
-#### 6. Once the image has been mounted onto the loop device, use `gparted` to expand the partition to occupy the 
-empty space.
+#### 6. Once the image has been mounted onto the loop device, use `gparted` to expand the partition to occupy the empty space.
 
 ```bash
 gparted /dev/loop0

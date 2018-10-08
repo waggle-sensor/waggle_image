@@ -7,10 +7,10 @@ The waggle nodes currently use [Hardkernel](https://www.hardkernel.com/main/shop
 
 ### Image Building Steps:
 
-The Linux images for the waggle SBCs is built in several stages, each outputting a Linux image. The process is performed in stages as building new images does not always require the rebuilding all the preceeding stages. To begin, here are the various images - 
+The Linux images for the waggle SBCs is built in several stages, each creating a Linux image. The process is performed in stages as building new images does not always require the rebuilding all the preceeding stages. To begin, here are the various images - 
 
   1. [**Stage 0:**](https://github.com/waggle-sensor/waggle_image/blob/master/build_image_docs/stage_0.md) Fetch Ubuntu Minimal Image for the Hard Kernel Single Board Computer (SBC).  
-  2. **Stage 1:** Create expanded Image for C1+ and XU4 from `Stage 0`.
+  2. [**Stage 1:**](https://github.com/waggle-sensor/waggle_image/blob/master/build_image_docs/stage_1.md) Create expanded Image for C1+ and XU4 from `Stage 0`.
   3. **Stage 2:** Add new software packages to the `Stage 1`.
   4. **Stage 3:** Create deployable Image from `Stage 2` by adding waggle and project specific configurations and credentials. 
 

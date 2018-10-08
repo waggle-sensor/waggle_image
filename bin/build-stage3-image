@@ -23,7 +23,7 @@ class BuildWaggleImageError(Exception):
     super(Exception, self).__init__(message)
 
 def print_usage():
-    usage_message = "Usage: build-waggle-docker-image [OPTIONS]\n"\
+    usage_message = "Usage: build-stage3-image [OPTIONS]\n"\
                     "OPTIONS\n"\
                     "  --help                         "\
                     "show this usage message\n"\
@@ -274,7 +274,7 @@ def burn_image(waggle_image, target_device):
 
 
 # TODO: use the deployment details directly instead of converting them into parameters
-#       for the bless-image script
+#       for the bless-stage3-image script
 def deploy(deployment, mount_point):
   disable_wvdial = ''
   wvdial_config = build_config.get_wireless_config(eid=deployment['wireless_config'])['name']
@@ -290,11 +290,11 @@ def deploy(deployment, mount_point):
   if shadow_entry == 'Default':
     disable_root_password = '--disable-root-pass '
 
-  rc = run_command('{0}/bless-image {1}{2}{3}{4} --clean-up'.format(
+  rc = run_command('{0}/bless-stage3-image {1}{2}{3}{4} --clean-up'.format(
     waggle_image_directory, disable_wvdial, enable_sudo, disable_root_password, mount_point))
   if rc != 0:
     raise BuildWaggleImageError(
-      "bless-image failed with return code '{}'".format(rc))
+      "bless-stage3-image failed with return code '{}'".format(rc))
 
 
 def deploy_to_disk(waggle_image, target_device, deployment):

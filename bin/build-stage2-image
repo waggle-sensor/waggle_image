@@ -215,7 +215,7 @@ def upload_image(build_directory, base_image):
 
 
 def main(argv):
-    usage_message = "Usage: build-base-image [OPTIONS] <uuid>\n"\
+    usage_message = "Usage: build-stage2-image [OPTIONS] <uuid>\n"\
                     "  build the image with UUID <uuid>\n"\
                     "OPTIONS\n"\
                     "  --help                         "\

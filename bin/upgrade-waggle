@@ -27,7 +27,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-declare -r USAGE_MESSAGE="Usage: bless-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
+declare -r USAGE_MESSAGE="Usage: bless-stage3-image [--help] [-w|--disable-wvdial] [-a|--disable-apn] [-s|--enable-sudo] [-r|--disable-root-pass] [-c|--clean-up] [-k <key-path>|--key-path=<key-path>] <mount-point>"
 if [ ${PRINT_USAGE} -eq 1 ]; then
   echo
   echo ${USAGE_MESSAGE}

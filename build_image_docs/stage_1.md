@@ -6,20 +6,23 @@ The raw Ubuntu minimal image available from [hardkernel](https://odroid.in/ubunt
 
 ```bash
 sudo apt-get install gparted
+cd <image directory where stage0 folder is located>
 ```
 
 #### 2. Unzip the downloaded raw image and move the compressed image to a backup directory (example shows XU4 HK image)
 
 ```bash
-unxz -k ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz
-mkdir backup
-mv ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz backup/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz
+mkdir -p stage1
+cd stage1
+cp ../stage0/stage0_c1+.img.xz .
+unxz stage0_c1+.img.xz
+mv stage0_c1+.img stage1_c1+.img
 ```
 
 #### 3. Extend the image with 1GB of empty space
 
 ```bash
-dd if=/dev/zero bs=1M count=1000 » ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img
+dd if=/dev/zero bs=1M count=700 » stage1_c1+.img
 ```
 
 #### 4. Check for the loop device that are currently mounted, and find a loop device that is currently available.
@@ -39,7 +42,7 @@ This would return an output like `/dev/loop0`.
 #### 5. Mount the image onto the loop device obtained from above.
 
 ```bash
-sudo losetup /dev/loop0 ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img
+sudo losetup /dev/loop0 stage1_c1+.img
 ```
 
 The documentation given on the github repository of waggle-image, above command is executed without `sudo`. While testing, 
@@ -63,7 +66,7 @@ sudo losetup -D
 #### 8. Now, check whether the image has the new extended partition.
 
 ```bash
-fdisk -l ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img
+fdisk -l stage1_c1+.img
 ```
 
 It should list two image under the *device* column.
@@ -71,5 +74,5 @@ It should list two image under the *device* column.
 #### 9. Lastly, compresss the image to the *xz* extension for use by the waggle image creation scripts
 
 ```bash
-xz -1 ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img
+xz -1 stage1_c1+.img
 ```

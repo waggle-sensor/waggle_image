@@ -96,8 +96,7 @@ sudo resize2fs $available_device"p2"
 sudo losetup -d  $available_device
 if [ `fdisk -l $image_file | awk '{print $1}' | grep "stage1" | wc -l` -eq 2 ];then
     echo "Success, now compressing image"
-    rm -rf $image_file".xz"
-    xz -1 $image_file
+    xz -1 -f $image_file
     echo "Stage 1 image successfully created."
 else 
     echo "Unsuccessful in creating Stage 1 image. Retry manually to check for errors."

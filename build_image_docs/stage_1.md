@@ -22,7 +22,7 @@ mv stage0_c1+.img stage1_c1+.img
 #### 3. Extend the image with 1GB of empty space
 
 ```bash
-dd if=/dev/zero bs=1M count=700 » stage1_c1+.img
+dd if=/dev/zero bs=1M count=700 >> stage1_c1+.img
 ```
 
 #### 4. Check for the loop device that are currently mounted, and find a loop device that is currently available.

@@ -78,8 +78,8 @@ if [ "x" == "x${python3_packages[*]}" ]; then
   echo "No Python 3 packages specified. Skipping pip3 operation."
 else
   echo "Installing the following Python 3 packages: ${python3_packages[@]}"
-  #pip3 install --upgrade pip==9.0.3
-  pip3 --no-cache-dir install --upgrade pip
+  pip3 --no-cache-dir install --upgrade pip==9.0.3
+  #pip3 --no-cache-dir install --upgrade pip
   cd ${script_dir}/../var/cache/pip3/archives
   pip3 --no-cache-dir install ${python3_packages[@]}
 fi

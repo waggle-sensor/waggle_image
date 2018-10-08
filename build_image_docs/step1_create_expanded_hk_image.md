@@ -1,15 +1,6 @@
 ### Process:
 
-Here, the process of building a Hardkernel Odroid Image has been described. The steps listed here are only needed, if any 
-image after all the pre-processing has not been provided. This section can be thought of any auxillary section which 
-can be skipped in future once the Waggle team decide to provide pre-configured images with all the modifications.
-
-To perform the various steps listed below, download an odroid image from Hardkernel. The image provided 
-on the hardkernel server is a raw image with the rootfs set to 1.5GB ext partition. 
-For building the beehive-node, the partition size has to be expanded in order to install the 
-required packages. The following steps describe the required steps for expanding the size of the 
-partition. In order to follow the steps described below, the user needs administrator access to the computer as 
-few steps require `sudo`.
+The raw Ubuntu minimal image available from [hardkernel] (https://odroid.in/ubuntu_16.04lts/) is a raw disk image with the rootfs set to about 1.5GB ext partition. This image when used as the starting point for waggle-base image building will fail as the process will run out of space in the raw image for installing packages. It is hence required that the root partition of the raw image be extended to 2.1 GB (at the time of this writing, may be further more as we add more packages). The process for it under Linux is described using an example XU4 image here-
 
 #### 0. Fetch Hardkernel Odroid Image: 
 

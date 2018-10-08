@@ -41,7 +41,7 @@ NAME       SIZELIMIT OFFSET AUTOCLEAR RO BACK-FILE
 
 In this example, the device is `/dev/loop3`
 
-#### 5. Use `gparted` to expand the partition to occupy the empty space-
+#### 5. GUI Method: Use `gparted` to expand the partition to occupy the empty space-
 
 ```bash
 gparted /dev/loop3

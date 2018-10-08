@@ -28,7 +28,7 @@ def get_base_image_filename(base):
 
     date = base['date'].replace('-', '')
 
-    base_image_base="stage3_%s_%s" % (device, date)
+    base_image_base="stage2_%s_%s" % (device, date)
     return "{}.img".format(base_image_base)
 
 

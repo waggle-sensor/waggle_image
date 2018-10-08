@@ -49,6 +49,7 @@ set -e
 
 apt-get update
 apt-key update
+pip install --upgrade pip
 
 
 

@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.realpath('{}/../lib/python/'.format(config_directory)
 import waggle.build as build
 
 def main(argv):
-  usage_message = ''.join(("Usage: add-build [OPTIONS]\n", \
+  usage_message = ''.join(("Usage: add-base [OPTIONS]\n", \
                           "OPTIONS\n", \
                           "  --help                          ", \
                           "print help screen\n", \

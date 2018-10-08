@@ -60,31 +60,6 @@ else
   echo "Installing the following Ubuntu packages: ${apt_packages[@]}"
   apt install -y ${apt_packages[@]}
 fi
- 
-
-# Install Python 2 package dependencies.
-if [ "x" == "x${python2_packages[*]}" ]; then
-  echo "No Python 2 packages specified. Skipping pip operation."
-else
-  echo "Installing the following Python 2 packages: ${python2_packages[@]}"
-  pip --no-cache-dir install --upgrade pip==9.0.3
-  #pip --no-cache-dir install --upgrade pip
-  #pip --no-cache-dir install --upgrade pip==10.0.1
-  pip --no-cache-dir install ${python2_packages[@]}
-fi
-
-
-# Install Python 3 package dependencies.
-if [ "x" == "x${python3_packages[*]}" ]; then
-  echo "No Python 3 packages specified. Skipping pip3 operation."
-else
-  echo "Installing the following Python 3 packages: ${python3_packages[@]}"
-  pip3 --no-cache-dir install --upgrade pip==9.0.3
-  #pip3 --no-cache-dir install --upgrade pip==10.0.1
-  #pip3 --no-cache-dir install --upgrade pip
-  cd ${script_dir}/../var/cache/pip3/archives
-  pip3 --no-cache-dir install ${python3_packages[@]}
-fi
 
 # Install Debian package dependencies.
 if [ "x" == "x${deb_packages[*]}" ]; then
@@ -95,8 +70,33 @@ else
   dpkg -i ${deb_packages[@]}
 fi
 
+
 apt-get update
 apt-get install -f
 apt-get autoremove
 apt-get clean
 apt-get autoclean
+
+
+# Install Python 2 package dependencies.
+if [ "x" == "x${python2_packages[*]}" ]; then
+  echo "No Python 2 packages specified. Skipping pip operation."
+else
+  echo "Installing the following Python 2 packages: ${python2_packages[@]}"
+  pip --no-cache-dir install --upgrade pip==9.0.3
+  pip --no-cache-dir install ${python2_packages[@]}
+fi
+
+
+# Install Python 3 package dependencies.
+if [ "x" == "x${python3_packages[*]}" ]; then
+  echo "No Python 3 packages specified. Skipping pip3 operation."
+else
+  echo "Installing the following Python 3 packages: ${python3_packages[@]}"
+  pip3 --no-cache-dir install --upgrade pip==9.0.3
+  cd ${script_dir}/../var/cache/pip3/archives
+  pip3 --no-cache-dir install ${python3_packages[@]}
+fi
+
+
+

@@ -11,14 +11,21 @@ required packages. The following steps describe the required steps for expanding
 partition. In order to follow the steps described below, the user needs administrator access to the computer as 
 few steps require `sudo`.
 
+#### 0. Fetch Hardkernel Odroid Image: 
+
+The C1+ (Node Controller) and XU4 are built around the latest minimal Ubuntu image released by Hardkernel. The current version of the 
+images are - 
+
+  * [Node Controller](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz)
+  * [Edge Processor](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz)
+
 #### 1. Pre-installation step
 
 ```bash
 sudo apt-get install gparted
-wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz
 ```
 
-#### 2. Unzip the downloaded raw image and move the compressed image to a backup directory
+#### 2. Unzip the downloaded raw image and move the compressed image to a backup directory (example shows XU4 HK image)
 
 ```bash
 unxz -k ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz

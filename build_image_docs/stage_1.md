@@ -5,7 +5,7 @@ The raw Ubuntu minimal image available from [hardkernel](https://odroid.in/ubunt
 #### 1. Pre-installation step-
 
 ```bash
-sudo apt-get install gparted
+sudo apt-get install gparted parted
 cd <image directory where stage0 folder is located>
 ```
 
@@ -41,7 +41,9 @@ NAME       SIZELIMIT OFFSET AUTOCLEAR RO BACK-FILE
 
 In this example, the device is `/dev/loop3`
 
-#### 5. GUI Method: Use `gparted` to expand the partition to occupy the empty space-
+#### 5. Expand the partition to occupy the empty space-
+
+##### 5.1 GUI Method-
 
 ```bash
 gparted /dev/loop3
@@ -49,6 +51,13 @@ gparted /dev/loop3
 
 This would open a gui window, where you drag the occupied space to occupy the *grey* unallocated space. Once the 
 unallocated space has been occupied, the gparted window can be closed.
+
+#### 5.2 Command line Method
+```bash
+sudo parted --script /dev/loop3 resizepart 2 100%
+sudo e2fsck -f /dev/loop3p2
+sudo resize2fs /dev/loop3p2
+```
 
 #### 7. Unmount the loop devices
 

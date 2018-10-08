@@ -1,0 +1,1226 @@
+{
+    "Dependency Type": {
+        "3": {
+            "name": "python3"
+        },
+        "2": {
+            "name": "python2"
+        },
+        "1": {
+            "name": "apt"
+        },
+        "4": {
+            "name": "deb"
+        }
+    },
+    "Build": {
+        "13": {
+            "revision": 0,
+            "nodecontroller_commit": "e9e1513",
+            "ep_base": 7,
+            "waggle_image_commit": "5ac0ac4",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.9.0",
+            "plugin_manager_commit": "4e00a92",
+            "edge_processor_commit": "70c57ef",
+            "core_commit": "f81ffb6",
+            "date": "2018-05-29"
+        },
+        "11": {
+            "revision": 0,
+            "nodecontroller_commit": "4de1cf9",
+            "ep_base": 7,
+            "waggle_image_commit": "5ac0ac4",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.9.0-rc1",
+            "plugin_manager_commit": "95111c1",
+            "edge_processor_commit": "51b8b19",
+            "core_commit": "3e6c43e",
+            "date": "2018-04-24"
+        },
+        "9": {
+            "revision": 0,
+            "nodecontroller_commit": "c438207",
+            "ep_base": 7,
+            "waggle_image_commit": "",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.9.0-rc",
+            "plugin_manager_commit": "1dec008",
+            "edge_processor_commit": "944ae29",
+            "core_commit": "0a93cc2",
+            "date": "2018-04-16"
+        },
+        "1": {
+            "revision": 0,
+            "nodecontroller_commit": "1764428",
+            "ep_base": 3,
+            "waggle_image_commit": "d6f69c5",
+            "nc_base": 1,
+            "cpu_architecture": 1,
+            "published_version": "2.6.0",
+            "plugin_manager_commit": "9031d0e",
+            "edge_processor_commit": "6cf03fa",
+            "core_commit": "50b1b2a",
+            "date": "2017-07-22"
+        },
+        "5": {
+            "revision": 0,
+            "nodecontroller_commit": "80d93d6",
+            "ep_base": 6,
+            "waggle_image_commit": "54982ed",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.8.1",
+            "plugin_manager_commit": "13af1f5",
+            "edge_processor_commit": "f34c36e",
+            "core_commit": "009a8dc",
+            "date": "2017-12-13"
+        },
+        "6": {
+            "revision": 1,
+            "nodecontroller_commit": "0d7f506",
+            "ep_base": 6,
+            "waggle_image_commit": "",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.8.1",
+            "plugin_manager_commit": "a516104",
+            "edge_processor_commit": "187eb2b",
+            "core_commit": "4843a11",
+            "date": "2017-12-13"
+        },
+        "7": {
+            "revision": 0,
+            "nodecontroller_commit": "0d7f506",
+            "ep_base": 6,
+            "waggle_image_commit": "",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.8.2",
+            "plugin_manager_commit": "a516104",
+            "edge_processor_commit": "187eb2b",
+            "core_commit": "4843a11",
+            "date": "2017-12-14"
+        },
+        "10": {
+            "revision": 1,
+            "nodecontroller_commit": "4de1cf9",
+            "ep_base": 7,
+            "waggle_image_commit": "5ac0ac4",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.9.0-rc",
+            "plugin_manager_commit": "95111c1",
+            "edge_processor_commit": "51b8b19",
+            "core_commit": "3e6c43e",
+            "date": "2018-04-16"
+        },
+        "3": {
+            "revision": 0,
+            "nodecontroller_commit": "1764428",
+            "ep_base": 6,
+            "waggle_image_commit": "d6f69c5",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.8.0",
+            "plugin_manager_commit": "9031d0e",
+            "edge_processor_commit": "6cf03fa",
+            "core_commit": "50b1b2a",
+            "date": "2017-11-15"
+        },
+        "2": {
+            "revision": 0,
+            "nodecontroller_commit": "1764428",
+            "ep_base": 4,
+            "waggle_image_commit": "d6f69c5",
+            "nc_base": 2,
+            "cpu_architecture": 2,
+            "published_version": "2.6.0",
+            "plugin_manager_commit": "9031d0e",
+            "edge_processor_commit": "6cf03fa",
+            "core_commit": "50b1b2a",
+            "date": "2017-07-22"
+        },
+        "4": {
+            "revision": 1,
+            "nodecontroller_commit": "80d93d6",
+            "ep_base": 6,
+            "waggle_image_commit": "54982ed",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.8.0",
+            "plugin_manager_commit": "13af1f5",
+            "edge_processor_commit": "f34c36e",
+            "core_commit": "009a8dc",
+            "date": "2017-11-15"
+        },
+        "8": {
+            "revision": 1,
+            "nodecontroller_commit": "c438207",
+            "ep_base": 6,
+            "waggle_image_commit": "",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.8.2",
+            "plugin_manager_commit": "1dec008",
+            "edge_processor_commit": "944ae29",
+            "core_commit": "0a93cc2",
+            "date": "2017-12-14"
+        },
+        "14": {
+            "revision": 1,
+            "nodecontroller_commit": "599d855",
+            "ep_base": 7,
+            "waggle_image_commit": "69b813e",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.9.0",
+            "plugin_manager_commit": "1f3d2d0",
+            "edge_processor_commit": "22cf407",
+            "core_commit": "56f5410",
+            "date": "2018-05-29"
+        },
+        "12": {
+            "revision": 1,
+            "nodecontroller_commit": "e9e1513",
+            "ep_base": 7,
+            "waggle_image_commit": "5ac0ac4",
+            "nc_base": 5,
+            "cpu_architecture": 1,
+            "published_version": "2.9.0-rc1",
+            "plugin_manager_commit": "4e00a92",
+            "edge_processor_commit": "70c57ef",
+            "core_commit": "f81ffb6",
+            "date": "2018-04-24"
+        }
+    },
+    "CPU Architecture": {
+        "2": {
+            "name": "x86_64"
+        },
+        "1": {
+            "name": "armv7l"
+        }
+    },
+    "Wireless Config": {
+        "2": {
+            "repo": "private_config",
+            "name": "AoT"
+        },
+        "1": {
+            "repo": "nodecontroller",
+            "name": "Default"
+        }
+    },
+    "Dependency": {
+        "1": {
+            "type": 1,
+            "name": "htop"
+        },
+        "2": {
+            "type": 1,
+            "name": "iotop"
+        },
+        "3": {
+            "type": 1,
+            "name": "iftop"
+        },
+        "4": {
+            "type": 1,
+            "name": "bwm-ng"
+        },
+        "5": {
+            "type": 1,
+            "name": "screen"
+        },
+        "6": {
+            "type": 1,
+            "name": "git"
+        },
+        "7": {
+            "type": 1,
+            "name": "python-dev"
+        },
+        "8": {
+            "type": 1,
+            "name": "python-pip"
+        },
+        "9": {
+            "type": 1,
+            "name": "python3-dev"
+        },
+        "10": {
+            "type": 1,
+            "name": "python3-pip"
+        },
+        "11": {
+            "type": 1,
+            "name": "dosfstools"
+        },
+        "12": {
+            "type": 1,
+            "name": "parted"
+        },
+        "13": {
+            "type": 1,
+            "name": "bash-completion"
+        },
+        "14": {
+            "type": 1,
+            "name": "v4l-utils"
+        },
+        "15": {
+            "type": 1,
+            "name": "network-manager"
+        },
+        "16": {
+            "type": 1,
+            "name": "usbutils"
+        },
+        "17": {
+            "type": 1,
+            "name": "nano"
+        },
+        "18": {
+            "type": 1,
+            "name": "stress-ng"
+        },
+        "19": {
+            "type": 1,
+            "name": "rabbitmq-server"
+        },
+        "20": {
+            "type": 1,
+            "name": "python-psutil"
+        },
+        "21": {
+            "type": 1,
+            "name": "python3-psutil"
+        },
+        "22": {
+            "type": 1,
+            "name": "wget"
+        },
+        "23": {
+            "type": 1,
+            "name": "locales"
+        },
+        "24": {
+            "type": 1,
+            "name": "tzdata"
+        },
+        "25": {
+            "type": 1,
+            "name": "ssh"
+        },
+        "26": {
+            "type": 1,
+            "name": "sudo"
+        },
+        "27": {
+            "type": 1,
+            "name": "psmisc"
+        },
+        "28": {
+            "type": 1,
+            "name": "wvdial"
+        },
+        "29": {
+            "type": 1,
+            "name": "autossh"
+        },
+        "30": {
+            "type": 1,
+            "name": "bossa-cli"
+        },
+        "31": {
+            "type": 1,
+            "name": "curl"
+        },
+        "32": {
+            "type": 1,
+            "name": "python3-zmq"
+        },
+        "33": {
+            "type": 1,
+            "name": "fswebcam"
+        },
+        "34": {
+            "type": 1,
+            "name": "alsa-utils"
+        },
+        "35": {
+            "type": 1,
+            "name": "portaudio19-dev"
+        },
+        "36": {
+            "type": 1,
+            "name": "libavcodec-ffmpeg56"
+        },
+        "37": {
+            "type": 1,
+            "name": "libavformat-ffmpeg56"
+        },
+        "38": {
+            "type": 1,
+            "name": "libavutil-ffmpeg54"
+        },
+        "39": {
+            "type": 1,
+            "name": "libc6"
+        },
+        "40": {
+            "type": 1,
+            "name": "libcairo2"
+        },
+        "41": {
+            "type": 1,
+            "name": "libgdk-pixbuf2.0-0"
+        },
+        "42": {
+            "type": 1,
+            "name": "libglib2.0-0"
+        },
+        "43": {
+            "type": 1,
+            "name": "libgtk-3-0"
+        },
+        "44": {
+            "type": 1,
+            "name": "libpng12-0"
+        },
+        "45": {
+            "type": 1,
+            "name": "libstdc++6"
+        },
+        "46": {
+            "type": 1,
+            "name": "libswscale-ffmpeg3"
+        },
+        "47": {
+            "type": 1,
+            "name": "zlib1g"
+        },
+        "48": {
+            "type": 1,
+            "name": "libhdf5-10"
+        },
+        "49": {
+            "type": 1,
+            "name": "libjasper1"
+        },
+        "50": {
+            "type": 1,
+            "name": "libvtk6.2"
+        },
+        "51": {
+            "type": 2,
+            "name": "tabulate"
+        },
+        "52": {
+            "type": 2,
+            "name": "pika"
+        },
+        "53": {
+            "type": 2,
+            "name": "crcmod"
+        },
+        "54": {
+            "type": 2,
+            "name": "pyserial"
+        },
+        "55": {
+            "type": 2,
+            "name": "numpy"
+        },
+        "56": {
+            "type": 3,
+            "name": "tabulate"
+        },
+        "57": {
+            "type": 3,
+            "name": "pika"
+        },
+        "58": {
+            "type": 3,
+            "name": "tinydb"
+        },
+        "59": {
+            "type": 3,
+            "name": "crcmod"
+        },
+        "60": {
+            "type": 3,
+            "name": "pyserial"
+        },
+        "61": {
+            "type": 3,
+            "name": "netifaces"
+        },
+        "62": {
+            "type": 3,
+            "name": "pyzmq"
+        },
+        "63": {
+            "type": 3,
+            "name": "pyinotify"
+        },
+        "64": {
+            "type": 3,
+            "name": "pynmea2"
+        },
+        "65": {
+            "type": 3,
+            "name": "pyaudio"
+        },
+        "66": {
+            "type": 3,
+            "name": "numpy"
+        },
+        "67": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-armv7l-dev.deb"
+        },
+        "68": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-armv7l-libs.deb"
+        },
+        "69": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-armv7l-main.deb"
+        },
+        "70": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-armv7l-python.deb"
+        },
+        "71": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-armv7l-samples.deb"
+        },
+        "72": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-x86_64-dev.deb"
+        },
+        "73": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-x86_64-libs.deb"
+        },
+        "74": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-x86_64-main.deb"
+        },
+        "75": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-x86_64-python.deb"
+        },
+        "76": {
+            "type": 4,
+            "name": "OpenCV-3.2.0-x86_64-samples.deb"
+        },
+        "77": {
+            "type": 1,
+            "name": "avrdude"
+        },
+        "78": {
+            "type": 1,
+            "name": "lsof"
+        },
+        "79": {
+            "type": 3,
+            "name": "piexif"
+        },
+        "80": {
+            "type": 3,
+            "name": "v4l2capture-1.5.tar.gz"
+        },
+        "81": {
+            "type": 4,
+            "name": "OpenCV-3.4.1-armv7l-dev.deb"
+        },
+        "82": {
+            "type": 4,
+            "name": "OpenCV-3.4.1-armv7l-libs.deb"
+        },
+        "83": {
+            "type": 4,
+            "name": "OpenCV-3.4.1-armv7l-main.deb"
+        },
+        "84": {
+            "type": 4,
+            "name": "OpenCV-3.4.1-armv7l-python.deb"
+        },
+        "85": {
+            "type": 1,
+            "name": "libv4l-dev"
+        },
+        "86": {
+            "type": 1,
+            "name": "libdc1394-22"
+        },
+        "87": {
+            "type": 1,
+            "name": "libgtk2.0-0"
+        },
+        "88": {
+            "type": 3,
+            "name": "v4l2-0.2.tar.gz"
+        },
+        "89": {
+            "type": 4,
+            "name": "gcc-8-base_8-20180424-0ubuntu1~16.04.1_armhf.deb"
+        },
+        "90": {
+            "type": 3,
+            "name": "tensorflow-1.8.0-cp35-none-any.whl"
+        },
+        "91": {
+            "type": 4,
+            "name": "libc6_2.23-0ubuntu10_armhf.deb"
+        },
+        "92": {
+            "type": 4,
+            "name": "libgcc1_1%3a8-20180424-0ubuntu1~16.04.1_armhf.deb"
+        },
+        "93": {
+            "type": 4,
+            "name": "libstdc++6_8-20180424-0ubuntu1~16.04.1_armhf.deb"
+        },
+        "94": {
+            "type": 1,
+            "name": "mali-fbdev"
+        },
+        "95": {
+            "type": 3,
+            "name": "pydub"
+        },
+        "96": {
+            "type": 1,
+            "name": "ffmpeg"
+        },
+        "97": {
+            "type": 1,
+            "name": "libasound-dev"
+        },
+        "98": {
+            "type": 1,
+            "name": "libportaudio2"
+        },
+        "99": {
+            "type": 1,
+            "name": "libportaudiocpp0"
+        },
+        "100": {
+            "type": 3,
+            "name": "wave"
+        },
+        "101": {
+            "type": 1,
+            "name": "mc"
+        },
+        "102": {
+            "type": 1,
+            "name": "tc"
+        }
+    },
+    "Base": {
+        "3": {
+            "cpu_architecture": 1,
+            "node_element": 2,
+            "date": "2017-07-31",
+            "uuid": "1f93c407-6a17-47b6-ad35-3d3291861cc8",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                55,
+                56,
+                57,
+                58,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+            ]
+        },
+        "2": {
+            "cpu_architecture": 2,
+            "node_element": 1,
+            "date": "2017-07-31",
+            "uuid": "95a9569b-fc3d-40b7-aec4-afb905132e87",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                28,
+                29,
+                30,
+                31,
+                32,
+                6,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                51,
+                52,
+                53,
+                54,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+            ]
+        },
+        "4": {
+            "cpu_architecture": 2,
+            "node_element": 2,
+            "date": "2017-07-31",
+            "uuid": "6a8170f5-7915-439a-9ee4-277db2ee7c39",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                6,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                51,
+                52,
+                55,
+                56,
+                57,
+                58,
+                65,
+                66,
+                72,
+                73,
+                74,
+                75,
+                76
+            ]
+        },
+        "8": {
+            "cpu_architecture": 1,
+            "node_element": 2,
+            "date": "2018-07-02",
+            "uuid": "a166a364-33f3-4cdd-a293-7174af2828d2",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                56,
+                57,
+                58,
+                65,
+                66,
+                81,
+                82,
+                83,
+                84,
+                78,
+                79,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                35,
+                98,
+                99,
+                65,
+                100
+            ]
+        },
+        "1": {
+            "cpu_architecture": 1,
+            "node_element": 1,
+            "date": "2017-07-31",
+            "uuid": "f6d47837-28dc-4958-877b-34123ce7a533",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                28,
+                29,
+                30,
+                31,
+                32,
+                51,
+                52,
+                53,
+                54,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+            ]
+        },
+        "5": {
+            "cpu_architecture": 1,
+            "node_element": 1,
+            "date": "2017-10-13",
+            "uuid": "A9024069-8E15-4946-A8DA-2BC9DAD8CCB0",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                28,
+                29,
+                30,
+                31,
+                32,
+                51,
+                52,
+                53,
+                54,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                77,
+                78
+            ]
+        },
+        "6": {
+            "cpu_architecture": 1,
+            "node_element": 2,
+            "date": "2017-10-13",
+            "uuid": "58687CAF-2418-470F-A82B-2020BAD694C3",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                55,
+                56,
+                57,
+                58,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                78,
+                79
+            ]
+        },
+        "7": {
+            "cpu_architecture": 1,
+            "node_element": 2,
+            "date": "2018-03-30",
+            "uuid": "77c1857d-4ce5-4b24-b15c-4925baca7059",
+            "dependencies": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                56,
+                57,
+                58,
+                65,
+                66,
+                81,
+                82,
+                83,
+                84,
+                78,
+                79,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+            ]
+        }
+    },
+    "Node Element": {
+        "2": {
+            "name": "Edge Processor"
+        },
+        "1": {
+            "name": "Node Controller"
+        }
+    },
+    "Beehive Host": {
+        "3": {
+            "fqdn": "beehive1.mcs.anl.gov",
+            "address": "beehive1.mcs.anl.gov",
+            "name": "AoT"
+        },
+        "2": {
+            "fqdn": "beehive-dev",
+            "address": "10.10.10.5",
+            "name": "Development"
+        },
+        "1": {
+            "fqdn": "localhost",
+            "address": "127.0.0.1",
+            "name": "Default"
+        }
+    },
+    "_default": {},
+    "Waggle": {},
+    "Shadow Entry": {
+        "2": {
+            "file": "root_shadow",
+            "name": "AoT"
+        },
+        "1": {
+            "file": "waggle_shadow",
+            "name": "Default"
+        }
+    },
+    "Build Host": {
+        "3": {
+            "fqdn": "beehive-dev",
+            "address": "10.10.10.5",
+            "name": "Development"
+        },
+        "2": {
+            "fqdn": "localhost",
+            "address": "127.0.0.1",
+            "name": "Local"
+        },
+        "1": {
+            "fqdn": "",
+            "address": "",
+            "name": "None"
+        }
+    },
+    "Registration Key": {
+        "3": {
+            "file": "id_rsa_waggle_aot_registration",
+            "name": "AoT"
+        },
+        "2": {
+            "file": "id_rsa_waggle_dev_registration",
+            "name": "Development"
+        },
+        "1": {
+            "file": "",
+            "name": "None"
+        }
+    },
+    "Deployment": {
+        "3": {
+            "wireless_config": 2,
+            "beehive_host": 2,
+            "reg_key": 3,
+            "sudo": true,
+            "name": "Development",
+            "shadow_entry": 2,
+            "build_host": 1
+        },
+        "5": {
+            "wireless_config": 2,
+            "beehive_host": 2,
+            "reg_key": 3,
+            "sudo": true,
+            "name": "Build",
+            "shadow_entry": 2,
+            "build_host": 3
+        },
+        "2": {
+            "wireless_config": 1,
+            "beehive_host": 3,
+            "reg_key": 3,
+            "sudo": true,
+            "name": "Collaborator",
+            "shadow_entry": 2,
+            "build_host": 2
+        },
+        "1": {
+            "wireless_config": 1,
+            "beehive_host": 1,
+            "reg_key": 1,
+            "sudo": true,
+            "name": "Public",
+            "shadow_entry": 1,
+            "build_host": 1
+        },
+        "4": {
+            "wireless_config": 2,
+            "beehive_host": 3,
+            "reg_key": 3,
+            "sudo": false,
+            "name": "AoT",
+            "shadow_entry": 2,
+            "build_host": 1
+        }
+    }
+}

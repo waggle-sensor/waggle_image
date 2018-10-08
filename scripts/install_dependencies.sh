@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set +e
-
 # command-line options
 declare -r dependencies_string=$1
 
@@ -50,9 +49,6 @@ set -e
 apt-get update
 apt-key update
 
-
-
-
 # Install Ubuntu package dependencies.
 if [ "x" == "x${apt_packages[*]}" ]; then
   echo "No APT packages specified. Skipping apt operation."
@@ -77,7 +73,6 @@ apt-get autoremove
 apt-get clean
 apt-get autoclean
 
-
 # Install Python 2 package dependencies.
 if [ "x" == "x${python2_packages[*]}" ]; then
   echo "No Python 2 packages specified. Skipping pip operation."
@@ -86,7 +81,6 @@ else
   pip --no-cache-dir install --upgrade pip==9.0.3
   pip --no-cache-dir install ${python2_packages[@]}
 fi
-
 
 # Install Python 3 package dependencies.
 if [ "x" == "x${python3_packages[*]}" ]; then

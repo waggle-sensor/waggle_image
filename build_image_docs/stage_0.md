@@ -5,12 +5,12 @@ set to about 1.5GB partition.
 
 The latest minimal Ubuntu images released by Hardkernel to be used as `Stage 0` images are -
 
-  * [Node Controller](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz)
-  * [Edge Processor](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz)
+  * [Node Controller (Odroid C1+)](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz)
+  * [Edge Processor (Odroid XU4)](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz)
 
 Download the images in a temporary directory on Linux Computer where you have a minimum of ~5GB of free disk space and sudo access. 
 
-#### Download Images:
+#### Download Images for C1+ and XU4:
 ```
 $ mkdir images
 $cd images

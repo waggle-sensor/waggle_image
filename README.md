@@ -1,24 +1,6 @@
 <!--
 waggle_topic=ignore
 -->
-# Image Building Steps:
+## Linux images for Single Board Computers in Waggle Nodes: 
 
-Building a Linux Image for Waggle nodes involves a 4 step process - 
-  1. Fetch Hardkernel Odroid Image - fetch file from Hardkernel image portal.  
-  2. Expand Hardkernel Odroid Image  - mount and grow the hardkernel image to add new software packages. 
-  3. Create Base Image - add the required software packages. 
-  4. Create Waggle Image - add waggle specific repositories, tools and configure beehive-server details and add beehive-server certs 
-
-# Steps: 
-
-## 1. Fetch Hardkernel Odroid Image: 
-
-The C1+ (Node Controller) and XU4 are built around the latest minimal Ubuntu image released by Hardkernel. The current version of the 
-images are - 
-
-  * [Node Controller](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz)
-  * [Edge Processor](https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz)
-
-## 2. Expand Hardkernel Odroid Image: 
-
-The step by step process for creating the edpanded raw image is available [here](https://github.com/waggle-sensor/waggle_image/blob/master/expand_hardkernel_odroid_image.md.md). 
+The waggle nodes currently use [Hardkernel(HK)](https://www.hardkernel.com/main/shop/good_list.php?lang=en) supplied [C1+](https://www.hardkernel.com/main/products/prdt_info.php?g_code=G143703355573) and [XU4](https://www.hardkernel.com/main/products/prdt_info.php?g_code=G143452239825) single board computers as Nodecontroller and Edge-processor respectively. These systems run a Linux operating system based on Ubuntu distribution. This repository deals with creating working versions of the Linux images (`Stage 3` below) for the C1+ and XU4 devices deployed in Waggle Nodes. 

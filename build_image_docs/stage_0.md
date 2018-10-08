@@ -12,7 +12,7 @@ Download the images in a temporary directory on Linux Computer where you have a 
 
 #### Download Images for C1+ and XU4:
 ```
-$ mkdir images
+$mkdir images
 $cd images
 $mkdir stage0
 $cd stage0

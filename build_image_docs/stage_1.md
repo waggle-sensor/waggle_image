@@ -80,7 +80,7 @@ xz -1 stage1_c1+.img
 ```
 
 ### Script:
-Steps 3 to 9 are coded in the script below for easy image creation:
+Steps 3 to 9 are coded in the script below for easy image creation. Replace `image_file="stage1_c1+.img"` with appropriate file name.
 
 ```bash
 #!/bin/bash

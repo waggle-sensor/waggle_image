@@ -1,4 +1,4 @@
-### Hardkernel Odroid Image
+### Process:
 
 Here, the process of building a Hardkernel Odroid Image has been described. The steps listed here are only needed, if any 
 image after all the pre-processing has not been provided. This section can be thought of any auxillary section which 

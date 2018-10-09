@@ -1,6 +1,6 @@
 #!/bin/bash
 
-stage1_dir="/root/stage1"
+stage1_dir="/root/images/stage1"
 
 set -e
 set -x

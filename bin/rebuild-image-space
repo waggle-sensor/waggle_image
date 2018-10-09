@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
+set -x
 if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ] || [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
     echo "Odroid build-system detected, starting process..."
     cd /root/
-    mv images images_$(date +%s)
+    if [ -d "images" ]; then mv images images_$(date +%s); fi
     mkdir -p images
     mkdir -p images/stage0
     mkdir -p images/stage1

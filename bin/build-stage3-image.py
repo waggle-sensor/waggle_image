@@ -15,7 +15,7 @@ waggle_image_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, '%s/lib/python/' % waggle_image_directory)
 from waggle.build import *
 
-config_db_path = os.path.realpath('{}/config/build_config.json'.format(waggle_image_directory))
+config_db_path = os.path.realpath('{}/configure/build_config.json'.format(waggle_image_directory))
 build_config = Configuration(str(config_db_path))
 
 class BuildWaggleImageError(Exception):

@@ -457,7 +457,7 @@ def main(argv):
   mount_point = "/mnt/newimage"
 
   #waggle_image = get_waggle_image_filename(build, node_element)
-  waggle_image = get_base_image_filename(build, node_element)
+  waggle_image = get_base_image_filename(base)
 
   setup_mount_point(mount_point)
 

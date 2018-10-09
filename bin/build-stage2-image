@@ -16,5 +16,5 @@ else
     echo "This machine is neither a C1+ nor a XU4. Please follow steps from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
 fi
 
-python3 build-stage2-image.py -b $stage2_dir $1
+python3 ./build-stage2-image.py -b $stage2_dir "$1"
 

@@ -72,6 +72,12 @@ def mount_new_image_local_uncompressed(base_image, mount_point, base):
                         }
                     }
 
+    try:
+        stock_image = stock_images[node_element]['filename']
+    except:
+        print("{} image not found".format(node_element))
+        sys.exit(1)
+
     base_image=stock_image
     #
     # LOOP DEVICES HERE

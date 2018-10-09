@@ -397,7 +397,7 @@
         },
         "54": {
             "type": 1,
-            "name": "python-pyserial"
+            "name": "python-serial"
         },
         "96": {
             "type": 1,

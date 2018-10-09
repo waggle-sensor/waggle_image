@@ -362,9 +362,9 @@ def main(argv):
 
     detach_loop_devices()
 
-    compress_image(base_image)
+    #compress_image(base_image)
 
-    upload_image(build_directory, base_image)
+    #upload_image(build_directory, base_image)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

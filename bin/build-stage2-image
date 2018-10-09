@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 set -x
-
+current_dir=`pwd`
 stage2_dir="/root/images/stage2"
 
 if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
@@ -15,6 +15,5 @@ elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; 
 else
     echo "This machine is neither a C1+ nor a XU4. Please follow steps from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
 fi
-
-python3 ./build-stage2-image.py -b $stage2_dir "$1"
-
+cd $current_dir
+./build-stage2-image.py -b $stage2_dir "$1"

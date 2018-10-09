@@ -17,19 +17,47 @@ build_config = Configuration(str(config_db_path))
 
 debug=0 # skip chroot environment if 1
 
-
 def get_base_image_filename(base):
-    node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
-        ' ', '_').lower()
-    if node_element == 'node_controller':
-        device = "c1+"
-    else:
-        device = "xu4"
+    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
+    if architecture != 'armv7l':
+        print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))
+        sys.exit(6)
+    node_element = build_config.get_node_element(eid=base['node_element'])['name']
+    waggle_stock_url=''
+    stock_images=   {
+                    'Edge Processor' : {
+                            'filename': "stage2_xu4.img",
+                             'url': waggle_stock_url
+                            },
+                    'Node Controller' : {
+                            'filename':"stage2_c1+.img",
+                            'url': waggle_stock_url
+                        }
+                    }
 
-    date = base['date'].replace('-', '')
+    try:
+        stock_image = stock_images[node_element]['filename']
+    except:
+        print("{} image not found".format(node_element))
+        sys.exit(1)
 
-    base_image_base="stage2_%s_%s" % (device, date)
-    return "{}.img".format(base_image_base)
+    base_image=stock_image
+
+    return "{}.img".format(base_image)
+
+
+#def get_base_image_filename(base):
+    #node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
+        #' ', '_').lower()
+    #if node_element == 'node_controller':
+        #device = "c1+"
+    #else:
+        #device = "xu4"
+
+    #date = base['date'].replace('-', '')
+
+    #base_image_base="stage2_%s_%s" % (device, date)
+    #return "{}.img".format(base_image_base)
 
 
 def setup_mount_point(mount_point):
@@ -132,9 +160,6 @@ def mount_new_image_local_compressed(base_image, mount_point, base):
     except:
         pass
 
-#    if not os.path.isfile(base_image_xz):
-#        print("Copying file %s to %s ..." % (stock_image_xz, base_image_xz))
-#        shutil.copyfile(stock_image_xz, base_image_xz)
 
     if not os.path.isfile(stock_image):
         print("Uncompressing file %s ..." % stock_image_xz)

@@ -154,7 +154,7 @@ DISABLE_WVDIAL=0
 ENABLE_SUDO=0
 DISABLE_ROOT_PASS=0
 CLEAN_UP=0
-KEY_PATH='/root/id_rsa_waggle_aot_config'
+KEY_PATH='/root/certs/id_rsa_waggle_aot_config'
 MOUNT_POINT=''
 set -e
 while [[ $# -gt 0 ]]; do

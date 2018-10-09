@@ -84,18 +84,46 @@ def setup_mount_point(mount_point):
   create_loop_devices()
 
 
+#def get_base_image_filename(base):
+    #node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
+        #' ', '_').lower()
+    #if node_element == 'node_controller':
+        #device = "odroid-c1"
+    #else:
+        #device = "odroid-xu3"
+
+    #date = base['date'].replace('-', '')
+
+    #base_image_base="waggle-base-%s-%s-%s" % (node_element, device, date)
+    #return "{}.img".format(base_image_base)
+
 def get_base_image_filename(base):
-    node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
-        ' ', '_').lower()
-    if node_element == 'node_controller':
-        device = "odroid-c1"
-    else:
-        device = "odroid-xu3"
+    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
+    if architecture != 'armv7l':
+        print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))
+        sys.exit(6)
+    node_element = build_config.get_node_element(eid=base['node_element'])['name']
+    waggle_stock_url=''
+    stock_images=   {
+                    'Edge Processor' : {
+                            'filename': "stage3_xu4",
+                             'url': waggle_stock_url
+                            },
+                    'Node Controller' : {
+                            'filename':"stage3_c1+",
+                            'url': waggle_stock_url
+                        }
+                    }
 
-    date = base['date'].replace('-', '')
+    try:
+        stock_image = stock_images[node_element]['filename']
+    except:
+        print("{} image not found".format(node_element))
+        sys.exit(1)
 
-    base_image_base="waggle-base-%s-%s-%s" % (node_element, device, date)
-    return "{}.img".format(base_image_base)
+    base_image=stock_image
+
+    return "{}.img".format(base_image)
 
 
 def mount_new_image(build, node_element, mount_point):
@@ -131,6 +159,32 @@ def mount_new_image(build, node_element, mount_point):
       print("Uncompressing file %s ..." % waggle_image_xz)
       run_command('unxz ' + waggle_image_xz)
 
+  attach_loop_devices(waggle_image, 0)
+
+  time.sleep(3)
+  print("first filesystem check on /dev/loop0p2")
+  check_data_partition()
+
+  print("execute: mkdir -p "+mount_point)
+  try:
+      os.mkdir(mount_point)
+  except:
+      pass
+
+  mount_mountpoint(0, mount_point)
+
+
+def mount_new_image_from_uncompressed(build, node_element, mount_point):
+  base = None
+  if node_element == 'Node Controller':
+    base = build_config.get_base(eid=build['nc_base'])
+  elif node_element == 'Edge Processor':
+    base = build_config.get_base(eid=build['ep_base'])
+  else:
+    raise BuildWaggleImageError(
+      "unknown node element '{}'".format(node_element))
+  base_image = get_base_image_filename(base)
+  waggle_image = base_image
   attach_loop_devices(waggle_image, 0)
 
   time.sleep(3)
@@ -402,13 +456,15 @@ def main(argv):
 
   mount_point = "/mnt/newimage"
 
-  waggle_image = get_waggle_image_filename(build, node_element)
+  #waggle_image = get_waggle_image_filename(build, node_element)
+  waggle_image = get_base_image_filename(build, node_element)
 
   setup_mount_point(mount_point)
 
   os.chdir(build_directory)
 
-  mount_new_image(build, node_element, mount_point)
+  #mount_new_image(build, node_element, mount_point)
+  mount_new_image_from_uncompressed(build, node_element, mount_point)
 
   stage_image_build_script(waggle_image_directory, mount_point)
 

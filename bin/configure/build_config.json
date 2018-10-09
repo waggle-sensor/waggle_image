@@ -437,7 +437,7 @@
         },
         "79": {
             "type": 1,
-            "name": "python3-pexif"
+            "name": "python-pexif"
         },
         "72": {
             "type": 4,
@@ -449,7 +449,7 @@
         },
         "97": {
             "type": 1,
-            "name": "libasound-dev"
+            "name": "libasound2-dev"
         },
         "63": {
             "type": 1,

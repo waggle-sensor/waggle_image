@@ -437,7 +437,7 @@
         },
         "79": {
             "type": 1,
-            "name": "python-pexif"
+            "name": "python3-exif"
         },
         "72": {
             "type": 4,

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+stage1_dir="/root/stage1"
+
+set -e
+set -x
+
+if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
+    echo "Odroid C1+ detected, starting process..."
+    cd $stage1_dir
+    cp ../stage0/stage0_c1+.img.xz .
+    unxz stage0_c1+.img.xz
+    mv stage0_c1+.img stage1_c1+.img
+    image_file="stage1_c1+.img"
+elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
+    echo "Odroid XU4 detected, starting process..."
+    cd stage1_dir
+    cp ../stage0/stage0_xu4.img.xz .
+    unxz stage0_xu4.img.xz
+    mv stage0_xu4.img stage1_xu4.img
+    image_file="stage1_xu4.img"
+else
+    echo "This machine is neither a C1+ nor a XU4. Please follow steps from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
+fi
+
+
+dd if=/dev/zero bs=1M count=700 >> $image_file
+available_device=$(losetup -f)
+sudo losetup $available_device $image_file
+losetup -l | grep "$image_file\|SIZELIMIT"
+sudo parted --script $available_device resizepart 2 100%
+sudo e2fsck -f $available_device"p2"
+sudo resize2fs $available_device"p2"
+sudo losetup -d  $available_device
+if [ `fdisk -l $image_file | awk '{print $1}' | grep "stage1" | wc -l` -eq 2 ];then
+    echo "Success, now compressing image"
+    xz -1 -f $image_file
+    echo "Stage 1 image successfully created."
+else
+    echo "Unsuccessful in creating Stage 1 image. Retry manually to check for errors."
+fi

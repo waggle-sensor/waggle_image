@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ] || [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
+    echo "Odroid build-system detected, starting process..."
+    cd /root/
+    mv images images_$(date +%s)
+    mkdir -p images
+    mkdir -p images/stage0
+    mkdir -p images/stage1
+    mkdir -p images/stage2
+    mkdir -p images/stage3
+else
+    echo "This machine is neither a C1+ nor a XU4. Please follow steps from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
+fi
+
+
+
+

@@ -65,7 +65,6 @@ def get_waggle_image_filename(build, node_element):
   else:
     raise BuildWaggleImageError(
       "unknown node element '{}'".format(node_element))
-
   version = build['published_version']
   revision = build['revision']
 
@@ -75,63 +74,27 @@ def setup_mount_point(mount_point):
   # clean up first
   print("Unmounting lingering images.")
   unmount_mountpoint(mount_point)
-
-
   print("Detaching loop devices.")
   time.sleep(3)
   detach_loop_devices()
-
   create_loop_devices()
 
-
-#def get_base_image_filename(base):
-    #node_element = build_config.get_node_element(eid=base['node_element'])['name'].replace(
-        #' ', '_').lower()
-    #if node_element == 'node_controller':
-        #device = "odroid-c1"
-    #else:
-        #device = "odroid-xu3"
-
-    #date = base['date'].replace('-', '')
-
-    #base_image_base="waggle-base-%s-%s-%s" % (node_element, device, date)
-    #return "{}.img".format(base_image_base)
-
 def get_base_image_filename(base):
-    architecture = build_config.get_cpu_architecture(eid=base['cpu_architecture'])['name']
-    if architecture != 'armv7l':
-        print("Error: expected CPU architecture 'armv7l', but got '{}'".format(architecture))
-        sys.exit(6)
-    node_element = build_config.get_node_element(eid=base['node_element'])['name']
-    waggle_stock_url=''
-    stock_images=   {
-                    'Edge Processor' : {
-                            'filename': "stage3_xu4",
-                             'url': waggle_stock_url
-                            },
-                    'Node Controller' : {
-                            'filename':"stage3_c1+",
-                            'url': waggle_stock_url
-                        }
-                    }
 
-    try:
-        stock_image = stock_images[node_element]['filename']
-    except:
-        print("{} image not found".format(node_element))
-        sys.exit(1)
-
+    if base == "NC":
+       stock_image="stage3_c1+"
+    elif base == "EP"
+       stock_image="stage3_xu4"
     base_image=stock_image
-
     return "{}.img".format(base_image)
 
 
 def mount_new_image(build, node_element, mount_point):
   base = None
   if node_element == 'Node Controller':
-    base = build_config.get_base(eid=build['nc_base'])
+    base = 'nc'
   elif node_element == 'Edge Processor':
-    base = build_config.get_base(eid=build['ep_base'])
+    base = 'ep'
   else:
     raise BuildWaggleImageError(
       "unknown node element '{}'".format(node_element))
@@ -177,9 +140,9 @@ def mount_new_image(build, node_element, mount_point):
 def mount_new_image_from_uncompressed(build, node_element, mount_point):
   base = None
   if node_element == 'Node Controller':
-    base = build_config.get_base(eid=build['nc_base'])
+    base = 'nc'
   elif node_element == 'Edge Processor':
-    base = build_config.get_base(eid=build['ep_base'])
+    base = 'ep'
   else:
     raise BuildWaggleImageError(
       "unknown node element '{}'".format(node_element))
@@ -438,8 +401,10 @@ def main(argv):
   node_element = None
   if node_controller:
     node_element = 'Node Controller'
+    base="nc"
   elif edge_processor:
     node_element = 'Edge Processor'
+    base="ep"
   else:
     raise BuildWaggleImageError(
       "no node element specified (use either --node-controller or --edge-processor)")

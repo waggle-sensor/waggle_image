@@ -26,12 +26,12 @@ fi
 
 dd if=/dev/zero bs=1M count=700 >> $image_file
 available_device=$(losetup -f)
-sudo losetup $available_device $image_file
+losetup $available_device $image_file
 losetup -l | grep "$image_file\|SIZELIMIT"
-sudo parted --script $available_device resizepart 2 100%
-sudo e2fsck -f $available_device"p2"
-sudo resize2fs $available_device"p2"
-sudo losetup -d  $available_device
+parted --script $available_device resizepart 2 100%
+e2fsck -f $available_device"p2"
+resize2fs $available_device"p2"
+losetup -d  $available_device
 if [ `fdisk -l $image_file | awk '{print $1}' | grep "stage1" | wc -l` -eq 2 ];then
     echo "Success, now compressing image"
     xz -1 -f $image_file

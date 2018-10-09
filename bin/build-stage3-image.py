@@ -81,9 +81,9 @@ def setup_mount_point(mount_point):
 
 def get_base_image_filename(base):
 
-    if base == "NC":
+    if base == "nc":
        stock_image="stage3_c1+"
-    elif base == "EP"
+    elif base == "ep":
        stock_image="stage3_xu4"
     base_image=stock_image
     return "{}.img".format(base_image)

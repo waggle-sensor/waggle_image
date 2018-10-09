@@ -26,11 +26,11 @@ def get_base_image_filename(base):
     waggle_stock_url=''
     stock_images=   {
                     'Edge Processor' : {
-                            'filename': "stage2_xu4.img",
+                            'filename': "stage2_xu4",
                              'url': waggle_stock_url
                             },
                     'Node Controller' : {
-                            'filename':"stage2_c1+.img",
+                            'filename':"stage2_c1+",
                             'url': waggle_stock_url
                         }
                     }

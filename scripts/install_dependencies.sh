@@ -72,6 +72,7 @@ apt-get -y install -f
 apt-get -y autoremove
 apt-get -y clean
 apt-get -y autoclean
+apt-get -y purge unattended-upgrades
 
 # Install Python 2 package dependencies.
 if [ "x" == "x${python2_packages[*]}" ]; then

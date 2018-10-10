@@ -8,7 +8,7 @@ if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
     echo "Odroid C1+ detected, starting process..."
     cd $stage2_dir
     cp ../stage1/stage1_c1+.img ./stage2_c1+.img
-elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
+elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ]; then
     echo "Odroid XU4 detected, starting process..."
     cd $stage2_dir
     cp ../stage1/stage1_xu4.img ./stage2_xu4.img

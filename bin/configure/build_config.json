@@ -94,6 +94,19 @@
             "published_version": "2.9.0",
             "nodecontroller_commit": "599d855"
         },
+        "25": {
+            "nc_base": 5,
+            "core_commit": "HEAD",
+            "revision": 1,
+            "plugin_manager_commit": "HEAD",
+            "cpu_architecture": 1,
+            "date": "2018-05-29",
+            "ep_base": 7,
+            "edge_processor_commit": "HEAD",
+            "waggle_image_commit": "HEAD",
+            "published_version": "bleeding",
+            "nodecontroller_commit": "HEAD"
+        },
         "7": {
             "nc_base": 5,
             "core_commit": "4843a11",

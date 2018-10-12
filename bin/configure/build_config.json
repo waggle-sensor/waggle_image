@@ -63,10 +63,13 @@
             "cpu_architecture": 1,
             "date": "2018-05-29",
             "ep_base": 2,
+            "published_version": "2.9.0",
             "edge_processor_commit": "22cf407",
             "waggle_image_commit": "69b813e",
-            "published_version": "2.9.0",
-            "nodecontroller_commit": "599d855"
+            "nodecontroller_commit": "599d855",
+            "wagman_commit": "b9eddda",
+            "sensors_commit":  "aa76a33"
+
         },
         "1": {
             "nc_base": 1,
@@ -76,10 +79,12 @@
             "cpu_architecture": 1,
             "date": "2018-10-10",
             "ep_base": 2,
+            "published_version": "bleeding",
             "edge_processor_commit": "HEAD",
             "waggle_image_commit": "HEAD",
-            "published_version": "bleeding",
-            "nodecontroller_commit": "HEAD"
+            "nodecontroller_commit": "HEAD",
+            "wagman_commit": "HEAD",
+            "sensors_commit":  "HEAD"
         }
     },
     "Dependency": {

@@ -1,6 +1,4 @@
-###  Building Images on an Odroid: 
-
-#### Set-up Odroid Image Builder Devices:
+### Set-up Odroid Image Builder Devices:
 
 1. Download images for C1+ and XU4 - 
 ```bash

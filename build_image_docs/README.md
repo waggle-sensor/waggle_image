@@ -11,8 +11,8 @@ The Linux images for the waggle SBCs is built in several stages, each creating a
 
   1. [**Stage 0:**](https://github.com/waggle-sensor/waggle_image/blob/master/build_image_docs/stage_0.md) Fetch Ubuntu Minimal Image for the Hard Kernel Single Board Computer (SBC).  
   2. [**Stage 1:**](https://github.com/waggle-sensor/waggle_image/blob/master/build_image_docs/stage_1.md) Create expanded Image for C1+ and XU4 from `Stage 0`.
-  3. **Stage 2:** Add new software packages to the `Stage 1`.
-  4. **Stage 3:** Create deployable Image from `Stage 2` by adding waggle and project specific configurations and credentials. 
+  3. [**Stage 2:**](https://github.com/waggle-sensor/waggle_image/blob/master/build_image_docs/stage_2.md) Add new software packages to the `Stage 1`.
+  4. [**Stage 3:**](https://github.com/waggle-sensor/waggle_image/blob/master/build_image_docs/stage_3.md) Create deployable Image from `Stage 2` by adding waggle and project specific configurations and credentials. 
 
 ### Rebuilding Various Images: Why and when? 
 

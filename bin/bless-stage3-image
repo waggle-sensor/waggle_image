@@ -66,17 +66,6 @@ configure_from_repository() {
     sed -i -e "s/^sudo:x:27:.*/sudo:x:27:waggle/" ${MOUNT_POINT}/etc/group
   fi
 
-  # set AoT root password
-  # if [ ${DISABLE_ROOT_PASS} -eq 0 ]; then
-  #   echo "Setting the AoT root password..."
-  #   aot_root_shadow_entry=$(cat private_config/root_shadow)
-  #   sed -i -e "s/^root:..*/${aot_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
-  # else
-  #   echo "Setting the default root password..."
-  #   default_root_shadow_entry=$(cat private_config/waggle_shadow)
-  #   sed -i -e "s/^root:..*/${default_root_shadow_entry}/" ${MOUNT_POINT}/etc/shadow
-  # fi
-
   # set default root password and
   # install lock and unlock scripts
   echo "Generating AoT and waggle root passwords under /root..."
@@ -87,7 +76,7 @@ configure_from_repository() {
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
     cp private_config/shadow_password/shadow_c1p_nc/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
-  elif [ "${ODROID_MODEL}" == "ODROID-XU3" ]; then
+  elif [ "${ODROID_MODEL}" == *"ODROID-XU"* ]; then
     cp private_config/shadow_password/shadow_xu4_ep/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
     cp private_config/shadow_password/shadow_xu4_ep/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle

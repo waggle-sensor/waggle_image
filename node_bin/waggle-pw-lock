@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [ ! -e /etc/passwds/shadow_aot ]; then
+  echo "The shadow file not presented under /etc/passwds/shadow_aot"
+  exit 1
+fi
+
+LOCK_FS=0
+if [ ! -w /etc ] ; then
+  echo "Remounting the file system to readwrite..."
+  mount -o remount,rw /
+  if [ $? -ne 0 ] ; then
+    echo "Mounting / as rw failed"
+    exit 1
+  fi
+  LOCK_FS=1
+fi
+
+echo "Locking the Waggle system...."
+ln -sf /etc/passwds/shadow_aot /etc/shadow
+if [ $? -ne 0 ] ; then
+  echo "Locking failed"
+  exit 1
+fi
+
+if [ ${LOCK_FS} -eq 1 ] ; then
+  mount -o remount,ro /
+  if [ $? -ne 0 ] ; then
+    echo "Mounting / as ro failed"
+    exit 1
+  fi
+fi
+echo "Locking is done"

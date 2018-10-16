@@ -12,7 +12,7 @@ if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
     unxz stage0_c1+.img.xz
     mv stage0_c1+.img stage1_c1+.img
     image_file="stage1_c1+.img"
-elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ]; then
+elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ] || [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
     echo "Odroid XU4 detected, starting process..."
     cd $stage1_dir
     cp ../stage0/stage0_xu4.img.xz .

@@ -76,7 +76,7 @@ configure_from_repository() {
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
     cp private_config/shadow_password/shadow_c1p_nc/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
-  elif [ "${ODROID_MODEL}" == *"ODROID-XU"* ]; then
+  elif [[ "${ODROID_MODEL}" == *"ODROID-XU"* ]]; then
     cp private_config/shadow_password/shadow_xu4_ep/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
     cp private_config/shadow_password/shadow_xu4_ep/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle

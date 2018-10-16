@@ -10,7 +10,7 @@ if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
     cp ../stage2/stage2_c1+.img ./stage3_c1+.img
     cd $current_dir
     ./build-stage3-image.py --build-dir=$stage3_dir --node-controller --revision=1 --deployment=AoT --version="$1"
-elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ]; then
+elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ] || [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
     echo "Odroid XU4 detected, starting process..."
     cd $stage3_dir
     cp ../stage2/stage2_xu4.img ./stage3_xu4.img

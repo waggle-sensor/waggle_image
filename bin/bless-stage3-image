@@ -83,14 +83,14 @@ configure_from_repository() {
   mkdir -p ${MOUNT_POINT}/etc/passwds
 
   if [ "${ODROID_MODEL}" == "ODROIDC" ]; then
-    cp private_config/nc_shadow/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
+    cp private_config/shadow_password/shadow_c1p_nc/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
-    cp private_config/nc_shadow/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
+    cp private_config/shadow_password/shadow_c1p_nc/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
   elif [ "${ODROID_MODEL}" == "ODROID-XU3" ]; then
-    cp private_config/ep_shadow/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
+    cp private_config/shadow_password/shadow_xu4_ep/shadow_aot ${MOUNT_POINT}/etc/passwds/shadow_aot
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_aot
-    cp private_config/ep_shadow/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
+    cp private_config/shadow_password/shadow_xu4_ep/shadow_waggle ${MOUNT_POINT}/etc/passwds/shadow_waggle
     chmod 640 ${MOUNT_POINT}/etc/passwds/shadow_waggle
   fi
 

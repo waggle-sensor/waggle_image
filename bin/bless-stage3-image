@@ -5,6 +5,9 @@
 #
 # Disable any of these actions except 1 and 2 with approprite options
 
+set -x
+set -e
+
 configure_from_repository() {
   # Use the private_config repository to obtain the blessing.
 

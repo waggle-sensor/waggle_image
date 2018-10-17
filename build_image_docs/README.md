@@ -28,25 +28,25 @@ new Ubuntu release/kernel). This is followed by building `Stage 1`, `Stage 2` an
   2. Step 2: Build images using scripts in [bin directory](https://github.com/waggle-sensor/waggle_image/tree/master/bin) - 
   
   #### Odroid C1+ (Node Controller):
-  2.9.0 Image for C1+ (using the latest Tag  and latest Stage 2 build):
+  1. *2.9.0* image for C1+ (using the latest Tag  and latest Stage 2 build):
   ```bash
   cd /root/waggle_image/bin
   ./rebuild-image-space && ./build-stage0-image && ./build-stage1-image && ./build-stage2-image a9024069-8e15-4946-a8da-2bc9dad8ccb0 && ./build-stage3-image 2.9.0
   ```
   
-  Bleeding Image for C1+ (using the latest Tag  and latest Stage 2 build):
+  2. *Bleeding* image for C1+ (using the latest Tag  and latest Stage 2 build):
   ```bash
   cd /root/waggle_image/bin
   ./rebuild-image-space && ./build-stage0-image && ./build-stage1-image && ./build-stage2-image a9024069-8e15-4946-a8da-2bc9dad8ccb0 && ./build-stage3-image bleeding
   ```
   
   #### Odroid XU4 (Edge Processor):
-  2.9.0 Image for XU4 (using the latest Tag  and latest Stage 2 build):
+  1. *2.9.0* image for XU4 (using the latest Tag  and latest Stage 2 build):
   ```bash
   cd /root/waggle_image/bin
   ./rebuild-image-space && ./build-stage0-image && ./build-stage1-image && ./build-stage2-image bf3fe9c2-cb3a-11e8-935c-e7c6eb8f24f5 && ./build-stage3-image 2.9.0
   ```
-  Bleeding Image for XU4 (using the latest Tag  and latest Stage 2 build):
+  2. *Bleeding* image for XU4 (using the latest Tag  and latest Stage 2 build):
   ```bash
   cd /root/waggle_image/bin
   ./rebuild-image-space && ./build-stage0-image && ./build-stage1-image && ./build-stage2-image bf3fe9c2-cb3a-11e8-935c-e7c6eb8f24f5 && ./build-stage3-image bleeding

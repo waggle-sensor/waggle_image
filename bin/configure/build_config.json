@@ -55,6 +55,21 @@
     },
     "_default": {},
     "Build": {
+        "3": {
+            "nc_base": 1,
+            "ep_base": 2,
+            "revision": 1,
+            "cpu_architecture": 1,
+            "date": "2018-10-23",
+            "core_commit": "v2.9.2",
+            "plugin_manager_commit": "v2.9.2",
+            "published_version": "2.9.2",
+            "edge_processor_commit": "v2.9.2",
+            "waggle_image_commit": "v2.9.2",
+            "nodecontroller_commit": "v2.9.2",
+            "wagman_commit": "v2.9.2",
+            "sensors_commit":  "v2.9.2"
+        },
         "2": {
             "nc_base": 1,
             "core_commit": "56f5410",

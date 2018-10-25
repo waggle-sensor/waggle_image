@@ -53,6 +53,8 @@ fi
 apt-get update
 apt-key update
 
+apt-get install -y net-tools
+
 # Install Ubuntu package dependencies.
 if [ "x" == "x${apt_packages[*]}" ]; then
   echo "No APT packages specified. Skipping apt operation."

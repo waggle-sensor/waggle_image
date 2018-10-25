@@ -83,7 +83,8 @@ if [ "x" == "x${python2_packages[*]}" ]; then
   echo "No Python 2 packages specified. Skipping pip operation."
 else
   echo "Installing the following Python 2 packages: ${python2_packages[@]}"
-  pip --no-cache-dir install --upgrade pip==9.0.3
+  #pip --no-cache-dir install --upgrade pip==9.0.3
+  pip --no-cache-dir install --upgrade
   pip --no-cache-dir install ${python2_packages[@]}
 fi
 
@@ -92,7 +93,8 @@ if [ "x" == "x${python3_packages[*]}" ]; then
   echo "No Python 3 packages specified. Skipping pip3 operation."
 else
   echo "Installing the following Python 3 packages: ${python3_packages[@]}"
-  pip3 --no-cache-dir install --upgrade pip==9.0.3
+  #pip3 --no-cache-dir install --upgrade pip==9.0.3
+  pip3 --no-cache-dir install --upgrade
   cd ${script_dir}/../var/cache/pip3/archives
   pip3 --no-cache-dir install ${python3_packages[@]}
 fi

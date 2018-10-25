@@ -46,6 +46,10 @@ fi
 
 set -e
 
+if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ]; then
+  add-apt-repository ppa:timsc/opencv-3.4 -y
+fi 
+
 apt-get update
 apt-key update
 

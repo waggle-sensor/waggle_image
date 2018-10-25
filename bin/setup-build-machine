@@ -4,4 +4,5 @@ declare -r script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 locale-gen --purge en_US.UTF-8
 echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' > /etc/default/locale
 cd $script_dir/scripts
-./install_dependencies.sh screen:apt,curl:apt,python3-pip:apt,parted:apt,tree:apt,python-pip:apt,tinydb:python3
+wget https://raw.githubusercontent.com/waggle-sensor/core/master/scripts/screenrc -O /root/.screenrc
+./install_dependencies.sh screen:apt,curl:apt,python3-pip:apt,parted:apt,tree:apt,python-pip:apt,tinydb:python3,git:apt,rsync:apt

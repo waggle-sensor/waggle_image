@@ -2,6 +2,8 @@
 set -e
 echo "Setting downloading and setting up images"
 
+cwd = `pwd`
+
 function arch(){
   local out=$(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2)
   echo $out
@@ -10,7 +12,9 @@ function arch(){
 if [ -d /root/images/stage0 ];then
   cd /root/images/stage0/
 else
+  cd $cwd
   ./rebuild-image-space
+  cd /root/images/stage0/
 fi
 
 if [ $(arch) == "ODROIDC" ]; then

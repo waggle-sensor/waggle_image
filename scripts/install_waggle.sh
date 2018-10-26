@@ -43,6 +43,7 @@ cat /etc/os-release >> ${report_file}
 echo "--------" >> ${report_file}
 dpkg -l >> ${report_file}
 echo "--------" >> ${report_file}
+
 ### remove unwanted apt-get files. The nodes will install packages using apt-get and so the
 ### files can be removed. 
 rm -rf /var/lib/apt/lists/*

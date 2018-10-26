@@ -36,8 +36,15 @@ echo root:waggle | chpasswd
 ### create report
 report_file="/root/report.txt"
 echo "Image created on $(date)." > ${report_file}
-echo "" >> ${report_file}
+echo "--------" >> ${report_file}
 uname -a >> ${report_file}
-echo "" >> ${report_file}
+echo "--------" >> ${report_file}
 cat /etc/os-release >> ${report_file}
+echo "--------" >> ${report_file}
 dpkg -l >> ${report_file}
+echo "--------" >> ${report_file}
+### remove unwanted apt-get files. The nodes will install packages using apt-get and so the
+### files can be removed. 
+rm -rf /var/lib/apt/lists/*
+
+

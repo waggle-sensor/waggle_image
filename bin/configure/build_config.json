@@ -529,7 +529,7 @@
         "5": {
             "nc_base": 3,
             "ep_base": 4,
-            "plugin_manager_commit": "v2.9.2",
+            "plugin_manager_commit": "9193c66",
             "cpu_architecture": 1,
             "published_version": "v2.10.1a1",
             "revision": 1,

@@ -1,18 +1,37 @@
 #!/bin/bash
 
+function arch(){
+  local out=$(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2)
+  echo $out
+}
+
 stage1_dir="/root/images/stage1"
 
 set -e
 set -x
 
-if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
+if [ ! -d  ../stage0 ];then
+  echo "Run build-stage0-image first"
+  exit
+fi
+
+if [ $(arch) == "ODROIDC" ] && [ ! -f ../stage0/stage0_c1+.img.xz ];then
+  echo "Run build-stage0-image first"
+  exit
+elif [ $(arch) == "ODROID-XU4" ] && [ ! -f ../stage0/stage0_xu4.img.xz ];then
+  echo "Run build-stage0-image first"
+  exit
+fi
+
+
+if [ $(arch) == "ODROIDC" ]; then
     echo "Odroid C1+ detected, starting process..."
     cd $stage1_dir
     cp ../stage0/stage0_c1+.img.xz .
     unxz stage0_c1+.img.xz
     mv stage0_c1+.img stage1_c1+.img
     image_file="stage1_c1+.img"
-elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ] || [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
+elif [ $(arch) = "ODROID-XU4" ] || [ $(arch) = "ODROID-XU3" ]; then
     echo "Odroid XU4 detected, starting process..."
     cd $stage1_dir
     cp ../stage0/stage0_xu4.img.xz .
@@ -20,7 +39,8 @@ elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ] |
     mv stage0_xu4.img stage1_xu4.img
     image_file="stage1_xu4.img"
 else
-    echo "This machine is neither a C1+ nor a XU4. Please follow steps from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
+    echo "This machine is neither a C1+ nor a XU4. Please follow steps \
+      from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
 fi
 
 

@@ -1,19 +1,43 @@
 #!/bin/bash
 set -e
 set -x
+
+function arch(){
+  local out=$(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2)
+  echo $out
+}
+
+
 current_dir=`pwd`
 stage2_dir="/root/images/stage2"
 
-if [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROIDC" ]; then
+
+if [ ! -d  ../stage1 ];then
+  echo "Run build-stage1-image first"
+  exit
+fi
+
+if [ $(arch) == "ODROIDC" ] && [ ! -f ../stage1/stage1_c1+.img.xz ];then
+  echo "Run build-stage1-image first"
+  exit
+elif [ $(arch) == "ODROID-XU4" ] && [ ! -f ../stage1/stage1_xu4.img.xz ];then
+  echo "Run build-stage1-image first"
+  exit
+fi
+
+
+if [ $(arch) == "ODROIDC" ]; then
     echo "Odroid C1+ detected, starting process..."
     cd $stage2_dir
     cp ../stage1/stage1_c1+.img ./stage2_c1+.img
-elif [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU4" ] || [ $(cat /proc/cpuinfo | grep Hardware | cut -d ":" -f 2) = "ODROID-XU3" ]; then
+elif [ $(arch) == "ODROID-XU4" ] || [ $(arch) == "ODROID-XU3" ]; then
     echo "Odroid XU4 detected, starting process..."
     cd $stage2_dir
     cp ../stage1/stage1_xu4.img ./stage2_xu4.img
 else
-    echo "This machine is neither a C1+ nor a XU4. Please follow steps from https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
+    echo "This machine is neither a C1+ nor a XU4. Please follow steps from \
+      https://github.com/waggle-sensor/waggle_image/tree/master/build_image_docs to build images."
 fi
+
 cd $current_dir
 ./build-stage2-image.py -b $stage2_dir "$1"

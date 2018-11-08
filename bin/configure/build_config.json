@@ -526,6 +526,21 @@
         }
     },
     "Build": {
+        "6": {
+            "nc_base": 3,
+            "ep_base": 4,
+            "plugin_manager_commit": "v2.10.0",
+            "cpu_architecture": 1,
+            "published_version": "v2.10.0",
+            "revision": 1,
+            "edge_processor_commit": "v2.10.0",
+            "core_commit": "v2.10.0",
+            "wagman_commit": "v2.10.0",
+            "sensors_commit": "v2.10.0",
+            "waggle_image_commit": "v2.10.0",
+            "date": "2018-10-23",
+            "nodecontroller_commit": "v2.10.0"
+        },
         "5": {
             "nc_base": 3,
             "ep_base": 4,

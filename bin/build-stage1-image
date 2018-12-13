@@ -10,6 +10,8 @@ stage1_dir="/root/images/stage1"
 set -e
 set -x
 
+cd $stage1_dir
+
 if [ ! -d  ../stage0 ];then
   echo "Run build-stage0-image first"
   exit

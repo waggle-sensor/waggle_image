@@ -11,16 +11,17 @@ function arch(){
 current_dir=`pwd`
 stage2_dir="/root/images/stage2"
 
+cd $stage2_dir
 
 if [ ! -d  ../stage1 ];then
   echo "Run build-stage1-image first"
   exit
 fi
 
-if [ $(arch) == "ODROIDC" ] && [ ! -f ../stage1/stage1_c1+.img.xz ];then
+if [ $(arch) == "ODROIDC" ] && [ ! -f ../stage1/stage1_c1+.img ];then
   echo "Run build-stage1-image first"
   exit
-elif [ $(arch) == "ODROID-XU4" ] && [ ! -f ../stage1/stage1_xu4.img.xz ];then
+elif [ $(arch) == "ODROID-XU4" ] && [ ! -f ../stage1/stage1_xu4.img ];then
   echo "Run build-stage1-image first"
   exit
 fi

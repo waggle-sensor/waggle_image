@@ -189,8 +189,8 @@ def build_image(build, node_element, server_host, mount_point):
     if base == None:
       raise BuildWaggleImageError(
         "unable to find base with DB id '{}'".format(build['nc_base']))
-    #repositories = ['core', 'nodecontroller', 'plugin_manager', 'wagman', 'sensors']
-    repositories = ['core', 'nodecontroller', 'plugin_manager']
+    repositories = ['core', 'nodecontroller', 'plugin_manager', 'wagman', 'sensors']
+    # repositories = ['core', 'nodecontroller', 'plugin_manager']
     repositories_string = generate_repositories_string(build, repositories)
   elif node_element == 'Edge Processor':
     base = build_config.get_base(eid=build['nc_base'])

@@ -52,8 +52,12 @@ fi
 
 apt-get update
 apt-key update
+apt-get -y purge unattended-upgrades
+apt-get -y install -f
+apt-get -y autoremove
+apt-get -y clean
+apt-get -y autoclean
 
-apt-get install -y net-tools
 
 # Install Ubuntu package dependencies.
 if [ "x" == "x${apt_packages[*]}" ]; then
@@ -73,12 +77,12 @@ else
 fi
 
 
-apt-get update
+apt-get install -y net-tools
 apt-get -y install -f
 apt-get -y autoremove
 apt-get -y clean
 apt-get -y autoclean
-apt-get -y purge unattended-upgrades
+
 
 # Install Python 2 package dependencies.
 if [ "x" == "x${python2_packages[*]}" ]; then

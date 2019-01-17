@@ -53,6 +53,7 @@ fi
 apt-get update
 apt-key update
 apt-get -y purge unattended-upgrades
+apt-get -y upgrade
 apt-get -y install -f
 apt-get -y autoremove
 apt-get -y clean

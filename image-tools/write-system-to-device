@@ -166,7 +166,6 @@ if test "\${vpu}" = "0"; then fdt rm /mesonstream; fdt rm /vdec; fdt rm /ppmgr; 
 if test "\${hdmioutput}" = "0"; then fdt rm /mesonfb; fi
 
 bootm 0x21000000 0x22000000 0x21800000"
-
 EOF
 }
 
@@ -189,7 +188,6 @@ UUID=${root_uuid}  /       ${root_type}    rw,nosuid,nodev,nofail,noatime,nodira
 UUID=${rw_uuid}      /wagglerw       ${rw_type}    errors=remount-ro,noatime,nodiratime            0 1
 UUID=${boot_uuid} /media/boot ${boot_type}  defaults,rw,owner,flush,umask=000 0 0
 tmpfs   /tmp  tmpfs nodev,nosuid,mode=1777      0 0
-
 EOF
 }
 

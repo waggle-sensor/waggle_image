@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "writing bootloader"
+(cd "$1/root/usr/share/c1_uboot"; ./sd_fusing.sh "$2")

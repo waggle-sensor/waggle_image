@@ -1,0 +1,245 @@
+#!/bin/bash
+
+log() {
+    echo "$(date +'%Y/%m/%d %H:%M:%S') - $*"
+}
+
+fatal() {
+    >&2 echo $*
+    exit 1
+}
+
+usage() {
+    cat << EOF
+$0 basedir device
+
+basedir must be a directory of the form:
+
+basedir/
+    boot/               <- boot partition contents
+    root/               <- root partition contents
+    rw/                 <- rw partition contents
+    hooks/
+        post-setup      <- post-setup executable
+EOF
+    exit 1
+}
+
+make_partitions() {
+  if [ -z "$1" ]; then
+    fatal "error: make_partitions requires a target device"
+  fi
+
+  dd if=/dev/zero of="$1" bs=1M count=100
+  sync
+
+  sleep 3
+
+  parted --script "$1" mklabel msdos
+
+  parted --script "$1" mkpart primary fat16 3072s 266239s
+  parted --script "$1" set 1 lba off
+
+  parted --script "$1" mkpart primary ext4 266240s 15624191s
+  parted --script "$1" mkpart primary ext4 15624192s 100%
+
+  sleep 3
+
+  mkdosfs -F 16 "$1"1
+  mkfs.ext2 -F "$1"2
+  mkfs.ext2 -F "$1"3
+}
+
+generate_boot_ini() {
+    if [ -z "$1" ]; then
+      fatal "error: missing target device"
+    fi
+
+    root_uuid=$(blkid -s UUID -o value "$1"2)
+
+    cat << EOF
+ODROIDC-UBOOT-CONFIG
+
+# Possible screen resolutions
+# Uncomment only a single Line! The line with setenv written.
+# At least one mode must be selected.
+
+# setenv m "480x320p60hz"	# 480x320
+# setenv m "480x800p60hz"	# 480x800
+# setenv m "vga"          	# 640x480
+# setenv m "480p"         	# 720x480
+# setenv m "576p"         	# 720x576
+# setenv m "800x480p60hz" 	# 800x480
+# setenv m "800x600p60hz" 	# 800x600
+# setenv m "1024x600p60hz"	# 1024x600
+# setenv m "1024x768p60hz"	# 1024x768
+# setenv m "1360x768p60hz" 	# 1360x768
+# setenv m "1440x900p60hz"	# 1440x900
+# setenv m "1600x900p60hz"	# 1600x900
+# setenv m "1680x1050p60hz"	# 1680x1050
+# setenv m "720p"         	# 720p 1280x720
+# setenv m "800p"         	# 1280x800
+# setenv m "sxga"         	# 1280x1024
+# setenv m "1080i50hz"          # 1080I@50Hz
+# setenv m "1080p24hz"          # 1080P@24Hz
+# setenv m "1080p50hz"          # 1080P@50Hz
+setenv m "1080p"                # 1080P@60Hz
+# setenv m "1920x1200"    	# 1920x1200
+
+# HDMI DVI Mode Configuration
+setenv vout_mode "hdmi"
+# setenv vout_mode "dvi"
+# setenv vout_mode "vga"
+
+# HDMI BPP Mode
+setenv m_bpp "32"
+# setenv m_bpp "24"
+# setenv m_bpp "16"
+
+# Monitor output
+# Controls if HDMI PHY should output anything to the monitor
+setenv monitor_onoff "false" # true or false
+
+# HDMI Hotplug Force (HPD)
+# 1 = Enables HOTPlug Detection
+# 0 = Disables HOTPlug Detection and force the connected status
+setenv hpd "0"
+
+# CEC Enable/Disable (Requires Hardware Modification)
+# 1 = Enables HDMI CEC
+# 0 = Disables HDMI CEC
+setenv cec "0"
+
+# PCM5102 I2S Audio DAC
+# PCM5102 is an I2S Audio Dac Addon board for ODROID-C1+
+# Uncomment the line below to __ENABLE__ support for this Addon board.
+# setenv enabledac "enabledac"
+
+# UHS Card Configuration
+# Uncomment the line below to __DISABLE__ UHS-1 MicroSD support
+# This might break boot for some brand models of cards.
+setenv disableuhs "disableuhs"
+
+# Disable VPU (Video decoding engine, Saves RAM!!!)
+# 0 = disabled
+# 1 = enabled
+setenv vpu "1"
+
+# Disable HDMI Output (Again, saves ram!)
+# 0 = disabled
+# 1 = enabled
+setenv hdmioutput "1"
+
+# Default Console Device Setting
+# setenv condev "console=ttyS0,115200n8"        # on serial port
+# setenv condev "console=tty0"                    # on display (HDMI)
+setenv condev "console=tty0 console=ttyS0,115200n8"   # on both
+
+# Enable/Disable ODROID-VU7 Touchscreen
+setenv disable_vu7 "false" # false
+
+# CPU Max Frequency
+# Possible Values: 96 192 312 408 504 600 720 816
+# 1008 1200 1320 1488 1536 1632 1728 and 1824
+setenv max_freq "1536"
+# setenv max_freq "1632"
+# setenv max_freq "1728"
+# setenv max_freq "1824"
+
+###########################################
+
+if test "\${hpd}" = "0"; then setenv hdmi_hpd "disablehpd=true"; fi
+if test "\${cec}" = "1"; then setenv hdmi_cec "hdmitx=cecf"; fi
+if test "\${disable_vu7}" = "false"; then setenv hid_quirks "usbhid.quirks=0x0eef:0x0005:0x0004"; fi
+
+# Boot Arguments
+setenv bootargs "root=UUID=${root_uuid} rootwait ro \${condev} no_console_suspend fsck.repair=yes vdaccfg=0xa000 logo=osd1,loaded,0x7900000,720p,full dmfc=3 cvbsmode=576cvbs hdmimode=\${m} m_bpp=\${m_bpp} vout=\${vout_mode} \${disableuhs} \${hdmi_hpd} \${hdmi_cec} \${enabledac} monitor_onoff=\${monitor_onoff} max_freq=\${max_freq} \${hid_quirks} fsck.repair=yes net.ifnames=0"
+
+# Booting
+fatload mmc 0:1 0x21000000 uImage
+fatload mmc 0:1 0x22000000 uInitrd
+fatload mmc 0:1 0x21800000 meson8b_odroidc.dtb
+fdt addr 21800000
+
+if test "\${vpu}" = "0"; then fdt rm /mesonstream; fdt rm /vdec; fdt rm /ppmgr; fi
+
+if test "\${hdmioutput}" = "0"; then fdt rm /mesonfb; fi
+
+bootm 0x21000000 0x22000000 0x21800000"
+
+EOF
+}
+
+generate_fstab() {
+    if [ -z "$1" ]; then
+      fatal "error: missing target device"
+    fi
+
+    boot_uuid=$(blkid -s UUID -o value "$1"1)
+    boot_type=$(blkid -s TYPE -o value "$1"1)
+
+    root_uuid=$(blkid -s UUID -o value "$1"2)
+    root_type=$(blkid -s TYPE -o value "$1"2)
+
+    rw_uuid=$(blkid -s UUID -o value "$1"3)
+    rw_type=$(blkid -s TYPE -o value "$1"3)
+
+    cat << EOF
+UUID=${root_uuid}  /       ${root_type}    rw,nosuid,nodev,nofail,noatime,nodiratime            0 1
+UUID=${rw_uuid}      /wagglerw       ${rw_type}    errors=remount-ro,noatime,nodiratime            0 1
+UUID=${boot_uuid} /media/boot ${boot_type}  defaults,rw,owner,flush,umask=000 0 0
+tmpfs   /tmp  tmpfs nodev,nosuid,mode=1777      0 0
+
+EOF
+}
+
+basedir=$1
+device=$2
+prefix=$3
+
+if [ -z "$device" ]; then
+    usage
+fi
+
+if [ -z "$prefix" ]; then
+    prefix=$1
+fi
+
+log "partitioning disk"
+make_partitions "$device"
+
+cleanup() {
+    log "unmounting partitions"
+    umount partitions/*
+}
+
+trap cleanup EXIT
+
+mkdir -p partitions/boot partitions/root partitions/rw
+
+log "mounting partitions"
+mount "$device"1 partitions/boot
+mount "$device"2 partitions/root
+mount "$device"3 partitions/rw
+
+log "populating boot partition"
+cp -r "$basedir"/boot/. partitions/boot
+
+log "populating root partition"
+cp -r "$basedir"/root/. partitions/root
+
+log "populating rw partition"
+cp -r "$basedir"/rw/. partitions/rw
+
+log "generating boot.ini"
+generate_boot_ini $device > partitions/boot/boot.ini
+
+log "generating fstab"
+generate_fstab $device > partitions/root/etc/fstab
+
+if [ -e $basedir/hooks/post-setup ]; then
+    log "executing post-setup hook"
+    $basedir/hooks/post-setup $basedir $device $prefix
+fi
+
+sync

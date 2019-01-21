@@ -248,15 +248,6 @@ generate_fstab $device rw > partitions/root/etc/fstab
 generate_fstab $device rw > partitions/root/etc/fstab_rw
 generate_fstab $device ro > partitions/root/etc/fstab_ro
 
-# NOTE This should become part of the one time partition extraction
-log "moving mutable system files into rw partition"
-mkdir -p partitions/rw/srv partitions/rw/var
-mv partitions/root/srv/* partitions/rw/srv
-mv partitions/root/var/* partitions/rw/var
-
-log "cleanup autorecover files"
-rm -f partitions/root/root/do_recovery partitions/root/wagglerw/do_recovery
-
 if [ -e $basedir/hooks/post-setup ]; then
     log "executing post-setup hook"
     $basedir/hooks/post-setup $basedir $device $prefix

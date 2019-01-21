@@ -21,8 +21,6 @@ basedir/
     boot/               <- boot partition contents
     root/               <- root partition contents
     rw/                 <- rw partition contents
-    hooks/
-        post-setup      <- post-setup executable
 EOF
     exit 1
 }
@@ -248,9 +246,7 @@ generate_fstab $device rw > partitions/root/etc/fstab
 generate_fstab $device rw > partitions/root/etc/fstab_rw
 generate_fstab $device ro > partitions/root/etc/fstab_ro
 
-if [ -e $basedir/hooks/post-setup ]; then
-    log "executing post-setup hook"
-    $basedir/hooks/post-setup $basedir $device $prefix
-fi
+log "writing bootloader"
+(cd odroid_c1_uboot; ./sd_fusing $device)
 
 sync

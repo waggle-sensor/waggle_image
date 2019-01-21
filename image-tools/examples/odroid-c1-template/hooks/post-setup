@@ -1,4 +1,0 @@
-#!/bin/bash
-
-echo "writing bootloader"
-(cd odroid_c1_uboot; ./sd_fusing.sh "$2")

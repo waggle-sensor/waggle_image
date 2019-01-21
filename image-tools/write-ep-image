@@ -21,8 +21,6 @@ basedir/
     boot/               <- boot partition contents
     root/               <- root partition contents
     rw/                 <- rw partition contents
-    hooks/
-        post-setup      <- post-setup executable
 EOF
     exit 1
 }

@@ -194,9 +194,6 @@ UUID=${root_uuid}  /       ${root_type}    ${root_mode},nosuid,nodev,nofail,noat
 UUID=${rw_uuid}      /wagglerw       ${rw_type}    errors=remount-ro,noatime,nodiratime            0 1
 UUID=${boot_uuid} /media/boot ${boot_type}  defaults,rw,owner,flush,umask=000 0 0
 tmpfs   /tmp  tmpfs nodev,nosuid,mode=1777      0 0
-/wagglerw/var /var none bind
-/wagglerw/srv /srv none bind
-/run /var/run none bind
 EOF
 }
 

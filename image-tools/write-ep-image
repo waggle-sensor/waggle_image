@@ -335,5 +335,3 @@ log "writing bootloader"
 (cd odroid_xu4_uboot; ./sd_fusing.sh $device)
 
 sync
-
-log "success!"

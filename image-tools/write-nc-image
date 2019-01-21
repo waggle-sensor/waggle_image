@@ -3,11 +3,11 @@
 # TODO add back in aafirstboot to regen host ssh keys. or generate as image creation process?
 
 log() {
-    echo "$(date +'%Y/%m/%d %H:%M:%S') - $*"
+    echo "\033[32m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
 }
 
 fatal() {
-    >&2 echo $*
+    >&2 echo "\033[33m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
     exit 1
 }
 
@@ -247,6 +247,6 @@ generate_fstab $device rw > partitions/root/etc/fstab_rw
 generate_fstab $device ro > partitions/root/etc/fstab_ro
 
 log "writing bootloader"
-(cd odroid_c1_uboot; ./sd_fusing $device)
+(cd odroid_c1_uboot; ./sd_fusing.sh $device)
 
 sync

@@ -250,3 +250,5 @@ log "writing bootloader"
 (cd odroid_c1_uboot; ./sd_fusing.sh $device)
 
 sync
+
+log "success!"

@@ -175,8 +175,8 @@ generate_fstab() {
     fi
 
     case "$2" in
-        ro) root_mode = "ro" ;;
-        rw) root_mode = "rw" ;;
+        ro) root_mode="ro" ;;
+        rw) root_mode="rw" ;;
         *) fatal "error: invalid root fs mode. must be ro or rw"
     esac
 
@@ -194,6 +194,9 @@ UUID=${root_uuid}  /       ${root_type}    ${root_mode},nosuid,nodev,nofail,noat
 UUID=${rw_uuid}      /wagglerw       ${rw_type}    errors=remount-ro,noatime,nodiratime            0 1
 UUID=${boot_uuid} /media/boot ${boot_type}  defaults,rw,owner,flush,umask=000 0 0
 tmpfs   /tmp  tmpfs nodev,nosuid,mode=1777      0 0
+/wagglerw/var /var none bind
+/wagglerw/srv /srv none bind
+/run /var/run none bind
 EOF
 }
 
@@ -243,9 +246,46 @@ generate_fstab $device rw > partitions/root/etc/fstab
 generate_fstab $device rw > partitions/root/etc/fstab_rw
 generate_fstab $device ro > partitions/root/etc/fstab_ro
 
+# TODO add back in aafirstboot to regen host ssh keys. or generate as image creation process?
+
+log "cleanup autorecover files"
+rm -f partitions/root/root/do_recovery partitions/root/wagglerw/do_recovery
+# shouldn't be in image to begin with!!!
+
+# mkdir -p partitions/root/media/boot
+# mkdir -p partitions/root/wagglerw
+# mkdir -p partitions/root/wagglerw/var
+# mkdir -p partitions/root/wagglerw/srv
+
+# mkdir -p partitions/root/wagglerw/var/log/rabbitmq partitions/root/wagglerw/var/lib/rabbitmq
+# chown rabbitmq:rabbitmq partitions/root/wagglerw/var/log/rabbitmq partitions/root/wagglerw/var/lib/rabbitmq
+
 if [ -e $basedir/hooks/post-setup ]; then
     log "executing post-setup hook"
     $basedir/hooks/post-setup $basedir $device $prefix
 fi
+
+# /media/3tb-vol1/Private/ /srv/Private        none    bind
+# ln -s /wagglerw/var var
+# ln -s /wagglerw/srv srv
+
+# mkdir -p waggle
+# mkdir -p var/log/rabbitmq
+# mkdir -p var/log/journal
+# mkdir -p etc
+# touch etc/adjtime
+#
+# # /etc/adjtime needs to be writable for adjusting hwclock --> hwclock -w
+# cd ${OTHER_DISK_P2}
+# rm -rf etc/adjtime
+# ln -s /wagglerw/etc/adjtime etc/adjtime
+# cd ${OTHER_DISK_P3}
+#
+#
+# # Ubuntu 18.04 requires /var/run and /run to be the same
+# rm -rf var/run
+# ln -s /run var/run
+#
+# chown rabbitmq:rabbitmq var/log/rabbitmq/
 
 sync

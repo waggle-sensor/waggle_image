@@ -248,6 +248,10 @@ generate_fstab $device ro > partitions/root/etc/fstab_ro
 
 # TODO add back in aafirstboot to regen host ssh keys. or generate as image creation process?
 
+log "moving mutable system files into rw partition"
+mv partitions/root/srv/* partitions/rw/srv
+mv partitions/root/var/* partitions/rw/var
+
 log "cleanup autorecover files"
 rm -f partitions/root/root/do_recovery partitions/root/wagglerw/do_recovery
 # shouldn't be in image to begin with!!!

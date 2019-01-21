@@ -13,7 +13,7 @@ fatal() {
 
 usage() {
     cat << EOF
-$0 basedir device
+usage: $0 basedir device
 
 basedir must be a directory of the form:
 

@@ -216,8 +216,8 @@ basedir="$2"
 device="$3"
 
 case "$model" in
-    nc) log "preparing node controller image" ;;
-    ep) log "preparing edge processor image" ;;
+    nc) true ;;
+    ep) true ;;
     *) usage ;;
 esac
 

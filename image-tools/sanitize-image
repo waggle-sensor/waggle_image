@@ -12,6 +12,9 @@ ln -s /wagglerw/var root/var
 rm -rf root/wagglerw/srv rw/srv
 mkdir -p root/wagglerw/srv rw/srv
 cp -a root/srv/. root/wagglerw/srv/.
+cp -a root/srv/. rw/srv/.
 rm -rf root/srv
 ln -s /wagglerw/srv root/srv
+
+cp -a root/wagglerw/. rw
 )

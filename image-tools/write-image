@@ -218,7 +218,7 @@ device="$3"
 case "$model" in
     nc) log "preparing node controller image" ;;
     ep) log "preparing edge processor image" ;;
-    *) fatal "error: invalid model. must be 'nc' or 'ep'." ;;
+    *) usage ;;
 esac
 
 if [ -z "$device" ]; then

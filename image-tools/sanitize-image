@@ -1,0 +1,17 @@
+#!/bin/bash
+
+(
+cd "$1"
+
+rm -rf root/wagglerw/var rw/var
+mkdir -p root/wagglerw/var rw/var
+cp -a root/var/. root/wagglerw/var/.
+rm -rf root/var
+ln -s /wagglerw/var root/var
+
+rm -rf root/wagglerw/srv rw/srv
+mkdir -p root/wagglerw/srv rw/srv
+cp -a root/srv/. root/wagglerw/srv/.
+rm -rf root/srv
+ln -s /wagglerw/srv root/srv
+)

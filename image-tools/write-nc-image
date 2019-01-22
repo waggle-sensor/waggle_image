@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO add back in aafirstboot to regen host ssh keys. or generate as image creation process?
-
 log() {
     echo -e "\033[32m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
 }
@@ -13,7 +11,9 @@ fatal() {
 
 usage() {
     cat << EOF
-usage: $0 basedir device
+usage: $0 model basedir device
+
+model must be 'nc' or 'ep'.
 
 basedir must be a directory of the form:
 
@@ -23,6 +23,20 @@ basedir/
     rw/                 <- rw partition contents
 EOF
     exit 1
+}
+
+partition_name() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+      fatal "error: partition_name requires a target device and partition number"
+    fi
+
+    if [ -e "$1$2" ]; then
+        echo "$1$2"
+    elif [ -e "$1p$2" ]; then
+        echo "$1p$2"
+    else
+        fatal "error: no matching partition"
+    fi
 }
 
 make_partitions() {
@@ -45,9 +59,9 @@ make_partitions() {
 
   sleep 3
 
-  mkdosfs -F 16 "$1"1
-  mkfs.ext2 -F "$1"2
-  mkfs.ext2 -F "$1"3
+  mkdosfs -F 16 $(partition_name "$1" 1)
+  mkfs.ext2 -F $(partition_name "$1" 2)
+  mkfs.ext2 -F $(partition_name "$1" 3)
 }
 
 generate_boot_ini() {
@@ -55,7 +69,7 @@ generate_boot_ini() {
       fatal "error: missing target device"
     fi
 
-    root_uuid=$(blkid -s UUID -o value "$1"2)
+    root_uuid=$(blkid -s UUID -o value $(partition_name "$1" 2))
 
     cat << EOF
 ODROIDC-UBOOT-CONFIG
@@ -180,14 +194,14 @@ generate_fstab() {
         *) fatal "error: invalid root fs mode. must be ro or rw"
     esac
 
-    boot_uuid=$(blkid -s UUID -o value "$1"1)
-    boot_type=$(blkid -s TYPE -o value "$1"1)
+    boot_uuid=$(blkid -s UUID -o value $(partition_name "$1" 1))
+    boot_type=$(blkid -s TYPE -o value $(partition_name "$1" 1))
 
-    root_uuid=$(blkid -s UUID -o value "$1"2)
-    root_type=$(blkid -s TYPE -o value "$1"2)
+    root_uuid=$(blkid -s UUID -o value $(partition_name "$1" 2))
+    root_type=$(blkid -s TYPE -o value $(partition_name "$1" 2))
 
-    rw_uuid=$(blkid -s UUID -o value "$1"3)
-    rw_type=$(blkid -s TYPE -o value "$1"3)
+    rw_uuid=$(blkid -s UUID -o value $(partition_name "$1" 3))
+    rw_type=$(blkid -s TYPE -o value $(partition_name "$1" 3))
 
     cat << EOF
 UUID=${root_uuid}  /       ${root_type}    ${root_mode},nosuid,nodev,nofail,noatime,nodiratime            0 1
@@ -197,16 +211,18 @@ tmpfs   /tmp  tmpfs nodev,nosuid,mode=1777      0 0
 EOF
 }
 
-basedir=$1
-device=$2
-prefix=$3
+model="$1"
+basedir="$2"
+device="$3"
+
+case "$model" in
+    nc) log "preparing node controller image" ;;
+    ep) log "preparing edge processor image" ;;
+    *) fatal "error: invalid model. must be 'nc' or 'ep'." ;;
+esac
 
 if [ -z "$device" ]; then
     usage
-fi
-
-if [ -z "$prefix" ]; then
-    prefix=$1
 fi
 
 log "partitioning disk"
@@ -222,9 +238,9 @@ trap cleanup EXIT
 mkdir -p partitions/boot partitions/root partitions/rw
 
 log "mounting partitions"
-mount "$device"1 partitions/boot
-mount "$device"2 partitions/root
-mount "$device"3 partitions/rw
+mount $(partition_name "$device" 1) partitions/boot
+mount $(partition_name "$device" 2) partitions/root
+mount $(partition_name "$device" 3) partitions/rw
 
 log "populating boot partition"
 cp -r "$basedir"/boot/. partitions/boot
@@ -244,6 +260,10 @@ generate_fstab $device rw > partitions/root/etc/fstab_rw
 generate_fstab $device ro > partitions/root/etc/fstab_ro
 
 log "writing bootloader"
-(cd odroid_c1_uboot; ./sd_fusing.sh $device)
+
+case "$model" in
+    nc) (cd odroid_c1_uboot; ./sd_fusing.sh $device) ;;
+    ep) (cd odroid_xu4_uboot; ./sd_fusing.sh $device) ;;
+esac
 
 sync

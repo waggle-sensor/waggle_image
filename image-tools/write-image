@@ -54,8 +54,8 @@ make_partitions() {
   parted --script "$1" mkpart primary fat16 3072s 266239s
   parted --script "$1" set 1 lba off
 
-  parted --script "$1" mkpart primary ext4 266240s 15624191s
-  parted --script "$1" mkpart primary ext4 15624192s 100%
+  parted --script "$1" mkpart primary ext2 266240s 15624191s
+  parted --script "$1" mkpart primary ext2 15624192s 100%
 
   sleep 3
 

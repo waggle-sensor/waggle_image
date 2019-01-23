@@ -1,0 +1,25 @@
+#!/bin/bash
+
+source="$1"
+
+if [ -z "$source" ]; then
+    echo "error: no source"
+    exit 1
+fi
+
+device=$(losetup --show -fP "$source")
+output="$2/$(basename $source)"
+
+mkdir -p mnt/boot mnt/root "$output/boot" "$output/root" "$output/rw"
+
+rm -rf mnt/boot/* mnt/root/* "$output"/boot/* "$output"/root/* "$output"/rw/*
+
+mount "$device"p1 mnt/boot
+cp -a mnt/boot/. "$output/boot"
+umount mnt/boot
+
+mount "$device"p2 mnt/root
+cp -a mnt/root/. "$output/root"
+umount mnt/root
+
+losetup -d "$device"

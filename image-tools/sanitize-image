@@ -17,4 +17,6 @@ rm -rf root/srv
 ln -s /wagglerw/srv root/srv
 
 cp -a root/wagglerw/. rw
+
+rm -f root/root/do_recovery wagglerw/root/do_recovery
 )

@@ -477,13 +477,13 @@ mount $(partition_name "$device" 2) partitions/root
 mount $(partition_name "$device" 3) partitions/rw
 
 log "populating boot partition"
-cp -r "$basedir"/boot/. partitions/boot
+cp -a "$basedir"/boot/. partitions/boot
 
 log "populating root partition"
-cp -r "$basedir"/root/. partitions/root
+cp -a "$basedir"/root/. partitions/root
 
 log "populating rw partition"
-cp -r "$basedir"/rw/. partitions/rw
+cp -a "$basedir"/rw/. partitions/rw
 
 log "generating boot.ini"
 case "$model" in

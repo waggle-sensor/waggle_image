@@ -1,11 +1,11 @@
 #!/bin/bash
 
 log() {
-    echo -e "\033[32m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
+    echo -e "\033[34m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
 }
 
 fatal() {
-    >&2 echo -e "\033[33m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
+    >&2 echo -e "\033[31m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
     exit 1
 }
 

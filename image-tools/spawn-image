@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+	echo "please specifiy an image directory"
+	exit 1
+fi
+
+(cd $1; systemd-nspawn -D $(pwd)/root/ --bind $(pwd)/rw:/wagglerw --bind $(pwd)/boot:/media/boot)

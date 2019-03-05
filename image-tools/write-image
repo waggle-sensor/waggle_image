@@ -485,6 +485,11 @@ cp -a "$basedir"/root/. partitions/root
 log "populating rw partition"
 cp -a "$basedir"/rw/. partitions/rw
 
+log "sanitizing partitions"
+rm -rf partitions/root/srv partitions/root/var
+ln -s /wagglerw/srv partitions/root/srv
+ln -s /wagglerw/var partitions/root/var
+
 log "generating boot.ini"
 case "$model" in
     nc) generate_c1_boot_ini $device > partitions/boot/boot.ini ;;

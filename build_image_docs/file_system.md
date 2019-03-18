@@ -15,6 +15,14 @@ Boot configurations are stored in the partition 1 whereas system files including
 
 Some of the Waggle configurations that do not need to change during normal operation are stored in the system file system. Changing them requires the system into a safe mode. `waggle-set-mode` is root-previliaged script that allows to switch between the modes. After a change happens the root file system has to be file-system locked in order to operate the Waggle system normally. Some other Waggle or user configurations are stored in the user file system and can be changed during normal operation. User files are separatedly stored in a specific directory as multiple users can use the system.
 
+The user file system is mapped to `/wagglerw` and structured roughly as,
+```
+/wagglerw/waggle/  # Waggle service configurations
+/wagglerw/var      # System var
+/wagglerw/srv      # System srv
+...
+```
+
 ### Frequent questions
 
 Q1) Does the root partition mount RW briefly and then switch to RO, in normal mode, or does it boot RO with only /var and /tmp RW?

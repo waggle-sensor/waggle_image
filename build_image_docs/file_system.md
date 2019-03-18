@@ -23,7 +23,7 @@ A1) The mounting is done through `fstab` entries. So in steady state, the `/` pa
 
 Q2) When the root file system is writable can user applications write something on `/`?
 
-A2) No, when the system is in safe mode, making the system writable, Waggle purposely terminate all user applications. In order to run uer applications again, the system needs to lock the root file system.
+A2) No, when the system is in safe mode, making the system writable, Waggle purposely terminates all user applications. In order to run uer applications again, the system needs to lock the root file system (i.e., the system switches its mode to normal operation).
 
 Q3) How to update and install user applications with and without bringing a new library?
 

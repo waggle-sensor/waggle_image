@@ -1,3 +1,7 @@
+<!--
+waggle_topic=ignore
+-->
+
 ## File system structure on Waggle
 
 Waggle is a remote embedded platform that provides data and user services from multiple of Waggle nodes. When Waggle nodes are deployed, it is challenging to manage the nodes operational and make them recoverable. Errors in file system such as file corruptions and damaged or deleted system files cause serious impact to Waggle nodes as they are not able to boot up normally. This even possibly leads to decommission of nodes. To prevent this, Waggle actively utilizes read-only feature on its file system.

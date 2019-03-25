@@ -1,14 +1,14 @@
 #!/bin/bash
 
 source="$1"
+output="$2"
 
-if [ -z "$source" ]; then
-    echo "error: no source"
+if [ -z "$source" ] || [ -z "$output" ]; then
+    echo "usage: source.img output_dir"
     exit 1
 fi
 
 device=$(losetup --show -fP "$source")
-output="$2/$(basename $source)"
 
 mkdir -p mnt/boot mnt/root "$output/boot" "$output/root" "$output/rw"
 

@@ -486,9 +486,37 @@ log "populating rw partition"
 cp -a "$basedir"/rw/. partitions/rw
 
 log "sanitizing partitions"
-rm -rf partitions/root/srv partitions/root/var
-ln -s /wagglerw/srv partitions/root/srv
-ln -s /wagglerw/var partitions/root/var
+(
+cd partitions
+
+if [ -d "root/var" ]; then
+    log "relinking image /var"
+    rm -rf root/wagglerw/var rw/var
+    mkdir -p root/wagglerw/var rw/var
+    cp -a root/var/. root/wagglerw/var/.
+    rm -rf root/var
+    ln -s /wagglerw/var root/var
+else
+    log "image /var ok"
+fi
+
+if [ -d "root/srv" ]; then
+    log "relinking image /srv"
+    rm -rf root/wagglerw/srv rw/srv
+    mkdir -p root/wagglerw/srv rw/srv
+    cp -a root/srv/. root/wagglerw/srv/.
+    cp -a root/srv/. rw/srv/.
+    rm -rf root/srv
+    ln -s /wagglerw/srv root/srv
+else
+    log "image /srv ok"
+fi
+
+log "copy root/wagglerw to rw partition"
+cp -a root/wagglerw/. rw
+
+rm root/root/do_recovery root/wagglerw/do_recovery rw/do_recovery
+)
 
 log "generating boot.ini"
 case "$model" in

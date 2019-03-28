@@ -14,6 +14,33 @@
         }
     },
     "Dependency": {
+    
+        "122": {
+            "type": 1,
+            "name": "libblas3"
+        },
+    
+        "123": {
+            "type": 1,
+            "name": "liblapack3"
+        },
+        "124": {
+            "type": 1,
+            "name": "liblapack-dev"
+        },
+        "125": {
+            "type": 1,
+            "name": "gfortran"
+        },
+        "126": {
+            "type": 1,
+            "name": "python-scipy"
+        },
+        "127": {
+            "type": 1,
+            "name": "python-numpy"
+        },
+
         "82": {
             "type": 4,
             "name": "OpenCV-3.4.1-armv7l-libs.deb"
@@ -551,6 +578,21 @@
         }
     },
     "Build": {
+        "7": {
+            "nc_base": 5,
+            "ep_base": 4,
+            "plugin_manager_commit": "v2.10.1",
+            "cpu_architecture": 1,
+            "published_version": "v2.10.1",
+            "revision": 1,
+            "edge_processor_commit": "v2.10.1",
+            "core_commit": "v2.10.1",
+            "wagman_commit": "v2.10.1",
+            "sensors_commit": "v2.10.1",
+            "waggle_image_commit": "v2.10.1",
+            "date": "2018-10-25",
+            "nodecontroller_commit": "v2.10.1"
+        },
         "6": {
             "nc_base": 3,
             "ep_base": 4,
@@ -731,7 +773,7 @@
             ]
         },
         "4": {
-            "date": "2018-10-24",
+            "date": "2018-03-28",
             "cpu_architecture": 1,
             "uuid": "2478451b-0669-4ac0-b0ea-4b73b81115ef",
             "node_element": 2,
@@ -800,12 +842,18 @@
                 112,
                 114,
                 115,
-        		116,
-        		117,
-		        118,
-        		119,
-        		120,
-        		121
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
             ]
         },
         "3": {

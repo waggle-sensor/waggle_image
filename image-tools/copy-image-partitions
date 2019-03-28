@@ -12,8 +12,6 @@ device=$(losetup --show -fP "$source")
 
 mkdir -p mnt/boot mnt/root "$output/boot" "$output/root" "$output/rw"
 
-rm -rf mnt/boot/* mnt/root/* "$output"/boot/* "$output"/root/* "$output"/rw/*
-
 mount "$device"p1 mnt/boot
 cp -a mnt/boot/. "$output/boot"
 umount mnt/boot

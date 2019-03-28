@@ -581,17 +581,17 @@
         "7": {
             "nc_base": 5,
             "ep_base": 4,
-            "plugin_manager_commit": "v2.10.1",
+            "plugin_manager_commit": "v2.12.0",
             "cpu_architecture": 1,
-            "published_version": "v2.10.1",
+            "published_version": "v2.12.0",
             "revision": 1,
-            "edge_processor_commit": "v2.10.1",
-            "core_commit": "v2.10.1",
-            "wagman_commit": "v2.10.1",
-            "sensors_commit": "v2.10.1",
-            "waggle_image_commit": "v2.10.1",
-            "date": "2018-10-25",
-            "nodecontroller_commit": "v2.10.1"
+            "edge_processor_commit": "v2.12.0",
+            "core_commit": "v2.12.0",
+            "wagman_commit": "v2.12.0",
+            "sensors_commit": "v2.12.0",
+            "waggle_image_commit": "v2.12.0",
+            "date": "2019-03-28",
+            "nodecontroller_commit": "v2.12.0"
         },
         "6": {
             "nc_base": 3,

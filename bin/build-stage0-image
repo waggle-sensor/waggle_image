@@ -22,14 +22,16 @@ if [ $(arch) == "ODROIDC" ]; then
     if [ $(lsb_release -r | tr "\t" " " | sed "s/\ //g"  | cut -d ":" -f 2) = "16.04" ]; then
         wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-minimal-odroid-c1-20170914.img.xz -O stage0_c1+.img.xz
     elif [ $(lsb_release -r | tr "\t" " " | sed "s/\ //g"  | cut -d ":" -f 2) = "18.04" ]; then
-        wget https://odroid.in/ubuntu_18.04lts/ubuntu-18.04.1-3.10-minimal-odroid-c1-20180802.img.xz	 -O stage0_c1+.img.xz
+        # wget https://odroid.in/ubuntu_18.04lts/ubuntu-18.04.1-3.10-minimal-odroid-c1-20180802.img.xz -O stage0_c1+.img.xz
+        wget https://odroid.in/ubuntu_18.04lts/C0_C1/ubuntu-18.04.1-3.10-minimal-odroid-c1-20180802.img.xz -O stage0_c1+.img.xz
     fi
 elif [ $(arch) == "ODROID-XU4" ] || [ $(arch) == "ODROID-XU3" ]; then
     echo "Odroid XU4 detected, starting process..."
     if [ $(lsb_release -r | tr "\t" " " | sed "s/\ //g"  | cut -d ":" -f 2) = "16.04" ]; then
         wget https://odroid.in/ubuntu_16.04lts/ubuntu-16.04.3-4.14-minimal-odroid-xu4-20171213.img.xz -O stage0_xu4.img.xz
     elif [ $(lsb_release -r | tr "\t" " " | sed "s/\ //g"  | cut -d ":" -f 2) = "18.04" ]; then
-        wget https://odroid.in/ubuntu_18.04lts/ubuntu-18.04.1-4.14-minimal-odroid-xu4-20181203.img.xz -O stage0_xu4.img.xz
+        # wget https://odroid.in/ubuntu_18.04lts/ubuntu-18.04.1-4.14-minimal-odroid-xu4-20181203.img.xz -O stage0_xu4.img.xz
+        wget https://odroid.in/ubuntu_18.04lts/XU3_XU4_MC1_HC1_HC2/ubuntu-18.04.1-4.14-minimal-odroid-xu4-20181203.img.xz -O stage0_xu4.img.xz
     fi
 else
     echo "This machine is neither a C1+ nor a XU4. Please follow steps from \

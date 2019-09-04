@@ -53,13 +53,19 @@ log writing bootloader
 systemd-nspawn -D root -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
-pacman -Syy
 
 # install packages
-yes | pacman -Sy rsync git
+yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch
+
+# enable custom services
+systemctl enable NetworkManager
 
 # ensure ntp enabled
 timedatectl set-ntp yes
 EOF
+
+# copy additional configurations into root
+# TODO do this after bind mounts are all setup
+cp -a extra/* root/
 
 umount root

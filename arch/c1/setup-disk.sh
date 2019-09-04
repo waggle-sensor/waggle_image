@@ -9,8 +9,9 @@ fatal() {
     exit 1
 }
 
-
 disk="$1"
+
+umount root
 
 if test -e ArchLinuxARM-odroid-c1-latest.tar.gz; then
         log using cached image
@@ -36,7 +37,6 @@ log creating filesystems
 mkfs.ext4 -O ^metadata_csum,^64bit "$disk"1
 
 mkdir -p root
-umount root
 mount "$disk"1 root
 
 log unpacking image

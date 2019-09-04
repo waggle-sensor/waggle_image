@@ -11,6 +11,8 @@ fatal() {
 
 disk="$1"
 
+umount root
+
 if test -e ArchLinuxARM-odroid-xu3-latest.tar.gz; then
         log using cached image
 else
@@ -35,7 +37,6 @@ log creating filesystems
 mkfs.ext4 "$disk"1
 
 mkdir -p root
-umount root
 mount "$disk"1 root
 
 log unpacking image

@@ -58,7 +58,7 @@ pacman-key --populate archlinuxarm
 yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch
 
 # enable custom services
-systemctl enable NetworkManager
+systemctl enable NetworkManager ModemManager
 
 # ensure ntp enabled
 timedatectl set-ntp yes

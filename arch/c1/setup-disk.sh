@@ -52,7 +52,12 @@ systemd-nspawn -D root -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
 pacman -Syy
+
+# install packages
 yes | pacman -Sy rsync git
+
+# ensure ntp enabled
+timedatectl set-ntp yes
 EOF
 
 umount root

@@ -1,4 +1,6 @@
 #!/bin/bash -u
+# Arch Linux Reference
+# https://archlinuxarm.org/platforms/armv7/amlogic/odroid-c1
 
 log() {
     echo -e "\033[34m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"

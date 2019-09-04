@@ -55,10 +55,10 @@ pacman-key --init
 pacman-key --populate archlinuxarm
 
 # install packages
-yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch
+yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh
 
 # enable custom services
-systemctl enable NetworkManager ModemManager
+systemctl enable NetworkManager ModemManager sshd
 
 # ensure ntp enabled
 timedatectl set-ntp yes

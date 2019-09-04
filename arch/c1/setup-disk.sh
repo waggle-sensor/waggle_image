@@ -45,7 +45,7 @@ log unpacking image
 bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C root
 
 log cleaning partitions
-rm root/etc/resolv.conf
+rm root/etc/resolv.conf root/etc/systemd/network/*
 
 log writing bootloader
 (cd root/boot; ./sd_fusing.sh "$disk")

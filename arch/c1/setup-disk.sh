@@ -52,6 +52,7 @@ systemd-nspawn -D root -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
 pacman -Syy
+pacman -Sy rsync git
 EOF
 
 umount root

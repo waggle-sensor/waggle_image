@@ -11,6 +11,8 @@ fatal() {
     exit 1
 }
 
+log starting setup
+
 disk="$1"
 
 umount root
@@ -47,25 +49,27 @@ bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C root
 log cleaning partitions
 rm root/etc/resolv.conf root/etc/systemd/network/*
 
+log copy extras
+cp -a extra/* root/
+
 log writing bootloader
 (cd root/boot; ./sd_fusing.sh "$disk")
 
+log setting up packages
 systemd-nspawn -D root -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
 
 # install packages
-yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh
+yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker
 
 # enable custom services
-systemctl enable NetworkManager ModemManager sshd
+systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh
 
 # ensure ntp enabled
 timedatectl set-ntp yes
 EOF
 
-# copy additional configurations into root
-# TODO do this after bind mounts are all setup
-cp -a extra/* root/
-
 umount root
+
+log setup complete

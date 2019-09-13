@@ -1,0 +1,9 @@
+[Unit]
+Description=Setup Routing and Firewall
+
+[Service]
+Type=oneshot
+ExecStart=/root/waggle-firewall
+
+[Install]
+WantedBy=multi-user.target

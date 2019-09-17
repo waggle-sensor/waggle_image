@@ -15,27 +15,29 @@ partuuid() {
     blkid -s UUID -o value "$1"
 }
 
-log starting setup
-
 disk="$1"
+rootpart="$disk"1
+rwpart="$disk"2
+
+log 'starting setup'
 
 # ensure mountpoints exists and nothing is currently using them
 mkdir -p root rw
-umount root
-umount rw
+umount -f root
+umount -f rw
 
 if test -e ArchLinuxARM-odroid-c1-latest.tar.gz; then
-        log using cached image
+    log 'using cached image'
 else
-        log pulling image
-        wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
+    log 'pulling image'
+    wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
 fi
 
-log clear disk
-dd if=/dev/zero of=$disk bs=1M count=8
+log 'clear disk'
+dd if=/dev/zero of=$1 bs=1M count=32
 sync
 
-log creating partitions
+log 'creating partitions'
 fdisk $disk <<EOF
 o
 n
@@ -54,29 +56,27 @@ EOF
 sync
 partprobe
 
-rootpart="$disk"1
-rwpart="$disk"2
-
-log creating filesystems
+log 'creating filesystems'
 mkfs.ext4 -F -O ^metadata_csum,^64bit "$rootpart"
 mkfs.ext4 -F -O ^metadata_csum,^64bit "$rwpart"
 
+log 'mounting partitions'
 mount "$rootpart" root
 mount "$rwpart" rw
 
-log unpacking image
+log 'unpacking image'
 bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C root
 
-log cleaning partitions
+log 'cleaning partitions'
 rm root/etc/resolv.conf root/etc/systemd/network/*
 
-log copy extras
+log 'copy extras'
 cp -a extra/* root/
 
-log writing bootloader
+log 'writing bootloader'
 (cd root/boot; ./sd_fusing.sh "$disk")
 
-log setting up packages
+log 'setting up packages'
 systemd-nspawn -D root -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
@@ -91,10 +91,9 @@ systemctl enable NetworkManager ModemManager sshd docker waggle-registration wag
 timedatectl set-ntp yes
 EOF
 
-mkdir -p root/wagglerw rw/var/lib rw/var/log rw/var/tmp
-
-# UUID=$(partuuid $rootpart) / ext4    ${root_mode},nosuid,nodev,nofail,noatime,nodiratime            0 1
-
+log 'setting up bind mounts'
+(cd root; mkdir -p wagglerw)
+(cd rw; mkdir -p var/lib var/log var/tmp)
 cat <<EOF > root/etc/fstab
 UUID=$(partuuid $rootpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/lib /var/lib none bind
@@ -102,7 +101,8 @@ UUID=$(partuuid $rootpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0
 /wagglerw/var/tmp /var/tmp none bind
 EOF
 
+log 'cleaning up'
 umount root
-unmount rw
+umount rw
 
-log setup complete
+log 'setup complete'

@@ -88,8 +88,11 @@ yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider
 # enable custom services
 systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh waggle-firewall waggle-watchdog
 
-# ensure ntp enabled
-timedatectl set-ntp yes
+# generate ssh host keys
+ssh-keygen -N '' -f /etc/ssh/ssh_host_dsa_key -t dsa
+ssh-keygen -N '' -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -b 521
+ssh-keygen -N '' -f /etc/ssh/ssh_host_ed25519_key -t ed25519
+ssh-keygen -N '' -f /etc/ssh/ssh_host_rsa_key -t rsa -b 2048
 EOF
 
 log 'setting up bind mounts'
@@ -103,7 +106,7 @@ mkdir -p wagglerw
 (
 cd rw
 mkdir -p var/lib var/log var/tmp etc
-touch etc/hostname etc/resolv.conf
+touch etc/hostname
 )
 
 cat <<EOF > root/etc/fstab
@@ -113,7 +116,6 @@ UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/log /var/log none bind
 /wagglerw/var/tmp /var/tmp none bind
 /wagglerw/etc/hostname /etc/hostname none bind
-/wagglerw/etc/resolv.conf /etc/resolv.conf none bind
 EOF
 
 log 'cleaning up'

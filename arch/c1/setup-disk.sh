@@ -77,6 +77,7 @@ log 'writing bootloader'
 (cd root/boot; ./sd_fusing.sh "$disk")
 
 log 'setting up packages'
+# TODO bind mount all mount points at build time!
 systemd-nspawn -D root -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
@@ -92,14 +93,27 @@ timedatectl set-ntp yes
 EOF
 
 log 'setting up bind mounts'
-(cd root; mkdir -p wagglerw)
-(cd rw; mkdir -p var/lib var/log var/tmp)
+# TODO how about we just bind mount /etc and /var with a known working failsafe
+# TODO generate openssh server keys during setup
+(
+cd root
+mkdir -p wagglerw
+)
+
+(
+cd rw
+mkdir -p var/lib var/log var/tmp etc
+touch etc/hostname etc/resolv.conf
+)
+
 cat <<EOF > root/etc/fstab
 UUID=$(partuuid $rootpart) / ext4 ro,nosuid,nodev,nofail,noatime,nodiratime 0 1
 UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/lib /var/lib none bind
 /wagglerw/var/log /var/log none bind
 /wagglerw/var/tmp /var/tmp none bind
+/wagglerw/etc/hostname /etc/hostname none bind
+/wagglerw/etc/resolv.conf /etc/resolv.conf none bind
 EOF
 
 log 'cleaning up'

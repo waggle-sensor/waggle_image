@@ -95,17 +95,17 @@ ssh-keygen -N '' -f /etc/ssh/ssh_host_ed25519_key -t ed25519
 ssh-keygen -N '' -f /etc/ssh/ssh_host_rsa_key -t rsa -b 2048
 EOF
 
-log 'setting up bind mounts'
 # TODO how about we just bind mount /etc and /var with a known working failsafe
-# TODO generate openssh server keys during setup
+log 'setting up bind mounts'
 (
 cd root
-mkdir -p wagglerw
+mkdir -p var/lib var/log var/tmp etc/docker
+touch etc/hostname
 )
 
 (
 cd rw
-mkdir -p var/lib var/log var/tmp etc
+mkdir -p var/lib var/log var/tmp etc/docker
 touch etc/hostname
 )
 
@@ -115,6 +115,7 @@ UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/lib /var/lib none bind
 /wagglerw/var/log /var/log none bind
 /wagglerw/var/tmp /var/tmp none bind
+/wagglerw/etc/docker /etc/docker none bind
 /wagglerw/etc/hostname /etc/hostname none bind
 EOF
 

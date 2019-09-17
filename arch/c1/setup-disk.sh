@@ -18,24 +18,29 @@ partuuid() {
 disk="$1"
 rootpart="$disk"1
 rwpart="$disk"2
+rootmount=$(pwd)/mnt/root
+rwmount=$(pwd)/mnt/rw
 
 log 'starting setup'
 
 # ensure mountpoints exists and nothing is currently using them
-mkdir -p root rw
-umount -f root
-umount -f rw
+mkdir -p $rootmount $rwmount
+umount -f $rootmount $rwmount
 
 if test -e ArchLinuxARM-odroid-c1-latest.tar.gz; then
     log 'using cached image'
 else
     log 'pulling image'
-    wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
+    if ! wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz; then
+        fatal 'failed to pull arch image'
+    fi
 fi
 
 log 'erase disk'
-dd if=/dev/zero of=$1 bs=1M count=32
-sync
+
+if ! dd if=/dev/zero of=$1 bs=1M count=32 && sync; then
+    fatal 'failed to erase disk'
+fi
 
 log 'creating partitions'
 fdisk $disk <<EOF
@@ -57,28 +62,34 @@ sync
 partprobe
 
 log 'creating filesystems'
-mkfs.ext4 -F -O ^metadata_csum,^64bit "$rootpart"
-mkfs.ext4 -F -O ^metadata_csum,^64bit "$rwpart"
+
+if ! mkfs.ext4 -F -O ^metadata_csum,^64bit "$rootpart"; then
+    fatal 'failed to create root fs'
+fi
+
+if ! mkfs.ext4 -F -O ^metadata_csum,^64bit "$rwpart"; then
+    fatal 'failed to create rw fs'
+fi
 
 log 'mounting partitions'
-mount "$rootpart" root
-mount "$rwpart" rw
+mount "$rootpart" $rootmount
+mount "$rwpart" $rwmount
 
 log 'unpacking image'
-bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C root
+bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C $rootmount
 
 log 'cleaning partitions'
-rm root/etc/resolv.conf root/etc/systemd/network/*
+rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*
 
 log 'copy extras'
-cp -a extra/* root/
+cp -a extra/* $rootmount
 
 log 'writing bootloader'
-(cd root/boot; ./sd_fusing.sh "$disk")
+(cd $rootmount/boot; ./sd_fusing.sh "$disk")
 
 log 'setting up packages'
 # TODO bind mount all mount points at build time!
-systemd-nspawn -D root -P bash -s <<EOF
+systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
 
@@ -93,22 +104,11 @@ ssh-keygen -N '' -f /etc/ssh/ssh_host_dsa_key -t dsa
 ssh-keygen -N '' -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -b 521
 ssh-keygen -N '' -f /etc/ssh/ssh_host_ed25519_key -t ed25519
 ssh-keygen -N '' -f /etc/ssh/ssh_host_rsa_key -t rsa -b 2048
+
+# prepare for bind mounts
+mkdir -p /var/lib /var/log /var/tmp /etc/docker
+mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker
 EOF
-
-# TODO how about we just bind mount /etc and /var with a known working failsafe
-log 'setting up bind mounts'
-(
-cd root
-mkdir -p wagglerw
-mkdir -p var/lib var/log var/tmp etc/docker
-touch etc/hostname
-)
-
-(
-cd rw
-mkdir -p var/lib var/log var/tmp etc/docker
-touch etc/hostname
-)
 
 cat <<EOF > root/etc/fstab
 UUID=$(partuuid $rootpart) / ext4 ro,nosuid,nodev,nofail,noatime,nodiratime 0 1
@@ -121,7 +121,6 @@ UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 EOF
 
 log 'cleaning up'
-umount root
-umount rw
+umount $rootmount $rwmount
 
 log 'setup complete'

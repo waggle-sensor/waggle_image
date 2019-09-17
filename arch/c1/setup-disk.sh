@@ -19,8 +19,10 @@ log starting setup
 
 disk="$1"
 
-# ensure nothing is currently using mountpoint
+# ensure mountpoints exists and nothing is currently using them
+mkdir -p root rw
 umount root
+umount rw
 
 if test -e ArchLinuxARM-odroid-c1-latest.tar.gz; then
         log using cached image
@@ -53,14 +55,14 @@ sync
 partprobe
 
 rootpart="$disk"1
-datapart="$disk"2
+rwpart="$disk"2
 
 log creating filesystems
 mkfs.ext4 -F -O ^metadata_csum,^64bit "$rootpart"
-mkfs.ext4 -F -O ^metadata_csum,^64bit "$datapart"
+mkfs.ext4 -F -O ^metadata_csum,^64bit "$rwpart"
 
-mkdir -p root
 mount "$rootpart" root
+mount "$rwpart" rw
 
 log unpacking image
 bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C root
@@ -89,15 +91,18 @@ systemctl enable NetworkManager ModemManager sshd docker waggle-registration wag
 timedatectl set-ntp yes
 EOF
 
-# UUID=$(partuuid $rootpart) / ext4    ${root_mode},nosuid,nodev,nofail,noatime,nodiratime            0 1
+mkdir -p root/wagglerw rw/var/lib rw/var/log rw/var/tmp
 
-mkdir root/wagglerw
+# UUID=$(partuuid $rootpart) / ext4    ${root_mode},nosuid,nodev,nofail,noatime,nodiratime            0 1
 
 cat <<EOF > root/etc/fstab
 UUID=$(partuuid $rootpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
+/wagglerw/var/lib /var/lib none bind
+/wagglerw/var/log /var/log none bind
+/wagglerw/var/tmp /var/tmp none bind
 EOF
 
-
 umount root
+unmount rw
 
 log setup complete

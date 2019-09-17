@@ -84,11 +84,10 @@ rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*
 log 'copy extras'
 cp -a extra/* $rootmount
 
-log 'writing bootloader'
+log 'setting up bootloader'
 (cd $rootmount/boot; ./sd_fusing.sh "$disk")
 
-log 'setting up packages'
-# TODO bind mount all mount points at build time!
+log 'setting up system'
 systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
@@ -110,7 +109,7 @@ mkdir -p /var/lib /var/log /var/tmp /etc/docker
 mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker
 EOF
 
-cat <<EOF > root/etc/fstab
+cat <<EOF > $rootmount/etc/fstab
 UUID=$(partuuid $rootpart) / ext4 ro,nosuid,nodev,nofail,noatime,nodiratime 0 1
 UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/lib /var/lib none bind

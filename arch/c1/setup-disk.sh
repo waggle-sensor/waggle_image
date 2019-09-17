@@ -7,14 +7,19 @@ log() {
 }
 
 fatal() {
-    >&2 echo -e "\033[31m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
+    echo -e "\033[31m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
     exit 1
+}
+
+partuuid() {
+    blkid -s UUID -o value "$1"
 }
 
 log starting setup
 
 disk="$1"
 
+# ensure nothing is currently using mountpoint
 umount root
 
 if test -e ArchLinuxARM-odroid-c1-latest.tar.gz; then
@@ -24,7 +29,9 @@ else
         wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
 fi
 
+log clear disk
 dd if=/dev/zero of=$disk bs=1M count=8
+sync
 
 log creating partitions
 fdisk $disk <<EOF
@@ -33,15 +40,27 @@ n
 p
 1
 
++4G
+n
+p
+2
 
+
+p
 w
 EOF
+sync
+partprobe
+
+rootpart="$disk"1
+datapart="$disk"2
 
 log creating filesystems
-mkfs.ext4 -O ^metadata_csum,^64bit "$disk"1
+mkfs.ext4 -F -O ^metadata_csum,^64bit "$rootpart"
+mkfs.ext4 -F -O ^metadata_csum,^64bit "$datapart"
 
 mkdir -p root
-mount "$disk"1 root
+mount "$rootpart" root
 
 log unpacking image
 bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C root
@@ -69,6 +88,15 @@ systemctl enable NetworkManager ModemManager sshd docker waggle-registration wag
 # ensure ntp enabled
 timedatectl set-ntp yes
 EOF
+
+# UUID=$(partuuid $rootpart) / ext4    ${root_mode},nosuid,nodev,nofail,noatime,nodiratime            0 1
+
+mkdir root/wagglerw
+
+cat <<EOF > root/etc/fstab
+UUID=$(partuuid $rootpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
+EOF
+
 
 umount root
 

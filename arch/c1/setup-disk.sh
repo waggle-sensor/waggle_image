@@ -33,7 +33,7 @@ else
     wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
 fi
 
-log 'clear disk'
+log 'erase disk'
 dd if=/dev/zero of=$1 bs=1M count=32
 sync
 
@@ -95,7 +95,8 @@ log 'setting up bind mounts'
 (cd root; mkdir -p wagglerw)
 (cd rw; mkdir -p var/lib var/log var/tmp)
 cat <<EOF > root/etc/fstab
-UUID=$(partuuid $rootpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
+UUID=$(partuuid $rootpart) / ext4 ro,nosuid,nodev,nofail,noatime,nodiratime 0 1
+UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/lib /var/lib none bind
 /wagglerw/var/log /var/log none bind
 /wagglerw/var/tmp /var/tmp none bind

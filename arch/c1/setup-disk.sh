@@ -99,6 +99,7 @@ EOF
 log 'setting up bind mounts'
 (
 cd root
+mkdir -p wagglerw
 mkdir -p var/lib var/log var/tmp etc/docker
 touch etc/hostname
 )

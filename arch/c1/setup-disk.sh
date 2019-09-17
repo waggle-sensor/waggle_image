@@ -104,9 +104,16 @@ ssh-keygen -N '' -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -b 521
 ssh-keygen -N '' -f /etc/ssh/ssh_host_ed25519_key -t ed25519
 ssh-keygen -N '' -f /etc/ssh/ssh_host_rsa_key -t rsa -b 2048
 
-# prepare for bind mounts
-mkdir -p /var/lib /var/log /var/tmp /etc/docker
-mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker
+# prepare bind mounts
+for d in /var/lib /var/log /var/tmp /etc/docker; do
+    mkdir -p $d
+    mkdir -p /wagglerw/$d
+done
+
+for f in /etc/hostname; do
+    touch $f
+    touch /wagglerw/$f
+done
 EOF
 
 cat <<EOF > $rootmount/etc/fstab

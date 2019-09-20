@@ -14,3 +14,17 @@ The main requirements are
 ```sh
 ./setup-disk.sh /dev/sdX
 ```
+
+## Notes
+
+Here are some notes recording why we've included less than obvious configurations.
+
+### extra/etc/systemd/resolved.conf.d/dnssec.conf
+
+This conf is added to address systemd-resolved's complaints
+
+```txt
+DNSSEC validation failed for...
+```
+
+This seems to have been leading to us not being able to resolve hostnames.

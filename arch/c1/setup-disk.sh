@@ -105,10 +105,10 @@ ssh-keygen -N '' -f /etc/ssh/ssh_host_ed25519_key -t ed25519
 ssh-keygen -N '' -f /etc/ssh/ssh_host_rsa_key -t rsa -b 2048
 
 # prepare for bind mounts
-mkdir -p /var/lib /var/log /var/tmp /etc/docker
+mkdir -p /var/lib /var/log /var/tmp /etc/docker /etc/waggle
 touch /etc/hostname
 
-mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker
+mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker /wagglerw/etc/waggle
 touch /wagglerw/etc/hostname
 EOF
 
@@ -120,6 +120,7 @@ UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/var/tmp /var/tmp none bind
 /wagglerw/etc/docker /etc/docker none bind
 /wagglerw/etc/hostname /etc/hostname none bind
+/wagglerw/etc/waggle /etc/waggle none bind
 EOF
 
 log 'cleaning up'

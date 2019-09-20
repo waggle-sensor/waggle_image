@@ -15,6 +15,7 @@ partuuid() {
     blkid -s UUID -o value "$1"
 }
 
+baseurl="http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz"
 disk="$1"
 rootpart="$disk"1
 rwpart="$disk"2
@@ -27,11 +28,11 @@ log 'starting setup'
 mkdir -p $rootmount $rwmount
 umount -f $rootmount $rwmount
 
-if test -e ArchLinuxARM-odroid-c1-latest.tar.gz; then
+if test -e base.tar.gz; then
     log 'using cached image'
 else
     log 'pulling image'
-    if ! wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz; then
+    if ! wget "$baseurl" -O base.tar.gz; then
         fatal 'failed to pull arch image'
     fi
 fi
@@ -76,7 +77,7 @@ mount "$rootpart" $rootmount
 mount "$rwpart" $rwmount
 
 log 'unpacking image'
-bsdtar -xpf ArchLinuxARM-odroid-c1-latest.tar.gz -C $rootmount
+bsdtar -xpf base.tar.gz -C $rootmount
 
 log 'cleaning partitions'
 rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*

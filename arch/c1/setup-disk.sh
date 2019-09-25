@@ -96,6 +96,14 @@ UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/etc/waggle /etc/waggle none bind
 EOF
 
+cat <<EOF > $rootmount/build.json
+{
+    "build_time": "$(utctimestamp)",
+    "build_host": "$(hostname)",
+    "device": "ODROID C1+"
+}
+EOF
+
 log "cleaning up"
 umount $rootmount $rwmount
 

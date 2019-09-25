@@ -1,3 +1,4 @@
-root/
+extra/
+mnt/
 *.tar.gz
 *.pem

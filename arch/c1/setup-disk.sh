@@ -44,23 +44,23 @@ if ! mkfs.ext4 -F -O ^metadata_csum,^64bit "$rwpart"; then
     fatal 'failed to create rw fs'
 fi
 
-log 'mounting partitions'
+log "mounting partitions"
 mount "$rootpart" $rootmount
 mount "$rwpart" $rwmount
 
-log 'unpacking image'
+log "unpacking image"
 bsdtar -xpf base.tar.gz -C $rootmount
 
-log 'cleaning partitions'
+log "cleaning partitions"
 rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*
 
-log 'copy extras'
+log "copy extras"
 cp -a extra/* $rootmount
 
-log 'setting up bootloader'
+log "setting up bootloader"
 (cd $rootmount/boot; ./sd_fusing.sh "$disk")
 
-log 'setting up system'
+log "setting up system"
 systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
@@ -96,7 +96,7 @@ UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
 /wagglerw/etc/waggle /etc/waggle none bind
 EOF
 
-log 'cleaning up'
+log "cleaning up"
 umount $rootmount $rwmount
 
-log 'setup complete'
+log "setup complete"

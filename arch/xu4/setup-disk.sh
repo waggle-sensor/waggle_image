@@ -2,64 +2,101 @@
 # Arch Linux Reference
 # https://archlinuxarm.org/platforms/armv7/samsung/odroid-xu4
 
-log() {
-    echo -e "\033[34m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
-}
+cd $(dirname $0) && source ../lib.sh
 
-fatal() {
-    >&2 echo -e "\033[31m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
-    exit 1
-}
+log "starting setup"
 
 disk="$1"
+rootpart="$disk"1
+rwpart="$disk"2
+rootmount=$(pwd)/mnt/root
+rwmount=$(pwd)/mnt/rw
 
-umount root
+# ensure mountpoints exists and nothing is currently using them
+mkdir -p $rootmount $rwmount
+umount -f $rootmount $rwmount
 
-if test -e ArchLinuxARM-odroid-xu3-latest.tar.gz; then
-        log using cached image
-else
-        log pulling image
-        wget http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-xu3-latest.tar.gz
-fi
+download_file "http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-xu3-latest.tar.gz" "base.tar.gz"
 
-dd if=/dev/zero of=$disk bs=1M count=8
-
-log creating partitions
-fdisk $disk <<EOF
+setup_disk $disk <<EOF
 o
 n
 p
 1
 4096
++4G
+n
+p
+2
 
+
+p
 w
 EOF
 
-log creating filesystems
-mkfs.ext4 "$disk"1
+log "creating filesystems"
 
-mkdir -p root
-mount "$disk"1 root
+if ! mkfs.ext4 -F "$rootpart"; then
+    fatal "failed to create root fs"
+fi
 
-log unpacking image
-bsdtar -xpf ArchLinuxARM-odroid-xu3-latest.tar.gz -C root
+if ! mkfs.ext4 -F "$rwpart"; then
+    fatal "failed to create rw fs"
+fi
 
-log cleaning partitions
-rm root/etc/resolv.conf
+log "mounting partitions"
+mount "$rootpart" $rootmount
+mount "$rwpart" $rwmount
 
-log writing bootloader
-(cd root/boot; sh sd_fusing.sh "$disk")
+log "unpacking image"
+bsdtar -xpf base.tar.gz -C $rootmount
 
-systemd-nspawn -D root -P bash -s <<EOF
+log "cleaning partitions"
+rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*
+
+log "copy extras"
+cp -a extra/* $rootmount
+
+log "setting up bootloader"
+(cd $rootmount/boot; ./sd_fusing.sh "$disk")
+
+log "setting up system"
+systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw -P bash -s <<EOF
 pacman-key --init
 pacman-key --populate archlinuxarm
-pacman -Syy
 
 # install packages
-yes | pacman -Sy rsync git
+yes | pacman -Sy rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker
 
-# ensure ntp enabled
-timedatectl set-ntp yes
+# enable custom services
+systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh waggle-firewall waggle-watchdog
+
+# generate ssh host keys
+ssh-keygen -N '' -f /etc/ssh/ssh_host_dsa_key -t dsa
+ssh-keygen -N '' -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -b 521
+ssh-keygen -N '' -f /etc/ssh/ssh_host_ed25519_key -t ed25519
+ssh-keygen -N '' -f /etc/ssh/ssh_host_rsa_key -t rsa -b 2048
+
+# prepare for bind mounts
+mkdir -p /var/lib /var/log /var/tmp /etc/docker /etc/waggle
+touch /etc/hostname
+
+mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker /wagglerw/etc/waggle
+touch /wagglerw/etc/hostname
 EOF
 
-umount root
+cat <<EOF > $rootmount/etc/fstab
+UUID=$(partuuid $rootpart) / ext4 ro,nosuid,nodev,nofail,noatime,nodiratime 0 1
+UUID=$(partuuid $rwpart) /wagglerw ext4 errors=remount-ro,noatime,nodiratime 0 2
+/wagglerw/var/lib /var/lib none bind
+/wagglerw/var/log /var/log none bind
+/wagglerw/var/tmp /var/tmp none bind
+/wagglerw/etc/docker /etc/docker none bind
+/wagglerw/etc/hostname /etc/hostname none bind
+/wagglerw/etc/waggle /etc/waggle none bind
+EOF
+
+log "cleaning up"
+umount $rootmount $rwmount
+
+log "setup complete"

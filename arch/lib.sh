@@ -14,11 +14,10 @@ partuuid() {
 }
 
 download_file() {
-    log "downloading $1 to $2"
-
     if test -e "$2"; then
-        log "skipping download. reusing cached file $2"
+        log "skipping download. $2 already exists"
     else
+        log "downloading $1 to $2"
         if ! wget "$1" -O "$2"; then
             fatal "failed to download $1"
         fi
@@ -27,16 +26,19 @@ download_file() {
 
 erase_disk() {
     log "erasing disk $1"
-
     if ! dd if=/dev/zero of="$1" bs=1M count=32 && sync; then
         fatal "failed to erase disk $1"
     fi
 }
 
-setup_disk() {
-    erase_disk "$1"
-
-    # fdisk expects input for fdisk
+# expects fdisk input on stdio
+partition_disk() {
     log "partitioning disk $1"
     fdisk $disk && sync && partprobe
+}
+
+# expects fdisk input on stdio
+setup_disk() {
+    erase_disk "$1"
+    partition_disk "$1"
 }

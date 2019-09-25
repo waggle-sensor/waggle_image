@@ -2,49 +2,23 @@
 # Arch Linux Reference
 # https://archlinuxarm.org/platforms/armv7/amlogic/odroid-c1
 
-log() {
-    echo -e "\033[34m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
-}
+cd $(dirname $0) && source ../lib.sh
 
-fatal() {
-    echo -e "\033[31m$(date +'%Y/%m/%d %H:%M:%S') - $*\033[0m"
-    exit 1
-}
+log "starting setup"
 
-partuuid() {
-    blkid -s UUID -o value "$1"
-}
-
-baseurl="http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz"
 disk="$1"
 rootpart="$disk"1
 rwpart="$disk"2
 rootmount=$(pwd)/mnt/root
 rwmount=$(pwd)/mnt/rw
 
-log 'starting setup'
-
 # ensure mountpoints exists and nothing is currently using them
 mkdir -p $rootmount $rwmount
 umount -f $rootmount $rwmount
 
-if test -e base.tar.gz; then
-    log 'using cached image'
-else
-    log 'pulling image'
-    if ! wget "$baseurl" -O base.tar.gz; then
-        fatal 'failed to pull arch image'
-    fi
-fi
+download_file "http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz" "base.tar.gz"
 
-log 'erase disk'
-
-if ! dd if=/dev/zero of=$1 bs=1M count=32 && sync; then
-    fatal 'failed to erase disk'
-fi
-
-log 'creating partitions'
-fdisk $disk <<EOF
+setup_disk "$disk" <<EOF
 o
 n
 p
@@ -59,10 +33,8 @@ p
 p
 w
 EOF
-sync
-partprobe
 
-log 'creating filesystems'
+log "creating filesystems"
 
 if ! mkfs.ext4 -F -O ^metadata_csum,^64bit "$rootpart"; then
     fatal 'failed to create root fs'

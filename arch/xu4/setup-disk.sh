@@ -66,7 +66,10 @@ pacman-key --init
 pacman-key --populate archlinuxarm
 
 # install packages
-yes | pacman -Sy uboot-tools rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker
+while ! yes | pacman -Sy uboot-tools rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker; do
+    echo "failed to install packages. retrying..."
+    sleep 3
+done
 
 # enable custom services
 systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh waggle-firewall waggle-watchdog

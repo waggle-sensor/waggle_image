@@ -45,4 +45,5 @@ partition_disk() {
 setup_disk() {
     erase_disk "$1"
     partition_disk "$1"
+    sleep 3
 }

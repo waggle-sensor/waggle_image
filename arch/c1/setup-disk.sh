@@ -98,7 +98,6 @@ ODROIDC-UBOOT-CONFIG
 # Uncomment only a single Line! The line with setenv written.
 # At least one mode must be selected.
 
-# setenv m "480x320p60hz"	# 480x320
 # setenv m "480x800p60hz"	# 480x800
 # setenv m "vga"          	# 640x480
 # setenv m "480p"         	# 720x480
@@ -170,7 +169,7 @@ setenv hdmioutput "0"
 setenv condev "console=tty0 console=ttyS0,115200n8"   # on both
 
 # Enable/Disable ODROID-VU7 Touchscreen
-setenv disable_vu7 "false" # false
+setenv disable_vu7 "true" # false
 
 # CPU Max Frequency
 # Possible Values: 96 192 312 408 504 600 720 816
@@ -182,24 +181,20 @@ setenv max_freq "1536"
 
 ###########################################
 
-if test "\${hpd}" = "0"; then setenv hdmi_hpd "disablehpd=true"; fi
-if test "\${cec}" = "1"; then setenv hdmi_cec "hdmitx=cecf"; fi
-if test "\${disable_vu7}" = "false"; then setenv hid_quirks "usbhid.quirks=0x0eef:0x0005:0x0004"; fi
+if test "${hpd}" = "0"; then setenv hdmi_hpd "disablehpd=true"; fi
+if test "${cec}" = "1"; then setenv hdmi_cec "hdmitx=cecf"; fi
+if test "${disable_vu7}" = "false"; then setenv hid_quirks "usbhid.quirks=0x0eef:0x0005:0x0004"; fi
 
-# Boot Arguments
-setenv bootargs "root=UUID=$(partuuid $rootpart) rootwait ro \${condev} no_console_suspend fsck.repair=yes vdaccfg=0xa000 logo=osd1,loaded,0x7900000,720p,full dmfc=3 cvbsmode=576cvbs hdmimode=\${m} m_bpp=\${m_bpp} vout=\${vout_mode} \${disableuhs} \${hdmi_hpd} \${hdmi_cec} \${enabledac} monitor_onoff=\${monitor_onoff} max_freq=\${max_freq} \${hid_quirks} fsck.repair=yes net.ifnames=0"
-
-# Booting
-fatload mmc 0:1 0x21000000 uImage
-fatload mmc 0:1 0x22000000 uInitrd
-fatload mmc 0:1 0x21800000 meson8b_odroidc.dtb
+setenv bootargs "root=/dev/mmcblk0p1 rootwait ro ${condev} no_console_suspend fsck.repair=yes vdaccfg=0xa000 logo=osd1,loaded,0x7900000,720p,full dmfc=3 cvbsmode=576cvbs hdmimode=${m} m_bpp=${m_bpp} vout=${vout_mode} ${disableuhs} ${hdmi_hpd} ${hdmi_cec} ${enabledac} monitor_onoff=${monitor_onoff} max_freq=${max_freq} ${hid_quirks}"
+ext4load mmc 0:1 0x21000000 /boot/uImage
+ext4load mmc 0:1 0x21800000 /boot/dtbs/meson8b_odroidc.dtb
 fdt addr 21800000
 
-if test "\${vpu}" = "0"; then fdt rm /mesonstream; fdt rm /vdec; fdt rm /ppmgr; fi
+if test "${vpu}" = "0"; then fdt rm /mesonstream; fdt rm /vdec; fdt rm /ppmgr; fi
 
-if test "\${hdmioutput}" = "0"; then fdt rm /mesonfb; fi
+if test "${hdmioutput}" = "0"; then fdt rm /mesonfb; fi
 
-bootm 0x21000000 0x22000000 0x21800000"
+bootm 0x21000000 - 0x21800000
 EOF
 
 log "generate fstab"

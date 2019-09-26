@@ -61,19 +61,20 @@ log "setting up bootloader"
 (cd $rootmount/boot; ./sd_fusing.sh "$disk")
 
 log "setting up system"
-systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw -P bash -s <<EOF
+# TODO resolve --pipe flag between versions of nspawn
+systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw --bind /usr/bin/qemu-arm-static bash -s <<EOF
 # setup pacman trust
 pacman-key --init
 pacman-key --populate archlinuxarm
 
 # install packages
-while ! yes | pacman -Sy uboot-tools rsync git networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker; do
+while ! yes | pacman --disable-download-timeout -Sy uboot-tools rsync git networkmanager python3 openssh docker; do
     echo "failed to install packages. retrying..."
     sleep 3
 done
 
 # enable custom services
-systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh waggle-firewall waggle-watchdog
+systemctl enable NetworkManager sshd docker waggle-watchdog
 
 # generate ssh host keys
 ssh-keygen -N '' -f /etc/ssh/ssh_host_dsa_key -t dsa

@@ -58,7 +58,7 @@ log "copy extras"
 cp -a extra/* $rootmount
 
 log "setting up bootloader"
-(cd $rootmount/boot; ./sd_fusing.sh "$disk")
+(cd $rootmount/boot; bash sd_fusing.sh "$disk")
 
 log "setting up system"
 # TODO resolve --pipe flag between versions of nspawn

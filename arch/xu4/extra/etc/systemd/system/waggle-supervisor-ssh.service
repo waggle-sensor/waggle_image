@@ -1,0 +1,11 @@
+[Unit]
+Description=Waggle Reverse Tunnel Supervisor
+
+[Service]
+Restart=always
+RestartSec=15s
+WatchdogSec=3min
+ExecStart=/root/waggle-supervisor-ssh
+
+[Install]
+WantedBy=multi-user.target

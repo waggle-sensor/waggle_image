@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+# ANL:waggle-license
+#  This file is part of the Waggle Platform.  Please see the file
+#  LICENSE.waggle.txt for the legal details of the copyright and software
+#  license.  For more details on the Waggle project, visit:
+#           http://www.wa8.gl
+# ANL:waggle-license
+import argparse
+import logging
+import os
+import os.path
+import re
+import subprocess
+import time
+import hashlib
+from pathlib import Path
+
+
+logger = logging.getLogger('registration-service')
+logger.setLevel(logging.INFO)
+
+cert_server = 'beehive'
+registration_key = '/root/id_rsa_waggle_registration'
+
+ca_root_file = '/etc/waggle/cacert.pem'
+client_key_file = '/etc/waggle/key.pem'
+client_cert_file = '/etc/waggle/cert.pem'
+
+reverse_ssh_port_file = '/etc/waggle/reverse_ssh_port'
+token_path = '/etc/waggle/token'
+
+
+def read_file(path):
+    return Path(path).read_text()
+
+
+def write_file(path, content):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    Path(path).write_text(content)
+
+
+def is_file_nonempty(path):
+    try:
+        return len(read_file(path)) > 0
+    except FileNotFoundError:
+        return False
+
+
+def run_registration_command(registration_key, cert_server, command):
+    return subprocess.check_output([
+        'ssh',
+        cert_server,
+        '-p', '20022',
+        '-i', registration_key,
+        '-o', 'StrictHostKeyChecking=no',
+        '-o', 'ConnectTimeout=60',
+        command,
+    ]).decode()
+
+
+def make_request(command):
+    logger.info('Making request %s to %s.', command, cert_server)
+
+    start_time = time.time()
+
+    while time.time() - start_time < 300:
+        try:
+            response = run_registration_command(registration_key, cert_server, command)
+            logger.debug('Response for %s:\n%s.', command, response)
+            return response
+        except subprocess.CalledProcessError:
+            logger.exception('Failed to get credentials from %s. Will retry in 30s...', cert_server)
+            time.sleep(30)
+
+    raise TimeoutError('Request timed out.')
+
+
+def scan_certificate(s):
+    try:
+        return re.search(r'-----BEGIN CERTIFICATE-----(.|\n)*-----END CERTIFICATE-----', s).group()
+    except AttributeError:
+        raise ValueError('No matching certification:\n{}.'.format(s))
+
+
+def scan_private_key(s):
+    try:
+        return re.search(r'-----BEGIN RSA PRIVATE KEY-----(.|\n)*-----END RSA PRIVATE KEY-----', s).group()
+    except AttributeError:
+        raise ValueError('No matching private key:\n{}.'.format(s))
+
+
+def scan_ssh_port(s):
+    try:
+        return int(re.search(r'PORT=(\d+)', s).group(1))
+    except AttributeError:
+        raise ValueError('No matching SSH port:\n{}.'.format(s))
+
+
+def scan_token(s):
+    try:
+        return re.search(r'TOKEN=(\S+)', s).group(1)
+    except AttributeError:
+        raise ValueError('No matching token:\n{}.'.format(s))
+
+
+def scan_token_or_failover(s):
+    try:
+        return scan_token(s)
+    except ValueError:
+        logger.warning('Token not found! Failover to generating from key and cert.')
+        key = scan_private_key(s)
+        cert = scan_certificate(s)
+        return generate_token_from_key_and_cert(key, cert)
+
+
+def generate_token_from_key_and_cert(key, cert):
+    data = (key.strip() + cert.strip()).encode()
+    hexdigest = hashlib.sha1(data).hexdigest()
+    return hexdigest[:8]
+
+
+def scan_ssh_key(s):
+    try:
+        return re.search(r'ssh-rsa.*', s).group()
+    except AttributeError:
+        raise ValueError('No matching SSH key:\n{}.'.format(s))
+
+
+def request_waggleca_info():
+    logger.info('Requesting waggleca info from %s.', cert_server)
+
+    return {
+        'cacert': scan_certificate(make_request('certca'))
+    }
+
+
+def request_node_info(node_id):
+    logger.info('Requesting node info from %s.', cert_server)
+
+    response = make_request('node?{}'.format(node_id))
+
+    if 'cert file not found' in response:
+        raise ValueError('Certificate not found for {}.'.format(node_id))
+
+    return {
+        'cert': scan_certificate(response),
+        'key': scan_private_key(response),
+        'ssh_port': scan_ssh_port(response),
+        'ssh_key': scan_ssh_key(response),
+        'token': scan_token_or_failover(response),
+    }
+
+
+def get_hostname():
+    r = subprocess.check_output('hostname').decode().strip()
+
+    if 'SD' in r:
+        return 'SD'
+    if 'MMC' in r:
+        return 'eMMC'
+    return ''
+
+
+def get_certificates():
+    logger.info('Getting credentials from %s.', cert_server)
+
+    node_id = Path('/sys/class/efuse/mac').read_text().strip().replace(':', '').rjust(16, '0')
+
+    required_files = [
+        ca_root_file,
+        client_key_file,
+        client_cert_file,
+        reverse_ssh_port_file,
+    ]
+
+    if all(is_file_nonempty(f) for f in required_files):
+        logger.info('Node already has all credentials. Skipping registration.')
+        return
+
+    while not all(is_file_nonempty(f) for f in required_files):
+        waggleca_info = request_waggleca_info()
+        node_info = request_node_info(node_id)
+
+        write_file(ca_root_file, waggleca_info['cacert'])
+
+        write_file(client_cert_file, node_info['cert'])
+        os.chmod(client_cert_file, 0o600)
+        subprocess.call(['chown', 'rabbitmq:rabbitmq', client_cert_file])
+
+        write_file(client_key_file, node_info['key'])
+        os.chmod(client_key_file, 0o600)
+        subprocess.call(['chown', 'rabbitmq:rabbitmq', client_key_file])
+
+        write_file(reverse_ssh_port_file, str(node_info['ssh_port']))
+        write_file(token_path, node_info['token'])
+
+    # os.remove(registration_key)
+    logger.info('Switching to safe operation mode')
+
+    if get_hostname() == 'SD':
+        subprocess.call('waggle-mode-burnin')
+    else:
+        subprocess.call('waggle-mode-burnin-core')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--force', action='store_true', help='kill other processes and start')
+    args = parser.parse_args()
+    get_certificates()
+
+
+if __name__ == '__main__':
+    main()

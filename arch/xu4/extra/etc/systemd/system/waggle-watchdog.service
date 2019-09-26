@@ -1,0 +1,10 @@
+[Unit]
+Description=Ping C1+ Watchdog
+
+[Service]
+Restart=always
+RestartSec=100ms
+ExecStart=/bin/bash -c 'while true; do echo 0 > /dev/watchdog; sleep 1; done'
+
+[Install]
+WantedBy=multi-user.target

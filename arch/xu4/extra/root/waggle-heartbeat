@@ -36,7 +36,7 @@ get_device_type() {
   if grep -q 'ODROID C1+' /build.json; then
     echo C
   elif grep -q 'ODROID XU4' /build.json; then
-    echo XU3
+    echo XU4
   elif grep -q 'NVIDIA TX2' /build.json; then
     echo TX2
   elif grep -q 'NVIDIA Nano' /build.json; then

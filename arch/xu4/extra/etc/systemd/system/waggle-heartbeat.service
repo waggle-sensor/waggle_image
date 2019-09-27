@@ -1,0 +1,9 @@
+[Unit]
+Description=Waggle Heartbeat
+
+[Service]
+Type=oneshot
+ExecStart=/root/waggle-heartbeat
+
+[Install]
+WantedBy=multi-user.target

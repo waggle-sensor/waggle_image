@@ -68,7 +68,7 @@ pacman-key --init
 pacman-key --populate archlinuxarm
 
 # install packages
-while ! yes | pacman --disable-download-timeout -S uboot-tools rsync git openbsd-netcat networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker screen; do
+while ! yes | pacman --disable-download-timeout -Sy uboot-tools rsync git openbsd-netcat networkmanager modemmanager mobile-broadband-provider-info usb_modeswitch python3 openssh docker screen; do
     echo "failed to install packages. retrying..."
     sleep 3
 done

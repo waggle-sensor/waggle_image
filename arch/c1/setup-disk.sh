@@ -74,7 +74,7 @@ while ! yes | pacman --disable-download-timeout -Sy uboot-tools rsync git openbs
 done
 
 # enable custom services
-systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh waggle-firewall waggle-watchdog
+systemctl enable NetworkManager ModemManager sshd docker waggle-registration waggle-reverse-tunnel waggle-supervisor-ssh waggle-firewall waggle-heartbeat waggle-watchdog
 
 # generate ssh host keys
 ssh-keygen -N '' -f /etc/ssh/ssh_host_dsa_key -t dsa

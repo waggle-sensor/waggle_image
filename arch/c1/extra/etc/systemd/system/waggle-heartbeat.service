@@ -2,7 +2,6 @@
 Description=Waggle Heartbeat
 
 [Service]
-Type=oneshot
 ExecStart=/root/waggle-heartbeat
 
 [Install]

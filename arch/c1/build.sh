@@ -5,11 +5,8 @@
 cd $(dirname $0) && source ../lib.sh
 
 log "starting setup"
-
-if ! mkdir -p "$1" && cd "$1"; then
-    fatal "could not setup build directory"
-fi
-
+mkdir -p "$1"
+cd "$1"
 mkdir -p root rw
 
 download_file "http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz" "base.tar.gz"

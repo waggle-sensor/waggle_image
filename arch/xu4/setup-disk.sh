@@ -7,8 +7,8 @@ cd $(dirname $0) && source ../lib.sh
 log "starting setup"
 
 disk="$1"
-rootpart="$disk"1
-rwpart="$disk"2
+rootpart=$(ls $disk?*1)
+rwpart=$(ls $disk?*2)
 rootmount=$(pwd)/mnt/root
 rwmount=$(pwd)/mnt/rw
 

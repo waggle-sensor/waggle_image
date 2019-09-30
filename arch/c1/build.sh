@@ -6,26 +6,24 @@ cd $(dirname $0) && source ../lib.sh
 
 log "starting setup"
 
-rootmount="$1/root"
-rwmount="$1/rw"
+if ! mkdir -p "$1" && cd "$1"; then
+    fatal "could not setup build directory"
+fi
 
-mkdir -p "$rootmount" "$rwmount"
+mkdir -p root rw
 
 download_file "http://os.archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz" "base.tar.gz"
 
 log "unpacking image"
-bsdtar -xpf base.tar.gz -C $rootmount
+bsdtar -xpf base.tar.gz -C root
 
 log "cleaning image"
-rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*
+rm root/etc/resolv.conf root/etc/systemd/network/*
 
 log "copy extras"
-cp -a extra/* $rootmount
+cp -a $(dirname $0)/extra/* root
 
 log "setting up system"
-(
-cd "$1"
-
 systemd-nspawn -D $PWD/root --bind $PWD/rw:/wagglerw --bind /usr/bin/qemu-arm-static bash -s <<EOF
 # setup pacman trust
 pacman-key --init
@@ -53,7 +51,6 @@ touch /etc/hostname
 mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker /wagglerw/etc/waggle
 touch /wagglerw/etc/hostname
 EOF
-)
 
 log "generate build info"
 cat <<EOF > $rootmount/build.json
@@ -63,8 +60,5 @@ cat <<EOF > $rootmount/build.json
     "device": "ODROID C1+"
 }
 EOF
-
-log "cleaning up"
-umount $rootmount $rwmount
 
 log "setup complete"

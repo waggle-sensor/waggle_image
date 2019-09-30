@@ -20,12 +20,17 @@ partuuid() {
 download_file() {
     if test -e "$2"; then
         log "skipping download. $2 already exists"
-    else
-        log "downloading $1 to $2"
-        if ! wget "$1" -O "$2"; then
-            fatal "failed to download $1"
-        fi
+        return
     fi
+
+    log "downloading $1 to $2"
+
+    if ! wget "$1" -O "$2.download"; then
+        fatal "failed to download $1"
+    fi
+
+    mv "$2.download" "$2"
+    log "download complete"
 }
 
 erase_disk() {

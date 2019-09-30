@@ -6,8 +6,8 @@ cd $(dirname $0) && source ../lib.sh
 
 log "starting setup"
 
-rootmount=$(abspath "$1/root")
-rwmount=$(abspath "$1/rw")
+rootmount="$1/root"
+rwmount="$1/rw"
 
 mkdir -p "$rootmount" "$rwmount"
 
@@ -23,7 +23,8 @@ log "copy extras"
 cp -a extra/* $rootmount
 
 log "setting up system"
-systemd-nspawn -D $rootmount --bind $rwmount:/wagglerw --bind /usr/bin/qemu-arm-static bash -s <<EOF
+(
+systemd-nspawn -D root --bind $PWD/rw:/wagglerw --bind /usr/bin/qemu-arm-static bash -s <<EOF
 # setup pacman trust
 pacman-key --init
 pacman-key --populate archlinuxarm
@@ -50,6 +51,7 @@ touch /etc/hostname
 mkdir -p /wagglerw/var/lib /wagglerw/var/log /wagglerw/var/tmp /wagglerw/etc/docker /wagglerw/etc/waggle
 touch /wagglerw/etc/hostname
 EOF
+)
 
 log "generate build info"
 cat <<EOF > $rootmount/build.json

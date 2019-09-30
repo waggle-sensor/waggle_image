@@ -1,9 +1,3 @@
-abspath() {
-    if prefix=$(cd $(dirname $1) && pwd); then
-        echo "$prefix/$(basename $1)"
-    fi
-}
-
 utctimestamp() {
     date -u +'%Y-%m-%dT%H:%M:%SZ'
 }

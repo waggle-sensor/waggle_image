@@ -24,7 +24,9 @@ cp -a extra/* $rootmount
 
 log "setting up system"
 (
-systemd-nspawn -D root --bind $PWD/rw:/wagglerw --bind /usr/bin/qemu-arm-static bash -s <<EOF
+cd "$1"
+
+systemd-nspawn -D $PWD/root --bind $PWD/rw:/wagglerw --bind /usr/bin/qemu-arm-static bash -s <<EOF
 # setup pacman trust
 pacman-key --init
 pacman-key --populate archlinuxarm

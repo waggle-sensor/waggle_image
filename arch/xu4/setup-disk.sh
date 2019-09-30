@@ -49,9 +49,7 @@ mount "$rootpart" $rootmount
 mount "$rwpart" $rwmount
 
 log "unpacking image"
-if ! bsdtar -xpf base.tar.gz -C $rootmount; then
-    fatal "failed to unpack image"
-fi
+bsdtar -xpf base.tar.gz -C $rootmount
 
 log "cleaning partitions"
 rm $rootmount/etc/resolv.conf $rootmount/etc/systemd/network/*

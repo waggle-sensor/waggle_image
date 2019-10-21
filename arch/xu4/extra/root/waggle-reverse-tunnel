@@ -1,7 +1,0 @@
-#!/bin/bash
-
-HOST=beehive
-PORT=$(cat /etc/waggle/reverse_ssh_port)
-key_file=/etc/waggle/key.pem
-
-ssh -i $key_file -gNC -o "ServerAliveInterval 5" -o "ServerAliveCountMax 3" -R $PORT:localhost:22 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -o "ExitOnForwardFailure yes" $HOST -p 20022
